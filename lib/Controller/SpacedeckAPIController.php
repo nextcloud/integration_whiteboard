@@ -66,7 +66,7 @@ class SpacedeckAPIController extends Controller {
 		}
 
 		$result = $this->spacedeckApiService->saveSpaceToFile(
-			$this->apiToken, $this->baseUrl, $this->userId, $space_id, $file_id
+			$this->baseUrl, $this->apiToken, $this->userId, $space_id, $file_id
 		);
 		if (isset($result['error'])) {
 			$response = new DataResponse($result['error'], 401);
@@ -87,7 +87,7 @@ class SpacedeckAPIController extends Controller {
 		}
 
 		$result = $this->spacedeckApiService->loadSpaceFromFile(
-			$this->apiToken, $this->baseUrl, $this->userId, $file_id
+			$this->baseUrl, $this->apiToken, $this->userId, $file_id
 		);
 		if (isset($result['error'])) {
 			$response = new DataResponse($result['error'], 401);
