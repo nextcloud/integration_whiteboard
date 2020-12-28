@@ -12,6 +12,7 @@ webpackConfig.stats = {
 
 webpackConfig.entry = {
     adminSettings: { import: path.join(__dirname, 'src', 'adminSettings.js'), filename: 'integration_spacedeck-adminSettings.js' },
+    filetypes: { import: path.join(__dirname, 'src', 'filetypes.js'), filename: 'integration_spacedeck-filetypes.js' },
 }
 
 module.exports = webpackConfig
