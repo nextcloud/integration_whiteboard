@@ -27,35 +27,35 @@ use OCA\Spacedeck\AppInfo\Application;
 class ConfigController extends Controller {
 
 
-    private $userId;
-    private $config;
-    private $dbtype;
+	private $userId;
+	private $config;
+	private $dbtype;
 
-    public function __construct($AppName,
-                                IRequest $request,
-                                IConfig $config,
-                                LoggerInterface $logger,
-                                SpacedeckAPIService $spacedeckAPIService,
-                                ?string $userId) {
-        parent::__construct($AppName, $request);
-        $this->appName = $AppName;
-        $this->userId = $userId;
-        $this->config = $config;
-        $this->logger = $logger;
-        $this->spacedeckAPIService = $spacedeckAPIService;
-    }
+	public function __construct($AppName,
+								IRequest $request,
+								IConfig $config,
+								LoggerInterface $logger,
+								SpacedeckAPIService $spacedeckAPIService,
+								?string $userId) {
+		parent::__construct($AppName, $request);
+		$this->appName = $AppName;
+		$this->userId = $userId;
+		$this->config = $config;
+		$this->logger = $logger;
+		$this->spacedeckAPIService = $spacedeckAPIService;
+	}
 
-    /**
-     * set admin config values
-     *
-     * @param array $values
-     * @return DataResponse
-     */
-    public function setAdminConfig(array $values): DataResponse {
-        foreach ($values as $key => $value) {
-            $this->config->setAppValue(Application::APP_ID, $key, $value);
-        }
-        $response = new DataResponse(1);
-        return $response;
-    }
+	/**
+	 * set admin config values
+	 *
+	 * @param array $values
+	 * @return DataResponse
+	 */
+	public function setAdminConfig(array $values): DataResponse {
+		foreach ($values as $key => $value) {
+			$this->config->setAppValue(Application::APP_ID, $key, $value);
+		}
+		$response = new DataResponse(1);
+		return $response;
+	}
 }

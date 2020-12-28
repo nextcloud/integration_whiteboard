@@ -22,7 +22,7 @@
 				{{ t('integration_spacedeck', 'Api KEY') }}
 			</label>
 			<input id="spacedeck-apikey"
-				v-model="state.api_key"
+				v-model="state.api_token"
 				type="password"
 				:readonly="readonly"
 				:placeholder="t('integration_spacedeck', 'Your Spacedeck Api KEY')"
@@ -71,7 +71,7 @@ export default {
 			const req = {
 				values: {
 					base_url: this.state.base_url,
-					api_key: this.state.api_key,
+					api_token: this.state.api_token,
 				},
 			}
 			const url = generateUrl('/apps/integration_spacedeck/admin-config')
