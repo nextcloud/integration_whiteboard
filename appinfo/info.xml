@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<info>
+    <id>integration_spacedeck</id>
+    <name>Spacedeck integration</name>
+    <summary>Modern Spacedeck whiteboards</summary>
+    <description><![CDATA[Spacedeck integration allows you to create whiteboards.]]></description>
+    <version>0.0.1</version>
+    <licence>agpl</licence>
+    <author>Julien Veyssier</author>
+    <namespace>Spacedeck</namespace>
+    <documentation>
+        <developer>https://github.com/eneiluj/integration_spacedeck/wikis</developer>
+    </documentation>
+    <category>integration</category>
+    <website>https://github.com/eneiluj/integration_spacedeck</website>
+    <bugs>https://github.com/eneiluj/integration_spacedeck/issues</bugs>
+    <screenshot>https://github.com/eneiluj/integration_spacedeck/raw/master/img/screenshot1.jpg</screenshot>
+    <dependencies>
+        <database min-version="9.4">pgsql</database>
+        <database>sqlite</database>
+        <database min-version="5.5">mysql</database>
+        <nextcloud min-version="20" max-version="21"/>
+    </dependencies>
+    <settings>
+        <admin>OCA\Spacedeck\Settings\Admin</admin>
+        <admin-section>OCA\Spacedeck\Settings\AdminSection</admin-section>
+    </settings>
+</info>
