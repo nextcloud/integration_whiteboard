@@ -48,7 +48,7 @@ class Application extends App implements IBootstrap {
 	protected function addPrivateListeners($eventDispatcher) {
 		$eventDispatcher->addListener('OCA\Files::loadAdditionalScripts', function () {
 				\OCP\Util::addscript(self::APP_ID, self::APP_ID . '-filetypes');
-				// \OCP\Util::addStyle(self::APP_ID,'style');
+				\OCP\Util::addStyle(self::APP_ID, 'style');
 		});
 	}
 

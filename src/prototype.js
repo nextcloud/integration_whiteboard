@@ -25,6 +25,8 @@ import axios from '@nextcloud/axios'
 import Vue from 'vue'
 import PrototypeView from './PrototypeView'
 
+const FILE_ACTION_IDENTIFIER = 'edit-spacedeck'
+
 /**
 * @namespace ApplicationPrototype
 */
@@ -49,8 +51,6 @@ export default {
 
 	// create container + handle close button
 	setupContainer(filename, context) {
-		const self = this
-
 		this.filename = filename
 		this.context = context
 
@@ -85,34 +85,45 @@ export default {
 		this.vm.$mount(container)
 
 		subscribe(this.APP_NAME + '::closeClick', this.CC = () => {
-			self.stopEdit()
+			this.stopEdit()
 		})
 	},
 
 	// register file handler
 	registerFileActions() {
-		const self = this
-
+		/*
+		// this is done like that in Whiteboard App
 		OCA.Files.fileActions.registerAction({
-			name: 'Edit',
+			name: FILE_ACTION_IDENTIFIER,
 			mime: this.APP_MIME,
-			permissions: OC.PERMISSION_READ,
+			permissions: OC.PERMISSION_UPDATE | OC.PERMISSION_READ,
 			icon() {
 				return imagePath('core', 'actions/edit')
 			},
-			actionHandler(filename, context) {
-				self.setupContainer(filename, context)
-				self.startEdit(filename, context)
+			actionHandler: (filename, context) => {
+				this.setupContainer(filename, context)
 			},
 		})
+		*/
 
-		OCA.Files.fileActions.setDefault(this.APP_MIME, 'Edit')
+		// this is how Text app does it
+		OCA.Files.fileActions.register(
+			this.APP_MIME,
+			FILE_ACTION_IDENTIFIER,
+			OC.PERMISSION_UPDATE | OC.PERMISSION_READ,
+			imagePath('core', 'actions/edit'),
+			(filename, context) => {
+				this.setupContainer(filename, context)
+			},
+			t(this.APP_NAME, 'Edit')
+		)
+
+		OCA.Files.fileActions.setDefault(this.APP_MIME, FILE_ACTION_IDENTIFIER)
 	},
 
-	// register "New" in file app
+	// register "New" in Files app
 	NewFileMenu: {
 		attach(menu) {
-			// const self = this
 			const fileList = menu.fileList
 			if (fileList.id !== 'files') {
 				return
@@ -120,59 +131,28 @@ export default {
 
 			menu.addMenuEntry({
 				id: this.APP_NAME,
-				displayName: t(this.APP_NAME, 'New ' + this.APP_NAME),
-				templateName: t(this.APP_NAME, 'New ' + this.APP_NAME + '.' + this.APP_EXT),
+				displayName: t(this.APP_NAME, 'New Spacedeck whiteboard'),
+				templateName: t(this.APP_NAME, 'whiteboard') + '.' + this.APP_EXT,
 				iconClass: 'icon-' + this.APP_NAME,
 				fileType: this.APP_MIME,
 				actionHandler(fileName) {
-					// const dir = fileList.getCurrentDirectory()
-					fileList.createFile(fileName)
-						.then(() => {
-							// console.log('New ' + self.APP_NAME)
-						})
+					fileList.createFile(fileName).then((status, data) => {
+						const fileInfoModel = new OCA.Files.FileInfoModel(data)
+						if (typeof OCA.Viewer !== 'undefined') {
+							OCA.Files.fileActions.triggerAction('view', fileInfoModel, fileList)
+						} else if (typeof OCA.Viewer === 'undefined') {
+							// this still has some style issues
+							// TODO fix
+							// OCA.Files.fileActions.triggerAction(FILE_ACTION_IDENTIFIER, fileInfoModel, fileList)
+						}
+					})
 				},
 			})
 		},
 	},
 
-	// start editing
-	async startEdit(filename, context) {
-
-		console.debug('AAAAA')
-		console.debug(this.vm)
-		/*
-		const self = this
-
-		// get the content and start the editor
-		const content = await this.loadContent()
-		this.ED = editor
-		this.ED.start(self.APP_NAME, content)
-
-		// start the collaboration Engine
-		this.CE = collaborationEngine
-
-		this.sessionInfo = await this.CE.start(this.APP_NAME, filename, context)
-		this.vm.sessionInfo = this.sessionInfo
-		// subscribtion to event bus
-		// local changes => send to Engine
-		subscribe(this.APP_NAME + '::editorAddStep', this.EDS = (data) => {
-			self.CE.sendStep(data)
-		})
-
-		// engine sent us changes => forward to editor
-		subscribe(this.APP_NAME + '::externalAddStep', this.EAS = (data) => {
-			self.ED.applyChange(data)
-		})
-		*/
-
-		return true
-	},
-
 	// stop editing
 	stopEdit() {
-		// save the content
-		this.saveEdit()
-
 		// unsubscribe from bus event
 		unsubscribe(this.APP_NAME + '::closeClick', this.CC)
 		// unsubscribe(this.APP_NAME + '::saveClick', this.SC)
@@ -184,7 +164,6 @@ export default {
 	loadContent() {
 		console.debug('loadContent')
 
-		// const self = this
 		const url = generateUrl('apps/' + this.APP_NAME + '/file/load')
 
 		return axios.get(url, {
@@ -192,9 +171,5 @@ export default {
 				path: this.context.dir + '/' + this.filename,
 			},
 		})
-	},
-
-	saveEdit() {
-		console.debug('saveEdit')
 	},
 }
