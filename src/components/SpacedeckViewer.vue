@@ -43,22 +43,40 @@ export default {
 			spaceId: null,
 			spaceUrl: '',
 			loop: null,
+			user: getCurrentUser(),
 		}
 	},
 
 	computed: {
 		saveSpaceUrl() {
-			return generateUrl('/apps/integration_spacedeck/space/' + this.spaceId + '/' + this.fileid)
+			return this.user
+				? generateUrl('/apps/integration_spacedeck/space/' + this.spaceId + '/' + this.fileid)
+				: generateUrl('/apps/integration_spacedeck/s/' + this.sharingToken + '/space/' + this.spaceId + '/' + this.fileid)
+		},
+		loadSpaceUrl() {
+			return this.user
+				? generateUrl('/apps/integration_spacedeck/space/' + this.fileid)
+				: generateUrl('/apps/integration_spacedeck/s/' + this.sharingToken + '/space/' + this.fileid)
 		},
 		nicknameParam() {
-			const user = getCurrentUser()
-			return (user && user.uid)
-				? '&nickname=' + encodeURIComponent(user.uid)
+			return (this.user && this.user.uid)
+				? '&nickname=' + encodeURIComponent(this.user.uid)
 				: ''
+		},
+		sharingToken() {
+			const elem = document.getElementById('sharingToken')
+			return elem && elem.tagName === 'INPUT'
+				? elem.value
+				: null
 		},
 	},
 
 	created() {
+		const user = getCurrentUser()
+		console.debug('user')
+		console.debug(user)
+		const elem = document.getElementById('sharingToken')
+		console.debug(elem)
 		this.loadSpace()
 	},
 
@@ -70,10 +88,10 @@ export default {
 
 	methods: {
 		loadSpace() {
+			console.debug(this.loadSpaceUrl)
 			// load the file into spacedeck (only if no related space exists)
-			const url = generateUrl('/apps/integration_spacedeck/space/' + this.fileid)
-			axios.get(url).then((response) => {
-				console.debug(response.data)
+			axios.get(this.loadSpaceUrl).then((response) => {
+				// console.debug(response.data)
 				this.spaceId = response.data.space_id
 				this.spaceUrl = response.data.base_url
 					+ '/spaces/' + response.data.space_id

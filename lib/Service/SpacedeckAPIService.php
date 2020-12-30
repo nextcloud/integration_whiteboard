@@ -52,12 +52,12 @@ class SpacedeckAPIService {
 	 *
 	 * @param string $baseUrl
 	 * @param string $apiToken
-	 * @param string $userId
+	 * @param ?string $userId
 	 * @param string $space_id
 	 * @param int $file_id
 	 * @return array success state
 	 */
-	public function saveSpaceToFile(string $baseUrl, string $apiToken, string $userId, string $space_id, int $file_id): array {
+	public function saveSpaceToFile(string $baseUrl, string $apiToken, ?string $userId, string $space_id, int $file_id): array {
 		// get db content !!!OR!!! directly get json artifacts and json space
 		// endpoints:
 		// * GET spaces/space_id
@@ -93,11 +93,11 @@ class SpacedeckAPIService {
 	 *
 	 * @param string $baseUrl
 	 * @param string $apiToken
-	 * @param string $userId
+	 * @param ?string $userId
 	 * @param int $file_id
 	 * @return array error or space information
 	 */
-	public function loadSpaceFromFile(string $baseUrl, string $apiToken, string $userId, int $file_id): array {
+	public function loadSpaceFromFile(string $baseUrl, string $apiToken, ?string $userId, int $file_id): array {
 		// load file json content
 		$file = $this->getFileFromId($userId, $file_id);
 		if (is_null($file)) {
@@ -197,11 +197,11 @@ class SpacedeckAPIService {
 	 *
 	 * @param string $baseUrl
 	 * @param string $apiToken
-	 * @param string $userId
+	 * @param ?string $userId
 	 * @param int $fileId
 	 * @return ?array new space information or null if failed to create
 	 */
-	private function createSpace(string $baseUrl, string $apiToken, string $userId, int $fileId): ?array {
+	private function createSpace(string $baseUrl, string $apiToken, ?string $userId, int $fileId): ?array {
 		$params = [
 			'name' => 'nextcloud-' . $fileId,
 			'edit_slug' => 'nextcloud-' . $fileId,
@@ -217,13 +217,17 @@ class SpacedeckAPIService {
 	/**
 	 * Get a user file from a fileId
 	 *
-	 * @param string $userId
+	 * @param ?string $userId
 	 * @param int $fileID
 	 * @return ?Node the file or null if it does not exist (or is not accessible by this user)
 	 */
-	private function getFileFromId(string $userId, int $fileId): ?Node {
-		$userFolder = $this->root->getUserFolder($userId);
-		$file = $userFolder->getById($fileId);
+	private function getFileFromId(?string $userId, int $fileId): ?Node {
+		if (is_null($userId)) {
+			$file = $this->root->getById($fileId);
+		} else {
+			$userFolder = $this->root->getUserFolder($userId);
+			$file = $userFolder->getById($fileId);
+		}
 		if (is_array($file) && count($file) > 0) {
 			return $file[0];
 		} elseif (!is_array($file) && $file->getType() === FileInfo::TYPE_FILE) {

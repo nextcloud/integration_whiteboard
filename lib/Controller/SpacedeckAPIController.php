@@ -20,6 +20,8 @@ use OCP\AppFramework\Http\RedirectResponse;
 
 use OCP\AppFramework\Http\ContentSecurityPolicy;
 
+use OCP\Files\FileInfo;
+use OCP\Share\IManager as IShareManager;
 use Psr\Log\LoggerInterface;
 use OCP\IRequest;
 use OCP\AppFramework\Http\DataResponse;
@@ -41,12 +43,14 @@ class SpacedeckAPIController extends Controller {
 								IServerContainer $serverContainer,
 								IConfig $config,
 								IL10N $l10n,
+								IShareManager $shareManager,
 								LoggerInterface $logger,
 								SpacedeckAPIService $spacedeckApiService,
-								string $userId) {
+								?string $userId) {
 		parent::__construct($AppName, $request);
 		$this->userId = $userId;
 		$this->l10n = $l10n;
+		$this->shareManager = $shareManager;
 		$this->serverContainer = $serverContainer;
 		$this->config = $config;
 		$this->logger = $logger;
@@ -62,7 +66,7 @@ class SpacedeckAPIController extends Controller {
 	 */
 	public function saveSpaceToFile(string $space_id, int $file_id): DataResponse {
 		if (!$this->apiToken || !$this->baseUrl) {
-			$response = new DataResponse('Spacedeck not configured', 400);
+			return new DataResponse('Spacedeck not configured', 400);
 		}
 
 		$result = $this->spacedeckApiService->saveSpaceToFile(
@@ -83,7 +87,45 @@ class SpacedeckAPIController extends Controller {
 	 */
 	public function loadSpaceFromFile(string $file_id): DataResponse {
 		if (!$this->apiToken || !$this->baseUrl) {
-			$response = new DataResponse('Spacedeck not configured', 400);
+			return new DataResponse('Spacedeck not configured', 400);
+		}
+
+		$result = $this->spacedeckApiService->loadSpaceFromFile(
+			$this->baseUrl, $this->apiToken, $this->userId, $file_id
+		);
+		if (isset($result['error'])) {
+			$response = new DataResponse($result['error'], 401);
+		} else {
+			$response = new DataResponse($result);
+		}
+		return $response;
+	}
+
+	/**
+	 * @NoAdminRequired
+	 * @PublicPage
+	 *
+	 * @return DataResponse
+	 */
+	public function publicLoadSpaceFromFile(string $token, int $file_id): DataResponse {
+		if (!$this->apiToken || !$this->baseUrl) {
+			return new DataResponse('Spacedeck not configured', 400);
+		}
+		try {
+			$share = $this->shareManager->getShareByToken($token);
+			$node = $share->getNode();
+			if ($node->getType() === FileInfo::TYPE_FILE && $node->getId() !== $file_id) {
+				return new DataResponse('No such share (file)', 400);
+			} elseif ($node->getType() === FileInfo::TYPE_FOLDER) {
+				$file = $node->getById($file_id);
+				if ( (is_array($file) && count($file) === 0)
+					|| (!is_array($file) && $file->getType() !== FileInfo::TYPE_FILE)
+				) {
+					return new DataResponse('No such share (dir)', 400);
+				}
+			}
+		} catch (ShareNotFound $e) {
+			return new DataResponse('No such share', 400);
 		}
 
 		$result = $this->spacedeckApiService->loadSpaceFromFile(

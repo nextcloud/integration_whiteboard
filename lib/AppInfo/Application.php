@@ -10,12 +10,15 @@
 namespace OCA\Spacedeck\AppInfo;
 
 use OCP\IContainer;
-
+use OCP\Util;
 use OCP\AppFramework\App;
 use OCP\AppFramework\IAppContainer;
 use OCP\AppFramework\Bootstrap\IRegistrationContext;
 use OCP\AppFramework\Bootstrap\IBootContext;
 use OCP\AppFramework\Bootstrap\IBootstrap;
+
+use OCA\Files\Event\LoadAdditionalScriptsEvent;
+use OCA\Files_Sharing\Event\BeforeTemplateRenderedEvent;
 
 use OC\Security\CSP\ContentSecurityPolicy;
 
@@ -46,10 +49,17 @@ class Application extends App implements IBootstrap {
 	}
 
 	protected function addPrivateListeners($eventDispatcher) {
-		$eventDispatcher->addListener('OCA\Files::loadAdditionalScripts', function () {
-				\OCP\Util::addscript(self::APP_ID, self::APP_ID . '-filetypes');
-				\OCP\Util::addStyle(self::APP_ID, 'style');
+		$eventDispatcher->addListener(LoadAdditionalScriptsEvent::class, function () {
+			$this->loadScripts();
 		});
+		$eventDispatcher->addListener(BeforeTemplateRenderedEvent::class, function () {
+			$this->loadScripts();
+		});
+	}
+
+	private function loadScripts() {
+		Util::addscript(self::APP_ID, self::APP_ID . '-filetypes');
+		Util::addStyle(self::APP_ID, 'style');
 	}
 
 	public function updateCSP() {
