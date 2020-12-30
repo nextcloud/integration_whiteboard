@@ -82,10 +82,35 @@ class SpacedeckAPIController extends Controller {
 
 	/**
 	 * @NoAdminRequired
+	 * @PublicPage
 	 *
 	 * @return DataResponse
 	 */
-	public function loadSpaceFromFile(string $file_id): DataResponse {
+	public function publicSaveSpaceToFile(string $token, string $space_id, int $file_id): DataResponse {
+		if (!$this->apiToken || !$this->baseUrl) {
+			return new DataResponse('Spacedeck not configured', 400);
+		}
+		if (!$this->isFileSharedWithToken($token, $file_id)) {
+			return new DataResponse('No such share', 400);
+		}
+
+		$result = $this->spacedeckApiService->saveSpaceToFile(
+			$this->baseUrl, $this->apiToken, $this->userId, $space_id, $file_id
+		);
+		if (isset($result['error'])) {
+			$response = new DataResponse($result['error'], 401);
+		} else {
+			$response = new DataResponse($result);
+		}
+		return $response;
+	}
+
+	/**
+	 * @NoAdminRequired
+	 *
+	 * @return DataResponse
+	 */
+	public function loadSpaceFromFile(int $file_id): DataResponse {
 		if (!$this->apiToken || !$this->baseUrl) {
 			return new DataResponse('Spacedeck not configured', 400);
 		}
@@ -111,20 +136,7 @@ class SpacedeckAPIController extends Controller {
 		if (!$this->apiToken || !$this->baseUrl) {
 			return new DataResponse('Spacedeck not configured', 400);
 		}
-		try {
-			$share = $this->shareManager->getShareByToken($token);
-			$node = $share->getNode();
-			if ($node->getType() === FileInfo::TYPE_FILE && $node->getId() !== $file_id) {
-				return new DataResponse('No such share (file)', 400);
-			} elseif ($node->getType() === FileInfo::TYPE_FOLDER) {
-				$file = $node->getById($file_id);
-				if ( (is_array($file) && count($file) === 0)
-					|| (!is_array($file) && $file->getType() !== FileInfo::TYPE_FILE)
-				) {
-					return new DataResponse('No such share (dir)', 400);
-				}
-			}
-		} catch (ShareNotFound $e) {
+		if (!$this->isFileSharedWithToken($token, $file_id)) {
 			return new DataResponse('No such share', 400);
 		}
 
@@ -137,5 +149,25 @@ class SpacedeckAPIController extends Controller {
 			$response = new DataResponse($result);
 		}
 		return $response;
+	}
+
+	private function isFileSharedWithToken(string $token, int $file_id): bool {
+		try {
+			$share = $this->shareManager->getShareByToken($token);
+			$node = $share->getNode();
+			if ($node->getType() === FileInfo::TYPE_FILE && $node->getId() !== $file_id) {
+				return false;
+			} elseif ($node->getType() === FileInfo::TYPE_FOLDER) {
+				$file = $node->getById($file_id);
+				if ( (is_array($file) && count($file) === 0)
+					|| (!is_array($file) && $file->getType() !== FileInfo::TYPE_FILE)
+				) {
+					return false;
+				}
+			}
+		} catch (ShareNotFound $e) {
+			return false;
+		}
+		return true;
 	}
 }
