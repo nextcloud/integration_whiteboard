@@ -18,23 +18,18 @@
  *
  */
 
-import ApplicationPrototype from './prototype.js'
-
-const APP_NAME = 'integration_spacedeck'
-const APP_EXT = 'spd'
-const APP_MIME = 'application/spacedeck'
-
-__webpack_nonce__ = btoa(OC.requestToken) 			 // eslint-disable-line
-__webpack_public_path__ = OC.linkTo(APP_NAME, 'js/') // eslint-disable-line
-
-OCA.integration_spacedeck = ApplicationPrototype
+import SpacedeckViewer from './components/SpacedeckViewer'
 
 document.addEventListener('DOMContentLoaded', () => {
-	// add the + action to create a file
-	OCA.integration_spacedeck.initialize(APP_NAME, APP_EXT, APP_MIME)
-
-	// if there is no viewer, do as the Whiteboard app: register a file action
-	if (!OCA.Viewer) {
-		OCA.integration_spacedeck.registerFileActions()
+	// register the viewer if possible
+	if (OCA.Viewer) {
+		OCA.Viewer.registerHandler({
+			id: 'spacedeck',
+			// group: 'media',
+			mimes: [
+				'application/spacedeck',
+			],
+			component: SpacedeckViewer,
+		})
 	}
 })

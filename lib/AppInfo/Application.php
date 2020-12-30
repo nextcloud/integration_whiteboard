@@ -19,6 +19,7 @@ use OCP\AppFramework\Bootstrap\IBootstrap;
 
 use OCA\Files\Event\LoadAdditionalScriptsEvent;
 use OCA\Files_Sharing\Event\BeforeTemplateRenderedEvent;
+use OCA\Viewer\Event\LoadViewer;
 
 use OC\Security\CSP\ContentSecurityPolicy;
 
@@ -50,14 +51,17 @@ class Application extends App implements IBootstrap {
 
 	protected function addPrivateListeners($eventDispatcher) {
 		$eventDispatcher->addListener(LoadAdditionalScriptsEvent::class, function () {
-			$this->loadScripts();
+			$this->loadFilesScripts();
 		});
 		$eventDispatcher->addListener(BeforeTemplateRenderedEvent::class, function () {
-			$this->loadScripts();
+			$this->loadFilesScripts();
+		});
+		$eventDispatcher->addListener(LoadViewer::class, function () {
+			Util::addscript(self::APP_ID, self::APP_ID . '-viewer');
 		});
 	}
 
-	private function loadScripts() {
+	private function loadFilesScripts() {
 		Util::addscript(self::APP_ID, self::APP_ID . '-filetypes');
 		Util::addStyle(self::APP_ID, 'style');
 	}
