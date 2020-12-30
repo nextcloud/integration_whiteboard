@@ -21,7 +21,7 @@
 <template>
 	<Content :id="appContent" :app-name="appName">
 		<button class="icon-close" @click="close" />
-		<button class="icon-menu-sidebar" @click="sidebar" />
+		<button v-if="dir" class="icon-menu-sidebar" @click="sidebar" />
 		<AppContent style="height: 100%;">
 			<SpacedeckViewer
 				ref="viewer"

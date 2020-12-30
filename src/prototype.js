@@ -114,7 +114,7 @@ export default {
 			OC.PERMISSION_UPDATE | OC.PERMISSION_READ,
 			imagePath('core', 'actions/edit'),
 			(filename, context) => {
-				this.setupContainer(filename, context)
+				this.setupContainerAction(filename, context)
 			},
 			t(this.APP_NAME, 'Edit')
 		)
