@@ -15,6 +15,7 @@
 import { generateUrl } from '@nextcloud/router'
 import axios from '@nextcloud/axios'
 import { showError } from '@nextcloud/dialogs'
+import { getCurrentUser } from '@nextcloud/auth'
 
 export default {
 	name: 'SpacedeckViewer',
@@ -49,6 +50,12 @@ export default {
 		saveSpaceUrl() {
 			return generateUrl('/apps/integration_spacedeck/space/' + this.spaceId + '/' + this.fileid)
 		},
+		nicknameParam() {
+			const user = getCurrentUser()
+			return (user && user.uid)
+				? '&nickname=' + encodeURIComponent(user.uid)
+				: ''
+		},
 	},
 
 	created() {
@@ -68,7 +75,10 @@ export default {
 			axios.get(url).then((response) => {
 				console.debug(response.data)
 				this.spaceId = response.data.space_id
-				this.spaceUrl = response.data.base_url + '/spaces/' + response.data.space_id + '?spaceAuth=' + response.data.edit_hash
+				this.spaceUrl = response.data.base_url
+					+ '/spaces/' + response.data.space_id
+					+ '?spaceAuth=' + response.data.edit_hash
+					+ this.nicknameParam
 				this.startSaveLoop()
 				// this method only exists when this component is loaded in the Viewer context
 				if (this.doneLoading) {
