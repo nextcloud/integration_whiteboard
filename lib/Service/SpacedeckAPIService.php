@@ -138,8 +138,8 @@ class SpacedeckAPIService {
 		}
 		// check if space_id exists: GET spaces/space_id
 		$space = $this->request($baseUrl, $apiToken, 'spaces/' . $spaceId);
-		// does not exist
-		if (isset($space['error'])) {
+		// does not exist or wrong file ID
+		if (isset($space['error']) || $decoded['space']['name'] !== strval($file_id)) {
 			// create new space
 			$newSpace = $this->createSpace($baseUrl, $apiToken, $userId, $file_id);
 			if (is_null($newSpace)) {
@@ -202,9 +202,10 @@ class SpacedeckAPIService {
 	 * @return ?array new space information or null if failed to create
 	 */
 	private function createSpace(string $baseUrl, string $apiToken, ?string $userId, int $fileId): ?array {
+		$strFileId = strval($fileId);
 		$params = [
-			'name' => 'nextcloud-' . $fileId,
-			'edit_slug' => 'nextcloud-' . $fileId,
+			'name' => $strFileId,
+			'edit_slug' => $strFileId,
 		];
 		$newSpace = $this->request($baseUrl, $apiToken, 'spaces', $params, 'POST');
 		if (isset($newSpace['error'])) {
