@@ -103,8 +103,31 @@ class SpacedeckAPIService {
 		if (is_null($file)) {
 			return ['error' => 'File does not exist'];
 		}
+		$fileContent = trim($file->getContent());
+
+		// file is empty: create a space
+		if (!$fileContent) {
+			$newSpace = $this->createSpace($baseUrl, $apiToken, $userId, $file_id);
+			if (is_null($newSpace)) {
+				return ['error' => 'Impossible to create space'];
+			}
+			// write it to the file to update space_id
+			$decoded['space']['_id'] = $newSpace['_id'];
+			$decoded['space']['edit_hash'] = $newSpace['edit_hash'];
+			$decoded['space']['edit_slug'] = $newSpace['edit_slug'];
+			$decoded['space']['name'] = $newSpace['name'];
+			$file->putContent(json_encode($decoded));
+			return [
+				'existed' => false,
+				'base_url' => $baseUrl,
+				'space_id' => $newSpace['_id'],
+				'edit_hash' => $newSpace['edit_hash'],
+			];
+		}
+
+		// file is not empty, try to load it
 		try {
-			$decoded = json_decode($file->getContent(), true);
+			$decoded = json_decode($fileContent, true);
 		} catch (Exception | Throwable $e) {
 			return ['error' => 'File is invalid, impossible to parse JSON'];
 		}
