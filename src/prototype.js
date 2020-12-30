@@ -19,8 +19,7 @@
  */
 
 import { subscribe, unsubscribe } from '@nextcloud/event-bus'
-import { imagePath, generateUrl } from '@nextcloud/router'
-import axios from '@nextcloud/axios'
+import { imagePath } from '@nextcloud/router'
 
 import Vue from 'vue'
 import PrototypeView from './PrototypeView'
@@ -46,20 +45,21 @@ export default {
 		this.sessionInfo = {}
 
 		OC.Plugins.register('OCA.Files.NewFileMenu', this.NewFileMenu)
-		// this.registerFileActions()
 	},
 
 	// create container + handle close button
-	setupContainer(filename, context) {
-		this.filename = filename
-		this.context = context
+	setupContainerAction(filename, context) {
+		const fileId = parseInt(context.$file[0].getAttribute('data-id'))
+		this.setupContainer(filename, fileId, context.dir)
+	},
 
+	setupContainer(filename, fileid, dir) {
 		const container = document.createElement('div')
 		container.id = 'app-content-' + this.APP_NAME
 
 		document.getElementById('app-content').appendChild(container)
 		document.body.style.overflowY = 'hidden'
-		document.getElementById('app-navigation').classList.add('hidden')
+		document.getElementById('app-navigation')?.classList.add('hidden')
 
 		Vue.prototype.t = window.t
 		Vue.prototype.n = window.n
@@ -75,7 +75,8 @@ export default {
 					props: {
 						appName: this.APP_NAME,
 						filename,
-						context,
+						fileid,
+						dir,
 						appContent: 'app-content-' + this.APP_NAME,
 					},
 				}
@@ -159,17 +160,5 @@ export default {
 
 		// remove app container
 		this.vm.$destroy()
-	},
-
-	loadContent() {
-		console.debug('loadContent')
-
-		const url = generateUrl('apps/' + this.APP_NAME + '/file/load')
-
-		return axios.get(url, {
-			params: {
-				path: this.context.dir + '/' + this.filename,
-			},
-		})
 	},
 }

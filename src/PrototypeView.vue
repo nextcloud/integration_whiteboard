@@ -26,7 +26,8 @@
 			<SpacedeckViewer
 				ref="viewer"
 				:filename="filename"
-				:fileid="fileId"
+				:fileid="fileid"
+				:dir="dir"
 				:in-oc-viewer="false"
 				@close="close" />
 		</AppContent>
@@ -58,8 +59,12 @@ export default {
 			type: String,
 			required: true,
 		},
-		context: {
-			type: Object,
+		fileid: {
+			type: Number,
+			required: true,
+		},
+		dir: {
+			type: String,
 			required: true,
 		},
 		appContent: {
@@ -74,17 +79,12 @@ export default {
 	},
 
 	computed: {
-		fileId() {
-			console.debug('File ID')
-			console.debug(this.context.$file[0].getAttribute('data-id'))
-			return parseInt(this.context.$file[0].getAttribute('data-id'))
-		},
 	},
 
 	destroyed() {
 		document.getElementById('app-content-' + this.appName).remove()
 		document.body.style.overflowY = ''
-		document.getElementById('app-navigation').classList.remove('hidden')
+		document.getElementById('app-navigation')?.classList.remove('hidden')
 	},
 
 	methods: {
@@ -94,7 +94,7 @@ export default {
 
 		sidebar() {
 			if (!document.getElementById('app-sidebar')) {
-				OCA.Files.Sidebar.open(this.context.dir + '/' + this.filename)
+				OCA.Files.Sidebar.open(this.dir + '/' + this.filename)
 			} else {
 				OCA.Files.Sidebar.close()
 			}

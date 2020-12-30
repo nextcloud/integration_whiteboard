@@ -90,12 +90,13 @@ class SpacedeckAPIController extends Controller {
 		if (!$this->apiToken || !$this->baseUrl) {
 			return new DataResponse('Spacedeck not configured', 400);
 		}
-		if (!$this->isFileSharedWithToken($token, $file_id)) {
+		$foundFileId = $this->isFileSharedWithToken($token, $file_id);
+		if (!$foundFileId) {
 			return new DataResponse('No such share', 400);
 		}
 
 		$result = $this->spacedeckApiService->saveSpaceToFile(
-			$this->baseUrl, $this->apiToken, $this->userId, $space_id, $file_id
+			$this->baseUrl, $this->apiToken, $this->userId, $space_id, $foundFileId
 		);
 		if (isset($result['error'])) {
 			$response = new DataResponse($result['error'], 401);
@@ -136,12 +137,13 @@ class SpacedeckAPIController extends Controller {
 		if (!$this->apiToken || !$this->baseUrl) {
 			return new DataResponse('Spacedeck not configured', 400);
 		}
-		if (!$this->isFileSharedWithToken($token, $file_id)) {
+		$foundFileId = $this->isFileSharedWithToken($token, $file_id);
+		if (!$foundFileId) {
 			return new DataResponse('No such share', 400);
 		}
 
 		$result = $this->spacedeckApiService->loadSpaceFromFile(
-			$this->baseUrl, $this->apiToken, $this->userId, $file_id
+			$this->baseUrl, $this->apiToken, $this->userId, $foundFileId
 		);
 		if (isset($result['error'])) {
 			$response = new DataResponse($result['error'], 401);
@@ -151,23 +153,24 @@ class SpacedeckAPIController extends Controller {
 		return $response;
 	}
 
-	private function isFileSharedWithToken(string $token, int $file_id): bool {
+	private function isFileSharedWithToken(string $token, int $file_id): ?int {
 		try {
 			$share = $this->shareManager->getShareByToken($token);
 			$node = $share->getNode();
-			if ($node->getType() === FileInfo::TYPE_FILE && $node->getId() !== $file_id) {
-				return false;
+			// in single file share, we get 0 as file ID
+			if ($node->getType() === FileInfo::TYPE_FILE && ($file_id === 0 || $node->getId() === $file_id)) {
+				return $node->getId();
 			} elseif ($node->getType() === FileInfo::TYPE_FOLDER) {
 				$file = $node->getById($file_id);
-				if ( (is_array($file) && count($file) === 0)
-					|| (!is_array($file) && $file->getType() !== FileInfo::TYPE_FILE)
+				if ( (is_array($file) && count($file) > 0)
+					|| (!is_array($file) && $file->getType() === FileInfo::TYPE_FILE)
 				) {
-					return false;
+					return $file_id;
 				}
 			}
 		} catch (ShareNotFound $e) {
-			return false;
+			return null;
 		}
-		return true;
+		return null;
 	}
 }

@@ -36,5 +36,14 @@ document.addEventListener('DOMContentLoaded', () => {
 	// if there is no viewer, do as the Whiteboard app: register a file action
 	if (!OCA.Viewer) {
 		OCA.integration_spacedeck.registerFileActions()
+
+		// check if we need to open the file directly
+		const dir = document.getElementById('dir').value
+		const filename = document.getElementById('filename').value
+		const mimetype = document.getElementById('mimetype').value
+		const sharingToken = document.getElementById('sharingToken') ? document.getElementById('sharingToken').value : null
+		if (filename && dir === '' && mimetype === APP_MIME && sharingToken) {
+			OCA.integration_spacedeck.setupContainer(filename, 0, dir)
+		}
 	}
 })
