@@ -22,12 +22,12 @@
 	<Content :id="appContent" :app-name="appName">
 		<button class="icon-close" @click="close" />
 		<button class="icon-menu-sidebar" @click="sidebar" />
-		<AppContent>
-			{{ filename }} - {{ fileId }}
+		<AppContent style="height: 100%;">
 			<SpacedeckViewer
 				ref="viewer"
 				:filename="filename"
 				:fileid="fileId"
+				:in-oc-viewer="false"
 				@close="close" />
 		</AppContent>
 	</Content>
@@ -36,7 +36,6 @@
 <script>
 import Content from '@nextcloud/vue/dist/Components/Content'
 import AppContent from '@nextcloud/vue/dist/Components/AppContent'
-// import Modal from '@nextcloud/vue/dist/Components/Modal'
 import { emit } from '@nextcloud/event-bus'
 
 import SpacedeckViewer from './components/SpacedeckViewer'

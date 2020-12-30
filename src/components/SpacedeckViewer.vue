@@ -1,8 +1,10 @@
 <template>
-	<div>
-		{{ filename }} => {{ fileid }}
+	<div class="spacedeck-wrapper">
+		<!--div>
+			{{ filename }} => {{ fileid }}
+		</div-->
 		<iframe v-if="spaceUrl"
-			class="spacedeck-frame"
+			:class="{ 'spacedeck-frame': true, 'frame-outside-viewer': !inOcViewer }"
 			frameborder="0"
 			:allowFullScreen="true"
 			:src="spaceUrl" />
@@ -28,6 +30,10 @@ export default {
 		fileid: {
 			type: Number,
 			required: true,
+		},
+		inOcViewer: {
+			type: Boolean,
+			default: true,
 		},
 	},
 
@@ -108,10 +114,20 @@ export default {
 	height: 100%;
 }
 
+.spacedeck-wrapper {
+	width: 100%;
+	height: 100%;
+}
+
 .spacedeck-frame {
 	width: 100%;
 	height: 100%;
 	max-width: 100%;
 	resize: both;
+}
+
+.frame-outside-viewer {
+	top: 0;
+	position: absolute;
 }
 </style>

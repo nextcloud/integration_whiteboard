@@ -35,16 +35,13 @@ document.addEventListener('DOMContentLoaded', () => {
 	OCA.integration_spacedeck.initialize(APP_NAME, APP_EXT, APP_MIME)
 
 	// register the viewer if possible
-	if (!OCA.Viewer) {
+	if (OCA.Viewer) {
 		OCA.Viewer.registerHandler({
 			id: 'spacedeck',
-
 			// group: 'media',
-
 			mimes: [
 				'application/spacedeck',
 			],
-
 			component: SpacedeckViewer,
 		})
 	} else {
