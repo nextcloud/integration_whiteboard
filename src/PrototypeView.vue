@@ -23,7 +23,11 @@
 		<button class="icon-close" @click="close" />
 		<button class="icon-menu-sidebar" @click="sidebar" />
 		<AppContent>
-			content
+			{{ filename }} - {{ fileId }}
+			<SpacedeckViewer
+				ref="viewer"
+				:filename="filename"
+				:fileid="fileId" />
 			<!--Modal @close="close">
 				PLOP
 			</Modal-->
@@ -37,13 +41,15 @@ import AppContent from '@nextcloud/vue/dist/Components/AppContent'
 // import Modal from '@nextcloud/vue/dist/Components/Modal'
 import { emit } from '@nextcloud/event-bus'
 
+import SpacedeckViewer from './components/SpacedeckViewer'
+
 export default {
 	name: 'PrototypeView',
 
 	components: {
 		Content,
 		AppContent,
-		// Modal,
+		SpacedeckViewer,
 	},
 
 	props: {
@@ -71,6 +77,11 @@ export default {
 	},
 
 	computed: {
+		fileId() {
+			console.debug('File ID')
+			console.debug(this.context.$file[0].getAttribute('data-id'))
+			return parseInt(this.context.$file[0].getAttribute('data-id'))
+		},
 	},
 
 	destroyed() {
@@ -101,8 +112,8 @@ button {
 	position: relative;
 	float: right;
 	top: 0;
-	width: 30px;
-	height: 30px;
+	width: 44px;
+	height: 44px;
 	opacity: 0.5;
 	z-index: 9999999;
 	border-width: 0;

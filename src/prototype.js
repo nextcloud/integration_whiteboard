@@ -44,7 +44,7 @@ export default {
 		this.sessionInfo = {}
 
 		OC.Plugins.register('OCA.Files.NewFileMenu', this.NewFileMenu)
-		this.registerFileActions()
+		// this.registerFileActions()
 	},
 
 	// create container + handle close button

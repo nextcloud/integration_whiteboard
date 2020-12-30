@@ -138,6 +138,7 @@ class SpacedeckAPIService {
 			$file->putContent(json_encode($decoded));
 			return [
 				'existed' => false,
+				'base_url' => $baseUrl,
 				'space_id' => $newSpace['_id'],
 				'edit_hash' => $newSpace['edit_hash'],
 			];
@@ -145,6 +146,7 @@ class SpacedeckAPIService {
 			// exists
 			return [
 				'existed' => true,
+				'base_url' => $baseUrl,
 				'space_id' => $space['_id'],
 				'edit_hash' => $space['edit_hash'],
 			];
