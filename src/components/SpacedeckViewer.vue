@@ -46,27 +46,40 @@ export default {
 	},
 
 	created() {
-		// load the file into spacedeck (only if no related space exists)
-		const url = generateUrl('/apps/integration_spacedeck/space/' + this.fileid)
-		axios.get(url).then((response) => {
-			console.debug(response.data)
-			this.spaceId = response.data.space_id
-			// this.spaceUrl = response.data.base_url + '/spaces/' + response.data.space_id + '?spaceAuth=' + response.data.edit_hash
-			this.spaceUrl = 'https://localhost/dev/server21/index.php/apps/files/'
-			this.startSaveLoop()
-			// this method only exists when this component is loaded in the Viewer context
-			if (this.doneLoading) {
-				this.doneLoading()
-			}
-		})
+		this.loadSpace()
 	},
 
 	destroyed() {
 		console.debug('DESTROYED')
+		this.saveSpace()
 		this.stopSaveLoop()
 	},
 
 	methods: {
+		loadSpace() {
+			// load the file into spacedeck (only if no related space exists)
+			const url = generateUrl('/apps/integration_spacedeck/space/' + this.fileid)
+			axios.get(url).then((response) => {
+				console.debug(response.data)
+				this.spaceId = response.data.space_id
+				this.spaceUrl = response.data.base_url + '/spaces/' + response.data.space_id + '?spaceAuth=' + response.data.edit_hash
+				this.startSaveLoop()
+				// this method only exists when this component is loaded in the Viewer context
+				if (this.doneLoading) {
+					this.doneLoading()
+				}
+			}).catch((error) => {
+				console.error(error)
+				showError(
+					t('integration_spacedeck', 'Impossible to load Spacedeck whiteboard')
+					+ ' ' + (error.response?.request?.responseText || '')
+				)
+				if (OCA.Viewer) {
+					OCA.Viewer.close()
+				}
+				this.$emit('close')
+			})
+		},
 		startSaveLoop() {
 			this.loop = setInterval(() => this.saveSpace(), 5000)
 		},
@@ -74,14 +87,16 @@ export default {
 			clearInterval(this.loop)
 		},
 		saveSpace() {
-			axios.post(this.saveSpaceUrl).then((response) => {
-				console.debug('SAVED')
-				console.debug(response.data)
-			}).catch((error) => {
-				console.error(error)
-				clearInterval(this.loop)
-				showError(t('integration_spacedeck', 'Error while saving Spacedeck whiteboard'))
-			})
+			if (this.spaceUrl) {
+				axios.post(this.saveSpaceUrl).then((response) => {
+					console.debug('SAVED')
+					console.debug(response.data)
+				}).catch((error) => {
+					console.error(error)
+					this.stopSaveLoop()
+					showError(t('integration_spacedeck', 'Error while saving Spacedeck whiteboard'))
+				})
+			}
 		},
 	},
 }

@@ -27,10 +27,8 @@
 			<SpacedeckViewer
 				ref="viewer"
 				:filename="filename"
-				:fileid="fileId" />
-			<!--Modal @close="close">
-				PLOP
-			</Modal-->
+				:fileid="fileId"
+				@close="close" />
 		</AppContent>
 	</Content>
 </template>
