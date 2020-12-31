@@ -126,7 +126,7 @@ export default {
 	NewFileMenu: {
 		attach(menu) {
 			const fileList = menu.fileList
-			if (fileList.id !== 'files') {
+			if (fileList.id !== 'files' && fileList.id !== 'files.public') {
 				return
 			}
 
