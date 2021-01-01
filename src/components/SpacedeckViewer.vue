@@ -1,8 +1,5 @@
 <template>
 	<div class="spacedeck-wrapper">
-		<!--div>
-			{{ filename }} => {{ fileid }}
-		</div-->
 		<iframe v-if="spaceUrl"
 			:class="{ 'spacedeck-frame': true, 'frame-outside-viewer': !inOcViewer }"
 			frameborder="0"

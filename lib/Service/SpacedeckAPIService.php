@@ -282,7 +282,7 @@ class SpacedeckAPIService {
 			} else {
 				return json_decode($body, true);
 			}
-		} catch (ServerException | ClientException $e) {
+		} catch (ServerException | ClientException | ConnectException $e) {
 			$response = $e->getResponse();
 			// $this->logger->warning('Spacedeck API error : '.$e->getMessage(), ['app' => $this->appName]);
 			return ['error' => $e->getMessage()];
