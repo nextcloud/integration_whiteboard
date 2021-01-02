@@ -59,8 +59,9 @@
 import { loadState } from '@nextcloud/initial-state'
 import { generateUrl } from '@nextcloud/router'
 import axios from '@nextcloud/axios'
-import { delay } from '../utils'
 import { showSuccess, showError } from '@nextcloud/dialogs'
+
+import { delay } from '../utils'
 
 export default {
 	name: 'AdminSettings',
