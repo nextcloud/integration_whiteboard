@@ -29,29 +29,6 @@
 				@input="onInput"
 				@focus="readonly = false">
 		</div>
-
-		<!-- TO DELETE later -->
-		<input id="load-file-id"
-			v-model="loadFileId"
-			type="text"
-			:placeholder="t('integration_spacedeck', 'File to load')">
-		<button @click="onLoadClick">
-			load
-		</button>
-		<br>
-
-		<input id="save-file-id"
-			v-model="saveFileId"
-			type="text"
-			:placeholder="t('integration_spacedeck', 'File to save in')">
-		<input id="save-space-id"
-			v-model="saveSpaceId"
-			type="text"
-			:placeholder="t('integration_spacedeck', 'Space to save')">
-		<button @click="onSaveClick">
-			save
-		</button>
-		<!-- UNTIL HERE -->
 	</div>
 </template>
 
@@ -116,23 +93,6 @@ export default {
 				})
 				.then(() => {
 				})
-		},
-		// /////////////// TO DELETE later
-		onLoadClick() {
-			// const url = generateUrl('/apps/integration_spacedeck/space/7145')
-			const url = generateUrl('/apps/integration_spacedeck/space/' + this.loadFileId)
-			axios.get(url).then((response) => {
-				console.debug(response.data)
-				console.debug(this.state.base_url + '/spaces/' + response.data.space_id + '?spaceAuth=' + response.data.edit_hash)
-			})
-		},
-		onSaveClick() {
-			const spaceId = this.saveSpaceId
-			const fileId = this.saveFileId
-			const url = generateUrl('/apps/integration_spacedeck/space/' + spaceId + '/' + fileId)
-			axios.post(url).then((response) => {
-				console.debug(response.data)
-			})
 		},
 	},
 }
