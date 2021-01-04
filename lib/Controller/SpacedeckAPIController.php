@@ -31,6 +31,17 @@ use OCP\AppFramework\Controller;
 use OCA\Spacedeck\Service\SpacedeckAPIService;
 use OCA\Spacedeck\AppInfo\Application;
 
+require_once __DIR__ . '/../../vendor/autoload.php';
+
+use Proxy\Proxy;
+use Proxy\Adapter\Guzzle\GuzzleAdapter;
+use Proxy\Filter\RemoveEncodingFilter;
+use Laminas\Diactoros\ServerRequestFactory;
+use Laminas\HttpHandlerRunner\Emitter\SapiEmitter;
+
+use GuzzleHttp;
+use GuzzleHttp\Psr7\Uri;
+
 class SpacedeckAPIController extends Controller {
 
 
@@ -57,6 +68,62 @@ class SpacedeckAPIController extends Controller {
 		$this->spacedeckApiService = $spacedeckApiService;
 		$this->apiToken = $this->config->getAppValue(Application::APP_ID, 'api_token', '');
 		$this->baseUrl = $this->config->getAppValue(Application::APP_ID, 'base_url', '');
+	}
+
+	/**
+	 * @NoAdminRequired
+	 * @NoCSRFRequired
+	 *
+	 */
+	public function proxy(string $req) {
+		// Create a PSR7 request based on the current browser request.
+		$request = ServerRequestFactory::fromGlobals();
+
+		// Create a guzzle client
+		$guzzle = new GuzzleHttp\Client();
+
+		$req = $_GET['req'];
+
+		// Create the proxy instance
+		$proxy = new Proxy(new GuzzleAdapter($guzzle));
+		$url = 'http://localhost:9666/' . $req;
+		// $url = 'http://localhost:9666/spaces/246ddaa4-7422-434d-b689-798029650c01?spaceAuth=68ec9be';
+		// $url = $toUrl;
+		$proxy->filter(function ($request, $response, $next) use ($url) {
+			$request = $request->withUri(new Uri($url));
+			$response = $next($request, $response);
+			return $response;
+		});
+
+		// Add a response filter that removes the encoding headers.
+		$proxy->filter(new RemoveEncodingFilter());
+
+		// Forward the request and get the response.
+		$response = $proxy->forward($request)
+			->filter(function ($request, $response, $next) {
+				// Manipulate the request object.
+				$request = $request->withHeader('User-Agent', 'FishBot/1.0');
+				$request = $request->withHeader('Origin', 'https://free.fr');
+				$request = $request->withHeader('Host', 'free.fr');
+				$request = $request->withHeader('X-Request-URI', 'free.fr');
+
+				// Call the next item in the middleware.
+				$response = $next($request, $response);
+
+				// Manipulate the response object.
+				$response = $response->withHeader('X-Proxy-Foo', 'Bar');
+				$response = $response->withHeader('X-Forwarded-Host', 'toto.com');
+				$response = $response->withHeader('Origin', 'https://free.fr');
+				$response = $response->withHeader('Host', 'free.fr');
+				$response = $response->withHeader('Content-Base', 'https://free.fr');
+				$response = $response->withHeader('X-Request-URI', 'free.fr');
+
+				return $response;
+			})
+			->to('http://localhost:9666');
+
+		// Output response to the browser.
+		(new SapiEmitter)->emit($response);
 	}
 
 	/**

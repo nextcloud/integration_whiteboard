@@ -93,6 +93,10 @@ export default {
 					+ '/spaces/' + response.data.space_id
 					+ '?spaceAuth=' + response.data.edit_hash
 					+ this.nicknameParam
+				this.spaceUrl = generateUrl('/apps/integration_spacedeck/proxy?req=')
+				// this.spaceUrl = this.spaceUrl.replace('index.php/', '')
+				console.debug('UUUUUUUUUUUUUUU')
+				console.debug(this.spaceUrl)
 				this.startSaveLoop()
 				// this method only exists when this component is loaded in the Viewer context
 				if (this.doneLoading) {
@@ -143,7 +147,7 @@ export default {
 			// kind of a trick...until a better way is found
 			const sidebarButtons = document.getElementsByClassName('icon-menu-sidebar-white-forced')
 			if (sidebarButtons.length > 0) {
-				sidebarButtons[0].click()
+				// sidebarButtons[0].click()
 			}
 		},
 	},
