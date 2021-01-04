@@ -56,8 +56,8 @@ export default {
 				: generateUrl('/apps/integration_spacedeck/s/' + this.sharingToken + '/space/' + this.fileid)
 		},
 		nicknameParam() {
-			return (this.user && this.user.uid)
-				? '&nickname=' + encodeURIComponent(this.user.uid)
+			return (this.user && this.user.displayName)
+				? '&nickname=' + encodeURIComponent(this.user.displayName)
 				: ''
 		},
 		sharingToken() {
@@ -69,9 +69,6 @@ export default {
 	},
 
 	created() {
-		const user = getCurrentUser()
-		console.debug('user')
-		console.debug(user)
 		const elem = document.getElementById('sharingToken')
 		console.debug(elem)
 		this.loadSpace()
