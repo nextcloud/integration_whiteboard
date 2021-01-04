@@ -69,9 +69,11 @@ export default {
 	},
 
 	created() {
-		const elem = document.getElementById('sharingToken')
-		console.debug(elem)
 		this.loadSpace()
+	},
+
+	mounted() {
+		this.openSidebar()
 	},
 
 	destroyed() {
@@ -124,6 +126,24 @@ export default {
 					this.stopSaveLoop()
 					showError(t('integration_spacedeck', 'Error while saving Spacedeck whiteboard'))
 				})
+			}
+		},
+		openSidebar() {
+			/*
+			if (OCA.Files.Sidebar && OCA.Viewer) {
+				const filePath = OCA.Viewer.file
+				console.debug('FFPFPFPFPFPF')
+				console.debug(filePath)
+				OCA.Files.Sidebar.open(filePath).then((e) => {
+					console.debug('IS open')
+					console.debug(e)
+				})
+			}
+			*/
+			// kind of a trick...until a better way is found
+			const sidebarButtons = document.getElementsByClassName('icon-menu-sidebar-white-forced')
+			if (sidebarButtons.length > 0) {
+				sidebarButtons[0].click()
 			}
 		},
 	},
