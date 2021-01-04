@@ -21,15 +21,18 @@
 import SpacedeckViewer from './components/SpacedeckViewer'
 
 document.addEventListener('DOMContentLoaded', () => {
-	// register the viewer if possible
-	if (OCA.Viewer) {
-		OCA.Viewer.registerHandler({
-			id: 'spacedeck',
-			// group: 'media',
-			mimes: [
-				'application/spacedeck',
-			],
-			component: SpacedeckViewer,
-		})
+	// register the viewer handler if possible
+	if (typeof OCA.Viewer === 'undefined') {
+		console.error('Viewer app is not installed')
+		return
 	}
+
+	OCA.Viewer.registerHandler({
+		id: 'spacedeck',
+		group: null,
+		mimes: [
+			'application/spacedeck',
+		],
+		component: SpacedeckViewer,
+	})
 })
