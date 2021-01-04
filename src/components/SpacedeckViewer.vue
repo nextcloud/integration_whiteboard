@@ -161,6 +161,12 @@ export default {
 	height: 100%;
 }
 
+.modal-container .spacedeck-wrapper {
+	position: absolute;
+	top: 50px;
+	height: calc(100% - 50px);
+}
+
 .spacedeck-frame {
 	width: 100%;
 	height: 100%;
