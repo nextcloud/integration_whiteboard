@@ -21,7 +21,7 @@
 import ApplicationPrototype from './prototype.js'
 
 const APP_NAME = 'integration_spacedeck'
-const APP_EXT = 'spd'
+const APP_EXT = 'whiteboard'
 const APP_MIME = 'application/spacedeck'
 
 __webpack_nonce__ = btoa(OC.requestToken) 			 // eslint-disable-line

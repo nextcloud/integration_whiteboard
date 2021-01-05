@@ -41,7 +41,7 @@ class RegisterMimeType implements IRepairStep {
 		$this->logger->info('Registering the Spacedeck mimetype...');
 
 		$mimetypeMapping = [
-			'spd' => ['application/spacedeck']
+			'whiteboard' => ['application/spacedeck']
 		];
 
 		$mimetypeMappingFile = \OC::$configDir . 'mimetypemapping.json';
