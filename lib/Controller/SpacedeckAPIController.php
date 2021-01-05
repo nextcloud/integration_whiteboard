@@ -75,22 +75,40 @@ class SpacedeckAPIController extends Controller {
 	 * @NoCSRFRequired
 	 *
 	 */
-	public function proxy(string $req) {
+	public function proxy2(?string $path) {
+		echo $path;
+		echo '!!!';
+		echo $_GET['req'];
+	}
+
+	/**
+	 * @NoAdminRequired
+	 * @NoCSRFRequired
+	 *
+	 */
+	public function proxy(string $path) {
 		// Create a PSR7 request based on the current browser request.
 		$request = ServerRequestFactory::fromGlobals();
+		// var_dump($_SERVER['REQUEST_URI']);
+		// $reqUri = $_SERVER['REQUEST_URI'];
+		// $url2 = str_replace('/dev/server21/index.php/apps/integration_spacedeck', 'http://localhost:9666', $reqUri);
+		// var_dump($url2);
+		// $url2 = preg_replace('/\/proxy/', '', $url2);
+		$url2 = 'http://localhost:9666/' . $path;
+		// var_dump($url2);
 
 		// Create a guzzle client
 		$guzzle = new GuzzleHttp\Client();
 
-		$req = $_GET['req'];
+		// $req = $_GET['req'];
 
 		// Create the proxy instance
 		$proxy = new Proxy(new GuzzleAdapter($guzzle));
-		$url = 'http://localhost:9666/' . $req;
+		// $url = 'http://localhost:9666/' . $req;
 		// $url = 'http://localhost:9666/spaces/246ddaa4-7422-434d-b689-798029650c01?spaceAuth=68ec9be';
 		// $url = $toUrl;
-		$proxy->filter(function ($request, $response, $next) use ($url) {
-			$request = $request->withUri(new Uri($url));
+		$proxy->filter(function ($request, $response, $next) use ($url2) {
+			$request = $request->withUri(new Uri($url2));
 			$response = $next($request, $response);
 			return $response;
 		});
@@ -117,9 +135,14 @@ class SpacedeckAPIController extends Controller {
 				$response = $response->withHeader('Host', 'free.fr');
 				$response = $response->withHeader('Content-Base', 'https://free.fr');
 				$response = $response->withHeader('X-Request-URI', 'free.fr');
+				//$content = $response->getBody()->getContents();
+				// $content = preg_replace('/\/images\/sd6-logo-black.svg/', 'plop', $content);
+				//$content = preg_replace('/src="\//', 'src="proxy?req=', $content);
+				//var_dump($content);
 
 				return $response;
 			})
+			//->to($targetUri);
 			->to('http://localhost:9666');
 
 		// Output response to the browser.
