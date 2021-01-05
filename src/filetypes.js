@@ -20,22 +20,22 @@
 
 import ApplicationPrototype from './prototype.js'
 
-const APP_NAME = 'integration_spacedeck'
-const APP_EXT = 'spd'
+const APP_NAME = 'integration_whiteboard'
+const APP_EXT = 'whiteboard'
 const APP_MIME = 'application/spacedeck'
 
 __webpack_nonce__ = btoa(OC.requestToken) 			 // eslint-disable-line
 __webpack_public_path__ = OC.linkTo(APP_NAME, 'js/') // eslint-disable-line
 
-OCA.integration_spacedeck = ApplicationPrototype
+OCA.integration_whiteboard = ApplicationPrototype
 
 document.addEventListener('DOMContentLoaded', () => {
 	// add the + action to create a file
-	OCA.integration_spacedeck.initialize(APP_NAME, APP_EXT, APP_MIME)
+	OCA.integration_whiteboard.initialize(APP_NAME, APP_EXT, APP_MIME)
 
 	// if there is no viewer, do as the Whiteboard app: register a file action
 	if (!OCA.Viewer) {
-		OCA.integration_spacedeck.registerFileActions()
+		OCA.integration_whiteboard.registerFileActions()
 
 		// check if we need to open the file directly
 		const dir = document.getElementById('dir').value
@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		const mimetype = document.getElementById('mimetype').value
 		const sharingToken = document.getElementById('sharingToken') ? document.getElementById('sharingToken').value : null
 		if (filename && dir === '' && mimetype === APP_MIME && sharingToken) {
-			OCA.integration_spacedeck.setupContainer(filename, 0, dir)
+			OCA.integration_whiteboard.setupContainer(filename, 0, dir)
 		}
 	}
 })

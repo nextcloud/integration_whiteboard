@@ -1,5 +1,5 @@
 {
-  "name": "integration_spacedeck",
+  "name": "integration_whiteboard",
   "version": "0.0.1",
   "description": "Spacedeck integration",
   "main": "index.js",
@@ -17,7 +17,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/nextcloud/integration_spacedeck"
+    "url": "https://github.com/nextcloud/integration_whiteboard"
   },
   "keywords": [
     "spacedeck"
@@ -25,9 +25,9 @@
   "author": "Julien Veyssier",
   "license": "AGPL-3.0",
   "bugs": {
-    "url": "https://github.com/nextcloud/integration_spacedeck/issues"
+    "url": "https://github.com/nextcloud/integration_whiteboard/issues"
   },
-  "homepage": "https://github.com/nextcloud/integration_spacedeck",
+  "homepage": "https://github.com/nextcloud/integration_whiteboard",
   "browserslist": [
     "extends @nextcloud/browserslist-config"
   ],

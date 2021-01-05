@@ -1,20 +1,20 @@
 <?xml version="1.0"?>
 <info>
-    <id>integration_spacedeck</id>
-    <name>Spacedeck integration</name>
-    <summary>Modern Spacedeck whiteboards</summary>
-    <description><![CDATA[Spacedeck integration allows you to create whiteboards.]]></description>
+    <id>integration_whiteboard</id>
+    <name>Whiteboard integration</name>
+    <summary>Collaborative whiteboard integration</summary>
+    <description><![CDATA[Whiteboard integration allows you to create whiteboards.]]></description>
     <version>0.0.2</version>
     <licence>agpl</licence>
     <author>Julien Veyssier</author>
     <namespace>Spacedeck</namespace>
     <documentation>
-        <developer>https://github.com/eneiluj/integration_spacedeck/wikis</developer>
+        <developer>https://github.com/eneiluj/integration_whiteboard/wikis</developer>
     </documentation>
     <category>integration</category>
-    <website>https://github.com/eneiluj/integration_spacedeck</website>
-    <bugs>https://github.com/eneiluj/integration_spacedeck/issues</bugs>
-    <screenshot>https://github.com/eneiluj/integration_spacedeck/raw/master/img/screenshot1.jpg</screenshot>
+    <website>https://github.com/eneiluj/integration_whiteboard</website>
+    <bugs>https://github.com/eneiluj/integration_whiteboard/issues</bugs>
+    <screenshot>https://github.com/eneiluj/integration_whiteboard/raw/master/img/screenshot1.jpg</screenshot>
     <dependencies>
         <database min-version="9.4">pgsql</database>
         <database>sqlite</database>

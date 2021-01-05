@@ -1,3 +1,3 @@
-# Spacedeck integration into Nextcloud
+# Whiteboard integration into Nextcloud
 
-🖵 Spacedeck integration into Nextcloud.
+🖵 Whiteboard integration into Nextcloud, powered by Spacedeck.

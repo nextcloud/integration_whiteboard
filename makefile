@@ -1,4 +1,4 @@
-app_name=integration_spacedeck
+app_name=integration_whiteboard
 app_version=$(version)
 project_dir=.
 build_dir=/tmp/build
