@@ -19,7 +19,7 @@ $req = $_GET['req'];
 
 // Create the proxy instance
 $proxy = new Proxy(new GuzzleAdapter($guzzle));
-$url = 'http://localhost:9666/' . $req;
+$url = 'http://localhost:9666' . $req;
 // $url = $toUrl;
 $proxy->filter(function ($request, $response, $next) use ($url) {
 	$request = $request->withUri(new Uri($url));
