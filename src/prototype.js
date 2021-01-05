@@ -132,7 +132,7 @@ export default {
 
 			menu.addMenuEntry({
 				id: this.APP_NAME,
-				displayName: t(this.APP_NAME, 'New Spacedeck whiteboard'),
+				displayName: t(this.APP_NAME, 'New whiteboard'),
 				templateName: t(this.APP_NAME, 'whiteboard') + '.' + this.APP_EXT,
 				iconClass: 'icon-' + this.APP_NAME,
 				fileType: this.APP_MIME,

@@ -47,13 +47,13 @@ export default {
 	computed: {
 		saveSpaceUrl() {
 			return this.user
-				? generateUrl('/apps/integration_spacedeck/space/' + this.spaceId + '/' + this.fileid)
-				: generateUrl('/apps/integration_spacedeck/s/' + this.sharingToken + '/space/' + this.spaceId + '/' + this.fileid)
+				? generateUrl('/apps/integration_whiteboard/space/' + this.spaceId + '/' + this.fileid)
+				: generateUrl('/apps/integration_whiteboard/s/' + this.sharingToken + '/space/' + this.spaceId + '/' + this.fileid)
 		},
 		loadSpaceUrl() {
 			return this.user
-				? generateUrl('/apps/integration_spacedeck/space/' + this.fileid)
-				: generateUrl('/apps/integration_spacedeck/s/' + this.sharingToken + '/space/' + this.fileid)
+				? generateUrl('/apps/integration_whiteboard/space/' + this.fileid)
+				: generateUrl('/apps/integration_whiteboard/s/' + this.sharingToken + '/space/' + this.fileid)
 		},
 		nicknameParam() {
 			return (this.user && this.user.displayName)

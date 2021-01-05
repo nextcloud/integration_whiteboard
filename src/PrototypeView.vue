@@ -120,7 +120,7 @@ button:hover {
 	opacity: 1;
 }
 
-#app-content-integration_spacedeck {
+#app-content-integration_whiteboard {
 	position: absolute;
 	top: 0;
 	left: 0;

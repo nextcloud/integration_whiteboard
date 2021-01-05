@@ -32,7 +32,7 @@ use OCA\Spacedeck\Notification\Notifier;
  */
 class Application extends App implements IBootstrap {
 
-	public const APP_ID = 'integration_spacedeck';
+	public const APP_ID = 'integration_whiteboard';
 
 	/**
 	 * Constructor

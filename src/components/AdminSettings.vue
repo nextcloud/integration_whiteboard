@@ -2,30 +2,30 @@
 	<div id="spacedeck_prefs" class="section">
 		<h2>
 			<a class="icon icon-spacedeck" />
-			{{ t('integration_spacedeck', 'Spacedeck integration') }}
+			{{ t('integration_whiteboard', 'Spacedeck whiteboard integration') }}
 		</h2>
 		<p class="settings-hint">
-			{{ t('integration_spacedeck', 'Create a dedicated user in Spacedeck and set an API token in user account settings.') }}
+			{{ t('integration_whiteboard', 'Create a dedicated user in Spacedeck and set an API token in user account settings.') }}
 		</p>
 		<div class="grid-form">
 			<label for="spacedeck-baseurl">
 				<a class="icon icon-link" />
-				{{ t('integration_spacedeck', 'Base URL') }}
+				{{ t('integration_whiteboard', 'Base URL') }}
 			</label>
 			<input id="spacedeck-baseurl"
 				v-model="state.base_url"
 				type="text"
-				:placeholder="t('integration_spacedeck', 'Your Spacedeck base URL')"
+				:placeholder="t('integration_whiteboard', 'Your Spacedeck base URL')"
 				@input="onInput">
 			<label for="spacedeck-apitoken">
 				<a class="icon icon-category-auth" />
-				{{ t('integration_spacedeck', 'API token') }}
+				{{ t('integration_whiteboard', 'API token') }}
 			</label>
 			<input id="spacedeck-apitoken"
 				v-model="state.api_token"
 				type="password"
 				:readonly="readonly"
-				:placeholder="t('integration_spacedeck', 'Your Spacedeck API token')"
+				:placeholder="t('integration_whiteboard', 'Your Spacedeck API token')"
 				@input="onInput"
 				@focus="readonly = false">
 		</div>
@@ -50,7 +50,7 @@ export default {
 
 	data() {
 		return {
-			state: loadState('integration_spacedeck', 'admin-config'),
+			state: loadState('integration_whiteboard', 'admin-config'),
 			// to prevent some browsers to fill fields with remembered passwords
 			readonly: true,
 			// /////////////// TO DELETE later
@@ -79,14 +79,14 @@ export default {
 					api_token: this.state.api_token,
 				},
 			}
-			const url = generateUrl('/apps/integration_spacedeck/admin-config')
+			const url = generateUrl('/apps/integration_whiteboard/admin-config')
 			axios.put(url, req)
 				.then((response) => {
-					showSuccess(t('integration_spacedeck', 'Spacedeck admin options saved'))
+					showSuccess(t('integration_whiteboard', 'Spacedeck admin options saved'))
 				})
 				.catch((error) => {
 					showError(
-						t('integration_spacedeck', 'Failed to save Spacedeck options')
+						t('integration_whiteboard', 'Failed to save Spacedeck options')
 						+ ': ' + error.response?.request?.responseText
 					)
 					console.error(error)
