@@ -111,7 +111,7 @@ export default {
 			})
 		},
 		startSaveLoop() {
-			this.loop = setInterval(() => this.saveSpace(), 5000)
+			this.loop = setInterval(() => this.saveSpace(), 30000)
 		},
 		stopSaveLoop() {
 			clearInterval(this.loop)
