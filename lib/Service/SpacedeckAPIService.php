@@ -288,4 +288,52 @@ class SpacedeckAPIService {
 			return ['error' => $e->getMessage()];
 		}
 	}
+
+	/**
+	 */
+	public function basicRequest(string $url, array $params = [], string $method = 'GET', bool $jsonOutput = false): array {
+		try {
+			$options = [
+				'headers' => [
+					'User-Agent' => 'Nextcloud Spacedeck integration',
+				],
+			];
+
+			if (count($params) > 0) {
+				if ($method === 'GET') {
+					$paramsContent = http_build_query($params);
+					$url .= '?' . $paramsContent;
+				} else {
+					$options['headers']['Content-Type'] = 'application/json';
+					$options['body'] = json_encode($params);
+				}
+			}
+
+			if ($method === 'GET') {
+				$response = $this->client->get($url, $options);
+			} else if ($method === 'POST') {
+				$response = $this->client->post($url, $options);
+			} else if ($method === 'PUT') {
+				$response = $this->client->put($url, $options);
+			} else if ($method === 'DELETE') {
+				$response = $this->client->delete($url, $options);
+			}
+			$respCode = $response->getStatusCode();
+
+			if ($respCode >= 400) {
+				return ['error' => 'Bad credentials'];
+			} else {
+				if ($jsonOutput) {
+					$body = $response->getBody();
+					return json_decode($body, true);
+				} else {
+					return ['response' => $response];
+				}
+			}
+		} catch (ServerException | ClientException | ConnectException $e) {
+			$response = $e->getResponse();
+			// $this->logger->warning('Spacedeck API error : '.$e->getMessage(), ['app' => $this->appName]);
+			return ['error' => $e->getMessage()];
+		}
+	}
 }

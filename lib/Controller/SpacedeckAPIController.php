@@ -41,6 +41,7 @@ use Laminas\HttpHandlerRunner\Emitter\SapiEmitter;
 
 use GuzzleHttp;
 use GuzzleHttp\Psr7\Uri;
+use GuzzleHttp\Psr7\Response;
 
 class SpacedeckAPIController extends Controller {
 
@@ -120,25 +121,32 @@ class SpacedeckAPIController extends Controller {
 		$response = $proxy->forward($request)
 			->filter(function ($request, $response, $next) {
 				// Manipulate the request object.
-				$request = $request->withHeader('User-Agent', 'FishBot/1.0');
-				$request = $request->withHeader('Origin', 'https://free.fr');
-				$request = $request->withHeader('Host', 'free.fr');
-				$request = $request->withHeader('X-Request-URI', 'free.fr');
+				//$request = $request->withHeader('User-Agent', 'FishBot/1.0');
+				//$request = $request->withHeader('Origin', 'https://free.fr');
+				//$request = $request->withHeader('Host', 'free.fr');
+				//$request = $request->withHeader('X-Request-URI', 'free.fr');
 
 				// Call the next item in the middleware.
 				$response = $next($request, $response);
 
 				// Manipulate the response object.
-				$response = $response->withHeader('X-Proxy-Foo', 'Bar');
-				$response = $response->withHeader('X-Forwarded-Host', 'toto.com');
-				$response = $response->withHeader('Origin', 'https://free.fr');
-				$response = $response->withHeader('Host', 'free.fr');
-				$response = $response->withHeader('Content-Base', 'https://free.fr');
-				$response = $response->withHeader('X-Request-URI', 'free.fr');
-				//$content = $response->getBody()->getContents();
-				// $content = preg_replace('/\/images\/sd6-logo-black.svg/', 'plop', $content);
-				//$content = preg_replace('/src="\//', 'src="proxy?req=', $content);
-				//var_dump($content);
+				//$response = $response->withHeader('X-Proxy-Foo', 'Bar');
+				$content = $response->getBody()->getContents();
+				$content = preg_replace('/src="\//', 'src="https://localhost/dev/server21/index.php/apps/integration_whiteboard/proxy/', $content);
+				$content = preg_replace('/href="\//', 'href="https://localhost/dev/server21/index.php/apps/integration_whiteboard/proxy/', $content);
+				// $content = preg_replace('//', '?req=/', $content);
+				$content = preg_replace('/"..\/images\//', '"https://localhost/dev/server21/index.php/apps/integration_whiteboard/proxy/images/', $content);
+				$content = preg_replace('/"\/images\//', '"https://localhost/dev/server21/index.php/apps/integration_whiteboard/proxy/images/', $content);
+				$content = preg_replace('/"..\/fonts\//', '"https://localhost/dev/server21/index.php/apps/integration_whiteboard/proxy/fonts/', $content);
+				$content = preg_replace('/"\/fonts\//', '"https://localhost/dev/server21/index.php/apps/integration_whiteboard/proxy/fonts/', $content);
+				$content = preg_replace('/url\(\/images\//', '"https://localhost/dev/server21/index.php/apps/integration_whiteboard/proxy/fonts/', $content);
+				// $content = preg_replace('/api\//', '?req=/api/', $content);
+				// $newBody = Utils::streamFor('PLPLPLPL');
+				// // $newBody->write($content);
+				// // var_dump($body);
+				// $response->withBody($newBody);
+				// $response->withBody($newBody);
+				return new Response(200, $response->getHeaders(), $content);
 
 				return $response;
 			})
@@ -147,6 +155,57 @@ class SpacedeckAPIController extends Controller {
 
 		// Output response to the browser.
 		(new SapiEmitter)->emit($response);
+	}
+
+	/**
+	 * @NoAdminRequired
+	 * @NoCSRFRequired
+	 *
+	 */
+	public function proxyGet(string $path) {
+		$url = 'http://localhost:9666/' . $path;
+		$result = $this->spacedeckApiService->basicRequest($url);
+		if (isset($result['error'])) {
+			return new DataDisplayResponse('error', 400);
+		} else {
+			$spdResponse = $result['response'];
+			error_log('!!!!!!!!!!!!!!! '.$path. ' ' . $spdResponse->getHeaders()['Content-Type'][0]. ' OOOOOOOOO');
+			$content = $spdResponse->getBody();
+			$content = preg_replace('/src="\//', 'src="https://localhost/dev/server21/index.php/apps/integration_whiteboard/proxy/', $content);
+			$content = preg_replace('/href="\//', 'href="https://localhost/dev/server21/index.php/apps/integration_whiteboard/proxy/', $content);
+			// $content = preg_replace('//', '?req=/', $content);
+			$content = preg_replace('/"..\/images\//', '"https://localhost/dev/server21/index.php/apps/integration_whiteboard/proxy/images/', $content);
+			$content = preg_replace('/"\/images\//', '"https://localhost/dev/server21/index.php/apps/integration_whiteboard/proxy/images/', $content);
+			$content = preg_replace('/"..\/fonts\//', '"https://localhost/dev/server21/index.php/apps/integration_whiteboard/proxy/fonts/', $content);
+			$content = preg_replace('/"\/fonts\//', '"https://localhost/dev/server21/index.php/apps/integration_whiteboard/proxy/fonts/', $content);
+			$content = preg_replace('/url\(\/images\//', '"https://localhost/dev/server21/index.php/apps/integration_whiteboard/proxy/fonts/', $content);
+			$content = preg_replace('/api_endpoint\+/', '"https://localhost/dev/server21/index.php/apps/integration_whiteboard/proxy"+', $content);
+			// return new Response(200, $spdResponse->getHeaders(), $content);
+
+			$csp = new \OCP\AppFramework\Http\ContentSecurityPolicy();
+			// $csp->allowInlineScript(true);
+			// $csp->allowInlineStyle(true);
+			// $csp->allowEvalScript(true);
+			$csp->useJsNonce('');
+
+			$csp->addAllowedScriptDomain("'unsafe-inline' 'unsafe-eval' *");
+			$csp->addAllowedStyleDomain('*');
+			$csp->addAllowedFontDomain('*');
+			$csp->addAllowedImageDomain('*');
+			$csp->addAllowedConnectDomain('*');
+			$csp->addAllowedMediaDomain('*');
+			$csp->addAllowedObjectDomain('*');
+			$csp->addAllowedFrameDomain('*');
+			$csp->addAllowedChildSrcDomain('*');
+
+			$response = new DataDisplayResponse($content);
+			$h = $response->getHeaders();
+			$h['Content-Type'] = $spdResponse->getHeaders()['Content-Type'][0];
+			$response->setHeaders($h);
+			// $response->setHeaders($spdResponse->getHeaders());
+			$response->setContentSecurityPolicy($csp);
+			return $response;
+		}
 	}
 
 	/**

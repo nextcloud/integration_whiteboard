@@ -8,6 +8,9 @@ use Proxy\Filter\RemoveEncodingFilter;
 use Laminas\Diactoros\ServerRequestFactory;
 
 use GuzzleHttp\Psr7\Uri;
+use GuzzleHttp\Psr7\Response;
+use GuzzleHttp\Psr7\Stream;
+use GuzzleHttp\Psr7\Utils;
 
 // Create a PSR7 request based on the current browser request.
 $request = ServerRequestFactory::fromGlobals();
@@ -34,18 +37,34 @@ $proxy->filter(new RemoveEncodingFilter());
 $response = $proxy->forward($request)
     ->filter(function ($request, $response, $next) {
         // Manipulate the request object.
-        $request = $request->withHeader('User-Agent', 'FishBot/1.0');
-        $request = $request->withHeader('Origin', 'https://free.fr');
-        $request = $request->withHeader('Host', 'free.fr');
+        // $request = $request->withHeader('User-Agent', 'FishBot/1.0');
+        // $request = $request->withHeader('Origin', 'https://free.fr');
+        // $request = $request->withHeader('Host', 'free.fr');
 
         // Call the next item in the middleware.
         $response = $next($request, $response);
 
         // Manipulate the response object.
-        $response = $response->withHeader('X-Proxy-Foo', 'Bar');
-        $response = $response->withHeader('X-Forwarded-Host', 'toto.com');
-        $response = $response->withHeader('Origin', 'https://free.fr');
-        $response = $response->withHeader('Host', 'free.fr');
+        //$response = $response->withHeader('X-Proxy-Foo', 'Bar');
+        //$response = $response->withHeader('X-Forwarded-Host', 'toto.com');
+        //$response = $response->withHeader('Origin', 'https://free.fr');
+        //$response = $response->withHeader('Host', 'free.fr');
+        $content = $response->getBody()->getContents();
+        $content = preg_replace('/src="\//', 'src="?req=/', $content);
+        $content = preg_replace('/href="\//', 'href="?req=/', $content);
+        // $content = preg_replace('//', '?req=/', $content);
+        $content = preg_replace('/"..\/images\//', '"https://localhost/dev/server21/apps/integration_whiteboard/proxy.php?req=/images/', $content);
+        $content = preg_replace('/"\/images\//', '"https://localhost/dev/server21/apps/integration_whiteboard/proxy.php?req=/images/', $content);
+        $content = preg_replace('/"..\/fonts\//', '"https://localhost/dev/server21/apps/integration_whiteboard/proxy.php?req=/fonts/', $content);
+        $content = preg_replace('/"\/fonts\//', '"https://localhost/dev/server21/apps/integration_whiteboard/proxy.php?req=/fonts/', $content);
+        $content = preg_replace('/url\(\/images\//', '"https://localhost/dev/server21/apps/integration_whiteboard/proxy.php?req=/fonts/', $content);
+        // $content = preg_replace('/api\//', '?req=/api/', $content);
+        // $newBody = Utils::streamFor('PLPLPLPL');
+        // // $newBody->write($content);
+        // // var_dump($body);
+        // $response->withBody($newBody);
+        // $response->withBody($newBody);
+        return new Response(200, $response->getHeaders(), $content);
 
         return $response;
     })
