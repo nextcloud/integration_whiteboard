@@ -15,10 +15,18 @@ use GuzzleHttp\Psr7\Utils;
 // Create a PSR7 request based on the current browser request.
 $request = ServerRequestFactory::fromGlobals();
 
+$lala = $_SERVER['HTTP_HOST'] . $_SERVER['SCRIPT_NAME'];
+//var_dump(json_encode($_SERVER));
+$uri = $_SERVER['REQUEST_URI'];
+$url = str_replace('/dev/server21/apps/integration_whiteboard/proxy.php', '', $uri);
+// var_dump($url);
+// exit();
+
 // Create a guzzle client
 $guzzle = new GuzzleHttp\Client();
 
-$req = $_GET['req'];
+//$req = $_GET['req'];
+$req = $url;
 
 // Create the proxy instance
 $proxy = new Proxy(new GuzzleAdapter($guzzle));
@@ -49,22 +57,22 @@ $response = $proxy->forward($request)
         //$response = $response->withHeader('X-Forwarded-Host', 'toto.com');
         //$response = $response->withHeader('Origin', 'https://free.fr');
         //$response = $response->withHeader('Host', 'free.fr');
-        $content = $response->getBody()->getContents();
-        $content = preg_replace('/src="\//', 'src="?req=/', $content);
-        $content = preg_replace('/href="\//', 'href="?req=/', $content);
-        // $content = preg_replace('//', '?req=/', $content);
-        $content = preg_replace('/"..\/images\//', '"https://localhost/dev/server21/apps/integration_whiteboard/proxy.php?req=/images/', $content);
-        $content = preg_replace('/"\/images\//', '"https://localhost/dev/server21/apps/integration_whiteboard/proxy.php?req=/images/', $content);
-        $content = preg_replace('/"..\/fonts\//', '"https://localhost/dev/server21/apps/integration_whiteboard/proxy.php?req=/fonts/', $content);
-        $content = preg_replace('/"\/fonts\//', '"https://localhost/dev/server21/apps/integration_whiteboard/proxy.php?req=/fonts/', $content);
-        $content = preg_replace('/url\(\/images\//', '"https://localhost/dev/server21/apps/integration_whiteboard/proxy.php?req=/fonts/', $content);
-        // $content = preg_replace('/api\//', '?req=/api/', $content);
-        // $newBody = Utils::streamFor('PLPLPLPL');
-        // // $newBody->write($content);
-        // // var_dump($body);
-        // $response->withBody($newBody);
-        // $response->withBody($newBody);
-        return new Response(200, $response->getHeaders(), $content);
+        // $content = $response->getBody()->getContents();
+        // $content = preg_replace('/src="\//', 'src="?req=/', $content);
+        // $content = preg_replace('/href="\//', 'href="?req=/', $content);
+        // // $content = preg_replace('//', '?req=/', $content);
+        // $content = preg_replace('/"..\/images\//', '"https://localhost/dev/server21/apps/integration_whiteboard/proxy.php?req=/images/', $content);
+        // $content = preg_replace('/"\/images\//', '"https://localhost/dev/server21/apps/integration_whiteboard/proxy.php?req=/images/', $content);
+        // $content = preg_replace('/"..\/fonts\//', '"https://localhost/dev/server21/apps/integration_whiteboard/proxy.php?req=/fonts/', $content);
+        // $content = preg_replace('/"\/fonts\//', '"https://localhost/dev/server21/apps/integration_whiteboard/proxy.php?req=/fonts/', $content);
+        // $content = preg_replace('/url\(\/images\//', '"https://localhost/dev/server21/apps/integration_whiteboard/proxy.php?req=/fonts/', $content);
+        // // $content = preg_replace('/api\//', '?req=/api/', $content);
+        // // $newBody = Utils::streamFor('PLPLPLPL');
+        // // // $newBody->write($content);
+        // // // var_dump($body);
+        // // $response->withBody($newBody);
+        // // $response->withBody($newBody);
+        // return new Response(200, $response->getHeaders(), $content);
 
         return $response;
     })

@@ -31,17 +31,17 @@ use OCP\AppFramework\Controller;
 use OCA\Spacedeck\Service\SpacedeckAPIService;
 use OCA\Spacedeck\AppInfo\Application;
 
-require_once __DIR__ . '/../../vendor/autoload.php';
-
-use Proxy\Proxy;
-use Proxy\Adapter\Guzzle\GuzzleAdapter;
-use Proxy\Filter\RemoveEncodingFilter;
-use Laminas\Diactoros\ServerRequestFactory;
-use Laminas\HttpHandlerRunner\Emitter\SapiEmitter;
-
-use GuzzleHttp;
-use GuzzleHttp\Psr7\Uri;
-use GuzzleHttp\Psr7\Response;
+// require_once __DIR__ . '/../../vendor/autoload.php';
+// 
+// use Proxy\Proxy;
+// use Proxy\Adapter\Guzzle\GuzzleAdapter;
+// use Proxy\Filter\RemoveEncodingFilter;
+// use Laminas\Diactoros\ServerRequestFactory;
+// use Laminas\HttpHandlerRunner\Emitter\SapiEmitter;
+// 
+// use GuzzleHttp;
+// use GuzzleHttp\Psr7\Uri;
+// use GuzzleHttp\Psr7\Response;
 
 class SpacedeckAPIController extends Controller {
 
@@ -171,24 +171,24 @@ class SpacedeckAPIController extends Controller {
 			$spdResponse = $result['response'];
 			error_log('!!!!!!!!!!!!!!! '.$path. ' ' . $spdResponse->getHeaders()['Content-Type'][0]. ' OOOOOOOOO');
 			$content = $spdResponse->getBody();
-			$content = preg_replace('/src="\//', 'src="https://localhost/dev/server21/index.php/apps/integration_whiteboard/proxy/', $content);
-			$content = preg_replace('/href="\//', 'href="https://localhost/dev/server21/index.php/apps/integration_whiteboard/proxy/', $content);
-			// $content = preg_replace('//', '?req=/', $content);
-			$content = preg_replace('/"..\/images\//', '"https://localhost/dev/server21/index.php/apps/integration_whiteboard/proxy/images/', $content);
-			$content = preg_replace('/"\/images\//', '"https://localhost/dev/server21/index.php/apps/integration_whiteboard/proxy/images/', $content);
-			$content = preg_replace('/"..\/fonts\//', '"https://localhost/dev/server21/index.php/apps/integration_whiteboard/proxy/fonts/', $content);
-			$content = preg_replace('/"\/fonts\//', '"https://localhost/dev/server21/index.php/apps/integration_whiteboard/proxy/fonts/', $content);
-			$content = preg_replace('/url\(\/images\//', '"https://localhost/dev/server21/index.php/apps/integration_whiteboard/proxy/fonts/', $content);
-			$content = preg_replace('/api_endpoint\+/', '"https://localhost/dev/server21/index.php/apps/integration_whiteboard/proxy"+', $content);
+			// $content = preg_replace('/src="\//', 'src="https://localhost/dev/server21/index.php/apps/integration_whiteboard/proxy/', $content);
+			// $content = preg_replace('/href="\//', 'href="https://localhost/dev/server21/index.php/apps/integration_whiteboard/proxy/', $content);
+			// // $content = preg_replace('//', '?req=/', $content);
+			// $content = preg_replace('/"..\/images\//', '"https://localhost/dev/server21/index.php/apps/integration_whiteboard/proxy/images/', $content);
+			// $content = preg_replace('/"\/images\//', '"https://localhost/dev/server21/index.php/apps/integration_whiteboard/proxy/images/', $content);
+			// $content = preg_replace('/"..\/fonts\//', '"https://localhost/dev/server21/index.php/apps/integration_whiteboard/proxy/fonts/', $content);
+			// $content = preg_replace('/"\/fonts\//', '"https://localhost/dev/server21/index.php/apps/integration_whiteboard/proxy/fonts/', $content);
+			// $content = preg_replace('/url\(\/images\//', '"https://localhost/dev/server21/index.php/apps/integration_whiteboard/proxy/fonts/', $content);
+			// $content = preg_replace('/api_endpoint\+/', '"https://localhost/dev/server21/index.php/apps/integration_whiteboard/proxy"+', $content);
 			// return new Response(200, $spdResponse->getHeaders(), $content);
 
 			$csp = new \OCP\AppFramework\Http\ContentSecurityPolicy();
-			// $csp->allowInlineScript(true);
-			// $csp->allowInlineStyle(true);
-			// $csp->allowEvalScript(true);
-			$csp->useJsNonce('');
+			$csp->allowInlineScript(true);
+			$csp->allowInlineStyle(true);
+			$csp->allowEvalScript(true);
+			//$csp->useJsNonce('');
 
-			$csp->addAllowedScriptDomain("'unsafe-inline' 'unsafe-eval' *");
+			$csp->addAllowedScriptDomain("*");
 			$csp->addAllowedStyleDomain('*');
 			$csp->addAllowedFontDomain('*');
 			$csp->addAllowedImageDomain('*');
@@ -198,10 +198,12 @@ class SpacedeckAPIController extends Controller {
 			$csp->addAllowedFrameDomain('*');
 			$csp->addAllowedChildSrcDomain('*');
 
-			$response = new DataDisplayResponse($content);
-			$h = $response->getHeaders();
+			$h = $spdResponse->getHeaders();
 			$h['Content-Type'] = $spdResponse->getHeaders()['Content-Type'][0];
-			$response->setHeaders($h);
+			error_log('LLLLLLL '.$spdResponse->getHeaders()['Content-Type'][0]);
+			// $response = new Response(200, $h, $content);
+			$response = new DataDisplayResponse($content, 200, $h);
+			// $response->setHeaders($h);
 			// $response->setHeaders($spdResponse->getHeaders());
 			$response->setContentSecurityPolicy($csp);
 			return $response;
