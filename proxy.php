@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/vendor/autoload.php';
+require_once 'websocket_client.php';
 
 use Proxy\Proxy;
 use Proxy\Adapter\Guzzle\GuzzleAdapter;
@@ -21,6 +22,10 @@ $uri = $_SERVER['REQUEST_URI'];
 $url = str_replace('/dev/server21/apps/integration_whiteboard/proxy.php', '', $uri);
 // var_dump($url);
 // exit();
+if ($url === '/socket') {
+    // var_dump('PLPLPLPLPLPLPLPL');
+    // exit();
+}
 
 // Create a guzzle client
 $guzzle = new GuzzleHttp\Client();
