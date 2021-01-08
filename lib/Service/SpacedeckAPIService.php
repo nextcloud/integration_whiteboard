@@ -14,6 +14,10 @@ namespace OCA\Spacedeck\Service;
 use OCP\IL10N;
 use Psr\Log\LoggerInterface;
 use OCP\IConfig;
+use OCP\IDBConnection;
+use OCP\DB\QueryBuilder\IQueryBuilder;
+use OCP\Share\IManager as IShareManager;
+use OCP\Share\Exceptions\ShareNotFound;
 use OCP\Files\IRootFolder;
 use OCP\Files\FileInfo;
 use OCP\Files\Node;
@@ -35,12 +39,16 @@ class SpacedeckAPIService {
 	public function __construct (string $appName,
 								IRootFolder $root,
 								LoggerInterface $logger,
+								IShareManager $shareManager,
+								IDBConnection $dbconnection,
 								IL10N $l10n,
 								IConfig $config,
 								IClientService $clientService) {
 		$this->appName = $appName;
 		$this->l10n = $l10n;
 		$this->logger = $logger;
+		$this->shareManager = $shareManager;
+		$this->dbconnection = $dbconnection;
 		$this->config = $config;
 		$this->root = $root;
 		$this->clientService = $clientService;
@@ -97,7 +105,7 @@ class SpacedeckAPIService {
 	 * @param int $file_id
 	 * @return array error or space information
 	 */
-	public function loadSpaceFromFile(string $baseUrl, string $apiToken, ?string $userId, int $file_id): array {
+	public function loadSpaceFromFile(string $baseUrl, string $apiToken, ?string $userId, int $file_id, string $accessToken): array {
 		// load file json content
 		$file = $this->getFileFromId($userId, $file_id);
 		if (is_null($file)) {
@@ -122,6 +130,7 @@ class SpacedeckAPIService {
 				'base_url' => $baseUrl,
 				'space_id' => $newSpace['_id'],
 				'edit_hash' => $newSpace['edit_hash'],
+				'access_token' => $accessToken,
 			];
 		}
 
@@ -164,6 +173,7 @@ class SpacedeckAPIService {
 				'base_url' => $baseUrl,
 				'space_id' => $newSpace['_id'],
 				'edit_hash' => $newSpace['edit_hash'],
+				'access_token' => $accessToken,
 			];
 		} else {
 			// exists
@@ -172,6 +182,7 @@ class SpacedeckAPIService {
 				'base_url' => $baseUrl,
 				'space_id' => $space['_id'],
 				'edit_hash' => $space['edit_hash'],
+				'access_token' => $accessToken,
 			];
 		}
 	}
@@ -287,5 +298,68 @@ class SpacedeckAPIService {
 			// $this->logger->warning('Spacedeck API error : '.$e->getMessage(), ['app' => $this->appName]);
 			return ['error' => $e->getMessage()];
 		}
+	}
+
+	public function isFileSharedWithToken(string $token, int $file_id): ?int {
+		try {
+			$share = $this->shareManager->getShareByToken($token);
+			$node = $share->getNode();
+			// in single file share, we get 0 as file ID
+			if ($node->getType() === FileInfo::TYPE_FILE && ($file_id === 0 || $node->getId() === $file_id)) {
+				return $node->getId();
+			} elseif ($node->getType() === FileInfo::TYPE_FOLDER) {
+				$file = $node->getById($file_id);
+				if ( (is_array($file) && count($file) > 0)
+					|| (!is_array($file) && $file->getType() === FileInfo::TYPE_FILE)
+				) {
+					return $file_id;
+				}
+			}
+		} catch (ShareNotFound $e) {
+			return null;
+		}
+		return null;
+	}
+
+	public function getOrCreateUserToken(string $userId): string {
+		$userToken = $this->config->getUserValue($userId, Application::APP_ID, 'access_token', '');
+		if (!$userToken) {
+			$userToken = md5(rand());
+			$this->config->setUserValue($userId, Application::APP_ID, 'access_token', $userToken);
+		}
+		return $userToken;
+	}
+
+	public function publicAuth(string $accessToken, int $fileId): bool {
+		$isShared = $this->isFileSharedWithToken($accessToken, $fileId);
+		// check if it's a public share
+		if ($isShared) {
+			return true;
+		} else {
+			// if not, check if there is a corresponding user token and if this user has access to the file
+			$qb = $this->dbconnection->getQueryBuilder();
+			$qb->select('userid')
+                    ->from('preferences')
+                    ->where(
+                        $qb->expr()->eq('appid', $qb->createNamedParameter(Application::APP_ID, IQueryBuilder::PARAM_STR))
+					)
+                    ->andWhere(
+                        $qb->expr()->eq('configkey', $qb->createNamedParameter('access_token', IQueryBuilder::PARAM_STR))
+					)
+                    ->andWhere(
+                        $qb->expr()->eq('configvalue', $qb->createNamedParameter($accessToken, IQueryBuilder::PARAM_STR))
+					);
+			$req = $qb->execute();
+			$dbUserId = null;
+			while ($row = $req->fetch()) {
+				$dbUserId = $row['userid'];
+				break;
+			}
+			$req->closeCursor();
+			if (!is_null($dbUserId)) {
+				return $this->getFileFromId($dbUserId, $fileId) !== null;
+			}
+		}
+		return false;
 	}
 }

@@ -92,6 +92,7 @@ export default {
 				this.spaceUrl = response.data.base_url
 					+ '/spaces/' + response.data.space_id
 					+ '?spaceAuth=' + response.data.edit_hash
+					+ '&accessToken=' + response.data.access_token
 					+ this.nicknameParam
 				this.startSaveLoop()
 				// this method only exists when this component is loaded in the Viewer context
