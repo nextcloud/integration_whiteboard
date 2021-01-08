@@ -159,6 +159,6 @@ class SpacedeckAPIController extends Controller {
 	 * @return DataResponse
 	 */
 	public function publicAuth(string $accessToken, int $fileId): DataResponse {
-		return new DataResponse($this->spacedeckApiService->publicAuth($accessToken, $fileId));
+		return new DataResponse(['success' => $this->spacedeckApiService->publicAuth($accessToken, $fileId)]);
 	}
 }
