@@ -291,13 +291,17 @@ class SpacedeckAPIService {
 
 	/**
 	 */
-	public function basicRequest(string $url, array $params = [], string $method = 'GET', bool $jsonOutput = false): array {
+	public function basicRequest(string $url, array $params = [], string $method = 'GET',
+								bool $jsonOutput = false, ?string $spaceAuth = null): array {
 		try {
 			$options = [
 				'headers' => [
 					'User-Agent' => 'Nextcloud Spacedeck integration',
 				],
 			];
+			if (!is_null($spaceAuth)) {
+				$options['headers']['X-Spacedeck-Space-Auth'] = $spaceAuth;
+			}
 
 			if (count($params) > 0) {
 				if ($method === 'GET') {

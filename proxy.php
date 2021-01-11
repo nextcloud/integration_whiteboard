@@ -1,7 +1,7 @@
 <?php
 
 require_once __DIR__ . '/vendor/autoload.php';
-require_once 'websocket_client.php';
+// require_once 'websocket_client.php';
 
 use Proxy\Proxy;
 use Proxy\Adapter\Guzzle\GuzzleAdapter;
@@ -36,6 +36,7 @@ $req = $url;
 // Create the proxy instance
 $proxy = new Proxy(new GuzzleAdapter($guzzle));
 $url = 'http://localhost:9666' . $req;
+error_log('UUUUUUUUUUU '.$url.' |||||||');
 // $url = $toUrl;
 $proxy->filter(function ($request, $response, $next) use ($url) {
 	$request = $request->withUri(new Uri($url));

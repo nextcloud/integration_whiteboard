@@ -163,8 +163,9 @@ class SpacedeckAPIController extends Controller {
 	 *
 	 */
 	public function proxyGet(string $path) {
+		$spaceAuth = $_SERVER['HTTP_X_SPACEDECK_SPACE_AUTH'] ?? null;
 		$url = 'http://localhost:9666/' . $path;
-		$result = $this->spacedeckApiService->basicRequest($url);
+		$result = $this->spacedeckApiService->basicRequest($url, [], 'GET', false, $spaceAuth);
 		if (isset($result['error'])) {
 			return new DataDisplayResponse('error', 400);
 		} else {
@@ -200,12 +201,120 @@ class SpacedeckAPIController extends Controller {
 
 			$h = $spdResponse->getHeaders();
 			$h['Content-Type'] = $spdResponse->getHeaders()['Content-Type'][0];
+			$h['content-security-policy'] = 'script-src * \'unsafe-eval\' \'unsafe-inline\'';
 			error_log('LLLLLLL '.$spdResponse->getHeaders()['Content-Type'][0]);
 			// $response = new Response(200, $h, $content);
 			$response = new DataDisplayResponse($content, 200, $h);
+			// $response = new DataDisplayResponse($content);
+			// $response->setContentSecurityPolicy($csp);
 			// $response->setHeaders($h);
 			// $response->setHeaders($spdResponse->getHeaders());
-			$response->setContentSecurityPolicy($csp);
+			return $response;
+		}
+	}
+
+	/**
+	 * @NoAdminRequired
+	 * @NoCSRFRequired
+	 *
+	 */
+	public function proxyDelete(string $path) {
+		$spaceAuth = $_SERVER['HTTP_X_SPACEDECK_SPACE_AUTH'] ?? null;
+		$url = 'http://localhost:9666/' . $path;
+		$result = $this->spacedeckApiService->basicRequest($url, [], 'DELETE', false, $spaceAuth);
+		if (isset($result['error'])) {
+			return new DataDisplayResponse($result['error'], 400);
+		} else {
+			$spdResponse = $result['response'];
+			error_log('!!!!!!!!!!!!!!! '.$path. ' ' . $spdResponse->getHeaders()['Content-Type'][0]. ' OOOOOOOOO');
+			$content = $spdResponse->getBody();
+
+			$csp = new \OCP\AppFramework\Http\ContentSecurityPolicy();
+			$csp->allowInlineScript(true);
+			$csp->allowInlineStyle(true);
+			$csp->allowEvalScript(true);
+
+			$csp->addAllowedScriptDomain("*");
+			$csp->addAllowedStyleDomain('*');
+			$csp->addAllowedFontDomain('*');
+			$csp->addAllowedImageDomain('*');
+			$csp->addAllowedConnectDomain('*');
+			$csp->addAllowedMediaDomain('*');
+			$csp->addAllowedObjectDomain('*');
+			$csp->addAllowedFrameDomain('*');
+			$csp->addAllowedChildSrcDomain('*');
+
+			$h = $spdResponse->getHeaders();
+			$h['Content-Type'] = $spdResponse->getHeaders()['Content-Type'][0];
+			$h['content-security-policy'] = 'script-src * \'unsafe-eval\' \'unsafe-inline\'';
+			$response = new DataDisplayResponse($content, 200, $h);
+			return $response;
+		}
+	}
+
+	/**
+	 * @NoAdminRequired
+	 * @NoCSRFRequired
+	 *
+	 */
+	public function proxyPut(string $path) {
+		// var_dump(file_get_contents('php://input'));
+		$body = file_get_contents('php://input');
+		$bodyArray = json_decode($body, true);
+		$spaceAuth = $_SERVER['HTTP_X_SPACEDECK_SPACE_AUTH'] ?? null;
+		$url = 'http://localhost:9666/' . $path;
+		$result = $this->spacedeckApiService->basicRequest($url, $bodyArray, 'PUT', false, $spaceAuth);
+		if (isset($result['error'])) {
+			return new DataDisplayResponse($result['error'], 400);
+		} else {
+			$spdResponse = $result['response'];
+			error_log('!!!!!!!!!!!!!!! '.$path. ' ' . $spdResponse->getHeaders()['Content-Type'][0]. ' OOOOOOOOO');
+			$content = $spdResponse->getBody();
+
+			$csp = new \OCP\AppFramework\Http\ContentSecurityPolicy();
+			$csp->allowInlineScript(true);
+			$csp->allowInlineStyle(true);
+			$csp->allowEvalScript(true);
+
+			$csp->addAllowedScriptDomain("*");
+			$csp->addAllowedStyleDomain('*');
+			$csp->addAllowedFontDomain('*');
+			$csp->addAllowedImageDomain('*');
+			$csp->addAllowedConnectDomain('*');
+			$csp->addAllowedMediaDomain('*');
+			$csp->addAllowedObjectDomain('*');
+			$csp->addAllowedFrameDomain('*');
+			$csp->addAllowedChildSrcDomain('*');
+
+			$h = $spdResponse->getHeaders();
+			$h['Content-Type'] = $spdResponse->getHeaders()['Content-Type'][0];
+			$h['content-security-policy'] = 'script-src * \'unsafe-eval\' \'unsafe-inline\'';
+			$response = new DataDisplayResponse($content, 200, $h);
+			return $response;
+		}
+	}
+
+	/**
+	 * @NoAdminRequired
+	 * @NoCSRFRequired
+	 *
+	 */
+	public function proxyPost(string $path) {
+		// var_dump(file_get_contents('php://input'));
+		$body = file_get_contents('php://input');
+		$bodyArray = json_decode($body, true);
+		$spaceAuth = $_SERVER['HTTP_X_SPACEDECK_SPACE_AUTH'] ?? null;
+		$url = 'http://localhost:9666/' . $path;
+		$result = $this->spacedeckApiService->basicRequest($url, $bodyArray, 'POST', false, $spaceAuth);
+		if (isset($result['error'])) {
+			return new DataDisplayResponse($result['error'], 400);
+		} else {
+			$spdResponse = $result['response'];
+			$content = $spdResponse->getBody();
+
+			$h = $spdResponse->getHeaders();
+			$h['Content-Type'] = $spdResponse->getHeaders()['Content-Type'][0];
+			$response = new DataDisplayResponse($content, 200, $h);
 			return $response;
 		}
 	}
