@@ -89,14 +89,10 @@ export default {
 			axios.get(this.loadSpaceUrl).then((response) => {
 				// console.debug(response.data)
 				this.spaceId = response.data.space_id
-				this.spaceUrl = response.data.base_url
+				this.spaceUrl = generateUrl('/apps/integration_whiteboard/proxy')
 					+ '/spaces/' + response.data.space_id
 					+ '?spaceAuth=' + response.data.edit_hash
 					+ this.nicknameParam
-				this.spaceUrl = generateUrl('/apps/integration_spacedeck/proxy?req=')
-				// this.spaceUrl = this.spaceUrl.replace('index.php/', '')
-				console.debug('UUUUUUUUUUUUUUU')
-				console.debug(this.spaceUrl)
 				this.startSaveLoop()
 				// this method only exists when this component is loaded in the Viewer context
 				if (this.doneLoading) {

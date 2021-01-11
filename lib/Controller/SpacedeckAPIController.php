@@ -157,12 +157,20 @@ class SpacedeckAPIController extends Controller {
 		(new SapiEmitter)->emit($response);
 	}
 
+	private function proxySocket() {
+		return new DataDisplayResponse('plop');
+	}
+
 	/**
 	 * @NoAdminRequired
 	 * @NoCSRFRequired
+	 * @PublicPage
 	 *
 	 */
 	public function proxyGet(string $path) {
+		if ($path === 'socket') {
+			return $this->proxySocket();
+		}
 		$spaceAuth = $_SERVER['HTTP_X_SPACEDECK_SPACE_AUTH'] ?? null;
 		$url = 'http://localhost:9666/' . $path;
 		$result = $this->spacedeckApiService->basicRequest($url, [], 'GET', false, $spaceAuth);
