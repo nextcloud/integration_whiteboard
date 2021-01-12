@@ -1,6 +1,7 @@
 <template>
 	<div class="spacedeck-wrapper">
 		<iframe v-if="spaceUrl"
+			ref="frame"
 			:class="{ 'spacedeck-frame': true, 'frame-outside-viewer': !inOcViewer }"
 			frameborder="0"
 			:allowFullScreen="true"
@@ -93,11 +94,13 @@ export default {
 					+ '/spaces/' + response.data.space_id
 					+ '?spaceAuth=' + response.data.edit_hash
 					+ this.nicknameParam
-				this.startSaveLoop()
+				// TODO uncomment next line
+				// this.startSaveLoop()
 				// this method only exists when this component is loaded in the Viewer context
 				if (this.doneLoading) {
 					this.doneLoading()
 				}
+				this.$nextTick(() => this.applyFrameStyle())
 			}).catch((error) => {
 				console.error(error)
 				showError(
@@ -109,6 +112,14 @@ export default {
 				}
 				this.$emit('close')
 			})
+		},
+		applyFrameStyle() {
+			// const style = '.btn-group.vertical > .btn:first-child { display: none !important; }'
+			console.debug('FRRRRRRRR')
+			console.debug(this.$refs.frame.getElementsByClassName('toolbar-elements'))
+			// const doc = this.$refs.frame.contentDocument
+			// doc.body.innerHTML = doc.body.innerHTML + style
+			// this.$refs.frame.append('style', style)
 		},
 		startSaveLoop() {
 			this.loop = setInterval(() => this.saveSpace(), 30000)

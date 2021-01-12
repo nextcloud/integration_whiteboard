@@ -31,17 +31,23 @@ use OCP\AppFramework\Controller;
 use OCA\Spacedeck\Service\SpacedeckAPIService;
 use OCA\Spacedeck\AppInfo\Application;
 
-// require_once __DIR__ . '/../../vendor/autoload.php';
-// 
-// use Proxy\Proxy;
-// use Proxy\Adapter\Guzzle\GuzzleAdapter;
-// use Proxy\Filter\RemoveEncodingFilter;
-// use Laminas\Diactoros\ServerRequestFactory;
-// use Laminas\HttpHandlerRunner\Emitter\SapiEmitter;
-// 
-// use GuzzleHttp;
-// use GuzzleHttp\Psr7\Uri;
-// use GuzzleHttp\Psr7\Response;
+if (!function_exists('getallheaders'))
+{
+	// polyfill, e.g. on PHP 7.2 setups with nginx.
+	// Can be removed when 7.2 becomes unsupported
+	function getallheaders() {
+		$headers = [];
+		if (!is_array($_SERVER)) {
+			return $headers;
+		}
+		foreach ($_SERVER as $name => $value) {
+			if (substr($name, 0, 5) == 'HTTP_') {
+				$headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
+			}
+		}
+		return $headers;
+	}
+}
 
 class SpacedeckAPIController extends Controller {
 
@@ -76,120 +82,17 @@ class SpacedeckAPIController extends Controller {
 	 * @NoCSRFRequired
 	 *
 	 */
-	public function proxy2(?string $path) {
-		echo $path;
-		echo '!!!';
-		echo $_GET['req'];
-	}
-
-	/**
-	 * @NoAdminRequired
-	 * @NoCSRFRequired
-	 *
-	 */
-	public function proxy(string $path) {
-		// Create a PSR7 request based on the current browser request.
-		$request = ServerRequestFactory::fromGlobals();
-		// var_dump($_SERVER['REQUEST_URI']);
-		// $reqUri = $_SERVER['REQUEST_URI'];
-		// $url2 = str_replace('/dev/server21/index.php/apps/integration_spacedeck', 'http://localhost:9666', $reqUri);
-		// var_dump($url2);
-		// $url2 = preg_replace('/\/proxy/', '', $url2);
-		$url2 = 'http://localhost:9666/' . $path;
-		// var_dump($url2);
-
-		// Create a guzzle client
-		$guzzle = new GuzzleHttp\Client();
-
-		// $req = $_GET['req'];
-
-		// Create the proxy instance
-		$proxy = new Proxy(new GuzzleAdapter($guzzle));
-		// $url = 'http://localhost:9666/' . $req;
-		// $url = 'http://localhost:9666/spaces/246ddaa4-7422-434d-b689-798029650c01?spaceAuth=68ec9be';
-		// $url = $toUrl;
-		$proxy->filter(function ($request, $response, $next) use ($url2) {
-			$request = $request->withUri(new Uri($url2));
-			$response = $next($request, $response);
-			return $response;
-		});
-
-		// Add a response filter that removes the encoding headers.
-		$proxy->filter(new RemoveEncodingFilter());
-
-		// Forward the request and get the response.
-		$response = $proxy->forward($request)
-			->filter(function ($request, $response, $next) {
-				// Manipulate the request object.
-				//$request = $request->withHeader('User-Agent', 'FishBot/1.0');
-				//$request = $request->withHeader('Origin', 'https://free.fr');
-				//$request = $request->withHeader('Host', 'free.fr');
-				//$request = $request->withHeader('X-Request-URI', 'free.fr');
-
-				// Call the next item in the middleware.
-				$response = $next($request, $response);
-
-				// Manipulate the response object.
-				//$response = $response->withHeader('X-Proxy-Foo', 'Bar');
-				$content = $response->getBody()->getContents();
-				$content = preg_replace('/src="\//', 'src="https://localhost/dev/server21/index.php/apps/integration_whiteboard/proxy/', $content);
-				$content = preg_replace('/href="\//', 'href="https://localhost/dev/server21/index.php/apps/integration_whiteboard/proxy/', $content);
-				// $content = preg_replace('//', '?req=/', $content);
-				$content = preg_replace('/"..\/images\//', '"https://localhost/dev/server21/index.php/apps/integration_whiteboard/proxy/images/', $content);
-				$content = preg_replace('/"\/images\//', '"https://localhost/dev/server21/index.php/apps/integration_whiteboard/proxy/images/', $content);
-				$content = preg_replace('/"..\/fonts\//', '"https://localhost/dev/server21/index.php/apps/integration_whiteboard/proxy/fonts/', $content);
-				$content = preg_replace('/"\/fonts\//', '"https://localhost/dev/server21/index.php/apps/integration_whiteboard/proxy/fonts/', $content);
-				$content = preg_replace('/url\(\/images\//', '"https://localhost/dev/server21/index.php/apps/integration_whiteboard/proxy/fonts/', $content);
-				// $content = preg_replace('/api\//', '?req=/api/', $content);
-				// $newBody = Utils::streamFor('PLPLPLPL');
-				// // $newBody->write($content);
-				// // var_dump($body);
-				// $response->withBody($newBody);
-				// $response->withBody($newBody);
-				return new Response(200, $response->getHeaders(), $content);
-
-				return $response;
-			})
-			//->to($targetUri);
-			->to('http://localhost:9666');
-
-		// Output response to the browser.
-		(new SapiEmitter)->emit($response);
-	}
-
-	private function proxySocket() {
-		return new DataDisplayResponse('plop');
-	}
-
-	/**
-	 * @NoAdminRequired
-	 * @NoCSRFRequired
-	 * @PublicPage
-	 *
-	 */
 	public function proxyGet(string $path) {
-		if ($path === 'socket') {
-			return $this->proxySocket();
-		}
-		$spaceAuth = $_SERVER['HTTP_X_SPACEDECK_SPACE_AUTH'] ?? null;
+		// HINT: set @PublicPage to be able to access outside NC
+		$reqHeaders = getallheaders();
 		$url = 'http://localhost:9666/' . $path;
-		$result = $this->spacedeckApiService->basicRequest($url, [], 'GET', false, $spaceAuth);
+		$result = $this->spacedeckApiService->basicRequest($url, [], 'GET', false, $reqHeaders);
 		if (isset($result['error'])) {
-			return new DataDisplayResponse('error', 400);
+			return new DataDisplayResponse($result['error'], 400);
 		} else {
 			$spdResponse = $result['response'];
-			error_log('!!!!!!!!!!!!!!! '.$path. ' ' . $spdResponse->getHeaders()['Content-Type'][0]. ' OOOOOOOOO');
+			// error_log('!!!!!!!!!!!!!!! '.$path. ' ' . $spdResponse->getHeaders()['Content-Type'][0]. ' OOOOOOOOO');
 			$content = $spdResponse->getBody();
-			// $content = preg_replace('/src="\//', 'src="https://localhost/dev/server21/index.php/apps/integration_whiteboard/proxy/', $content);
-			// $content = preg_replace('/href="\//', 'href="https://localhost/dev/server21/index.php/apps/integration_whiteboard/proxy/', $content);
-			// // $content = preg_replace('//', '?req=/', $content);
-			// $content = preg_replace('/"..\/images\//', '"https://localhost/dev/server21/index.php/apps/integration_whiteboard/proxy/images/', $content);
-			// $content = preg_replace('/"\/images\//', '"https://localhost/dev/server21/index.php/apps/integration_whiteboard/proxy/images/', $content);
-			// $content = preg_replace('/"..\/fonts\//', '"https://localhost/dev/server21/index.php/apps/integration_whiteboard/proxy/fonts/', $content);
-			// $content = preg_replace('/"\/fonts\//', '"https://localhost/dev/server21/index.php/apps/integration_whiteboard/proxy/fonts/', $content);
-			// $content = preg_replace('/url\(\/images\//', '"https://localhost/dev/server21/index.php/apps/integration_whiteboard/proxy/fonts/', $content);
-			// $content = preg_replace('/api_endpoint\+/', '"https://localhost/dev/server21/index.php/apps/integration_whiteboard/proxy"+', $content);
-			// return new Response(200, $spdResponse->getHeaders(), $content);
 
 			$csp = new \OCP\AppFramework\Http\ContentSecurityPolicy();
 			$csp->allowInlineScript(true);
@@ -210,7 +113,7 @@ class SpacedeckAPIController extends Controller {
 			$h = $spdResponse->getHeaders();
 			$h['Content-Type'] = $spdResponse->getHeaders()['Content-Type'][0];
 			$h['content-security-policy'] = 'script-src * \'unsafe-eval\' \'unsafe-inline\'';
-			error_log('LLLLLLL '.$spdResponse->getHeaders()['Content-Type'][0]);
+			// error_log('LLLLLLL '.$spdResponse->getHeaders()['Content-Type'][0]);
 			// $response = new Response(200, $h, $content);
 			$response = new DataDisplayResponse($content, 200, $h);
 			// $response = new DataDisplayResponse($content);
@@ -227,14 +130,15 @@ class SpacedeckAPIController extends Controller {
 	 *
 	 */
 	public function proxyDelete(string $path) {
-		$spaceAuth = $_SERVER['HTTP_X_SPACEDECK_SPACE_AUTH'] ?? null;
+		// $spaceAuth = $_SERVER['HTTP_X_SPACEDECK_SPACE_AUTH'] ?? null;
+		$reqHeaders = getallheaders();
 		$url = 'http://localhost:9666/' . $path;
-		$result = $this->spacedeckApiService->basicRequest($url, [], 'DELETE', false, $spaceAuth);
+		$result = $this->spacedeckApiService->basicRequest($url, [], 'DELETE', false, $reqHeaders);
 		if (isset($result['error'])) {
 			return new DataDisplayResponse($result['error'], 400);
 		} else {
 			$spdResponse = $result['response'];
-			error_log('!!!!!!!!!!!!!!! '.$path. ' ' . $spdResponse->getHeaders()['Content-Type'][0]. ' OOOOOOOOO');
+			// error_log('!!!!!!!!!!!!!!! '.$path. ' ' . $spdResponse->getHeaders()['Content-Type'][0]. ' OOOOOOOOO');
 			$content = $spdResponse->getBody();
 
 			$csp = new \OCP\AppFramework\Http\ContentSecurityPolicy();
@@ -269,14 +173,15 @@ class SpacedeckAPIController extends Controller {
 		// var_dump(file_get_contents('php://input'));
 		$body = file_get_contents('php://input');
 		$bodyArray = json_decode($body, true);
-		$spaceAuth = $_SERVER['HTTP_X_SPACEDECK_SPACE_AUTH'] ?? null;
+		// $spaceAuth = $_SERVER['HTTP_X_SPACEDECK_SPACE_AUTH'] ?? null;
+		$reqHeaders = getallheaders();
 		$url = 'http://localhost:9666/' . $path;
-		$result = $this->spacedeckApiService->basicRequest($url, $bodyArray, 'PUT', false, $spaceAuth);
+		$result = $this->spacedeckApiService->basicRequest($url, $bodyArray, 'PUT', false, $reqHeaders);
 		if (isset($result['error'])) {
 			return new DataDisplayResponse($result['error'], 400);
 		} else {
 			$spdResponse = $result['response'];
-			error_log('!!!!!!!!!!!!!!! '.$path. ' ' . $spdResponse->getHeaders()['Content-Type'][0]. ' OOOOOOOOO');
+			// error_log('!!!!!!!!!!!!!!! '.$path. ' ' . $spdResponse->getHeaders()['Content-Type'][0]. ' OOOOOOOOO');
 			$content = $spdResponse->getBody();
 
 			$csp = new \OCP\AppFramework\Http\ContentSecurityPolicy();
@@ -311,9 +216,10 @@ class SpacedeckAPIController extends Controller {
 		// var_dump(file_get_contents('php://input'));
 		$body = file_get_contents('php://input');
 		$bodyArray = json_decode($body, true);
-		$spaceAuth = $_SERVER['HTTP_X_SPACEDECK_SPACE_AUTH'] ?? null;
+		// $spaceAuth = $_SERVER['HTTP_X_SPACEDECK_SPACE_AUTH'] ?? null;
+		$reqHeaders = getallheaders();
 		$url = 'http://localhost:9666/' . $path;
-		$result = $this->spacedeckApiService->basicRequest($url, $bodyArray, 'POST', false, $spaceAuth);
+		$result = $this->spacedeckApiService->basicRequest($url, $bodyArray, 'POST', false, $reqHeaders);
 		if (isset($result['error'])) {
 			return new DataDisplayResponse($result['error'], 400);
 		} else {
@@ -322,6 +228,11 @@ class SpacedeckAPIController extends Controller {
 
 			$h = $spdResponse->getHeaders();
 			$h['Content-Type'] = $spdResponse->getHeaders()['Content-Type'][0];
+			if ($path === 'api/sessions') {
+				error_log('API cookie');
+				error_log($h['Set-Cookie'][0]. ' !!!!!!!!!!');
+				$h['Set-Cookie'] = $h['Set-Cookie'][0];
+			}
 			$response = new DataDisplayResponse($content, 200, $h);
 			return $response;
 		}
