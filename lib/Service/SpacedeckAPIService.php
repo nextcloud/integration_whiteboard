@@ -121,6 +121,7 @@ class SpacedeckAPIService {
 				'existed' => false,
 				'base_url' => $baseUrl,
 				'space_id' => $newSpace['_id'],
+				'space_name' => $newSpace['name'],
 				'edit_hash' => $newSpace['edit_hash'],
 			];
 		}
@@ -163,6 +164,7 @@ class SpacedeckAPIService {
 				'existed' => false,
 				'base_url' => $baseUrl,
 				'space_id' => $newSpace['_id'],
+				'space_name' => $newSpace['name'],
 				'edit_hash' => $newSpace['edit_hash'],
 			];
 		} else {
@@ -171,6 +173,7 @@ class SpacedeckAPIService {
 				'existed' => true,
 				'base_url' => $baseUrl,
 				'space_id' => $space['_id'],
+				'space_name' => $space['name'],
 				'edit_hash' => $space['edit_hash'],
 			];
 		}
@@ -222,7 +225,7 @@ class SpacedeckAPIService {
 	 * @param int $fileID
 	 * @return ?Node the file or null if it does not exist (or is not accessible by this user)
 	 */
-	private function getFileFromId(?string $userId, int $fileId): ?Node {
+	public function getFileFromId(?string $userId, int $fileId): ?Node {
 		if (is_null($userId)) {
 			$file = $this->root->getById($fileId);
 		} else {

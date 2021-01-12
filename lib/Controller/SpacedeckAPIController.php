@@ -80,9 +80,64 @@ class SpacedeckAPIController extends Controller {
 	/**
 	 * @NoAdminRequired
 	 * @NoCSRFRequired
+	 * @PublicPage
 	 *
 	 */
-	public function proxyGet(string $path) {
+	public function privateProxyGetMain(string $file_id, ?string $token = null): DataDisplayResponse {
+		error_log('fid '. $file_id. ' and token '. $token);
+		if (!is_null($this->userId) && !is_null($this->spacedeckApiService->getFileFromId($this->userId, $file_id))) {
+			return $this->proxyGet('spaces/' . $file_id);
+		} elseif (is_null($this->userId) && !is_null($token) && $this->isFileSharedWithToken($token, $file_id)) {
+			return $this->proxyGet('spaces/' . $file_id);
+		} else {
+			return new DataDisplayResponse('Unauthorized', 400);
+		}
+	}
+
+	/**
+	 * @NoAdminRequired
+	 * @NoCSRFRequired
+	 * @PublicPage
+	 *
+	 */
+	public function privateProxyGet(string $path): DataDisplayResponse {
+		return $this->proxyGet($path);
+	}
+
+	/**
+	 * @NoAdminRequired
+	 * @NoCSRFRequired
+	 * @PublicPage
+	 *
+	 */
+	public function privateProxyDelete(string $path): DataDisplayResponse {
+		return $this->proxyDelete($path);
+	}
+
+	/**
+	 * @NoAdminRequired
+	 * @NoCSRFRequired
+	 * @PublicPage
+	 *
+	 */
+	public function privateProxyPut(string $path): DataDisplayResponse {
+		return $this->proxyPut($path);
+	}
+
+	/**
+	 * @NoAdminRequired
+	 * @NoCSRFRequired
+	 * @PublicPage
+	 *
+	 */
+	public function privateProxyPost(string $path): DataDisplayResponse {
+		return $this->proxyPost($path);
+	}
+
+	private function proxyGet(string $path) {
+		if ($path === 'socket') {
+			return new DataDisplayResponse('impossible to forward socket', 400);
+		}
 		// HINT: set @PublicPage to be able to access outside NC
 		$reqHeaders = getallheaders();
 		$url = 'http://localhost:9666/' . $path;
@@ -124,12 +179,7 @@ class SpacedeckAPIController extends Controller {
 		}
 	}
 
-	/**
-	 * @NoAdminRequired
-	 * @NoCSRFRequired
-	 *
-	 */
-	public function proxyDelete(string $path) {
+	private function proxyDelete(string $path) {
 		// $spaceAuth = $_SERVER['HTTP_X_SPACEDECK_SPACE_AUTH'] ?? null;
 		$reqHeaders = getallheaders();
 		$url = 'http://localhost:9666/' . $path;
@@ -164,12 +214,7 @@ class SpacedeckAPIController extends Controller {
 		}
 	}
 
-	/**
-	 * @NoAdminRequired
-	 * @NoCSRFRequired
-	 *
-	 */
-	public function proxyPut(string $path) {
+	private function proxyPut(string $path) {
 		// var_dump(file_get_contents('php://input'));
 		$body = file_get_contents('php://input');
 		$bodyArray = json_decode($body, true);
@@ -207,12 +252,7 @@ class SpacedeckAPIController extends Controller {
 		}
 	}
 
-	/**
-	 * @NoAdminRequired
-	 * @NoCSRFRequired
-	 *
-	 */
-	public function proxyPost(string $path) {
+	private function proxyPost(string $path) {
 		// var_dump(file_get_contents('php://input'));
 		$body = file_get_contents('php://input');
 		$bodyArray = json_decode($body, true);

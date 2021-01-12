@@ -90,10 +90,16 @@ export default {
 			axios.get(this.loadSpaceUrl).then((response) => {
 				// console.debug(response.data)
 				this.spaceId = response.data.space_id
-				this.spaceUrl = generateUrl('/apps/integration_whiteboard/proxy')
-					+ '/spaces/' + response.data.space_id
-					+ '?spaceAuth=' + response.data.edit_hash
-					+ this.nicknameParam
+				this.spaceUrl = this.user
+					? generateUrl('/apps/integration_whiteboard/proxy')
+						+ '/spaces/' + this.fileid
+						+ '?spaceAuth=' + response.data.edit_hash
+						+ this.nicknameParam
+					: generateUrl('/apps/integration_whiteboard/proxy')
+						+ '/spaces/' + response.data.space_name
+						+ '?spaceAuth=' + response.data.edit_hash
+						+ this.nicknameParam
+						+ '&token=' + this.sharingToken
 				// TODO uncomment next line
 				// this.startSaveLoop()
 				// this method only exists when this component is loaded in the Viewer context
