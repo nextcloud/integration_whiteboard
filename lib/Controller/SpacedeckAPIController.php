@@ -86,8 +86,10 @@ class SpacedeckAPIController extends Controller {
 	public function privateProxyGetMain(string $file_id, ?string $token = null): DataDisplayResponse {
 		error_log('fid '. $file_id. ' and token '. $token);
 		if (!is_null($this->userId) && !is_null($this->spacedeckApiService->getFileFromId($this->userId, $file_id))) {
+			error_log('============USER '.$this->userId);
 			return $this->proxyGet('spaces/' . $file_id);
 		} elseif (is_null($this->userId) && !is_null($token) && $this->isFileSharedWithToken($token, $file_id)) {
+			error_log('============public '.$token);
 			return $this->proxyGet('spaces/' . $file_id);
 		} else {
 			return new DataDisplayResponse('Unauthorized', 400);
@@ -101,7 +103,7 @@ class SpacedeckAPIController extends Controller {
 	 *
 	 */
 	public function privateProxyGet(string $path): DataDisplayResponse {
-		return $this->proxyGet($path);
+			return $this->proxyGet($path);
 	}
 
 	/**
@@ -111,7 +113,11 @@ class SpacedeckAPIController extends Controller {
 	 *
 	 */
 	public function privateProxyDelete(string $path): DataDisplayResponse {
-		return $this->proxyDelete($path);
+		if ($this->checkAuthHeaders()) {
+			return $this->proxyDelete($path);
+		} else {
+			return new DataDisplayResponse('Unauthorized!', 401);
+		}
 	}
 
 	/**
@@ -121,7 +127,11 @@ class SpacedeckAPIController extends Controller {
 	 *
 	 */
 	public function privateProxyPut(string $path): DataDisplayResponse {
-		return $this->proxyPut($path);
+		if ($this->checkAuthHeaders()) {
+			return $this->proxyPut($path);
+		} else {
+			return new DataDisplayResponse('Unauthorized!', 401);
+		}
 	}
 
 	/**
@@ -131,7 +141,24 @@ class SpacedeckAPIController extends Controller {
 	 *
 	 */
 	public function privateProxyPost(string $path): DataDisplayResponse {
-		return $this->proxyPost($path);
+		if ($this->checkAuthHeaders()) {
+			return $this->proxyPost($path);
+		} else {
+			return new DataDisplayResponse('Unauthorized!', 401);
+		}
+	}
+
+	private function checkAuthHeaders(): bool {
+		$spaceName = $_SERVER['HTTP_X_SPACEDECK_SPACE_NAME'] ?? null;
+		$shareToken = $_SERVER['HTTP_X_SPACEDECK_SPACE_TOKEN'] ?? null;
+		if (!is_null($this->userId) && !is_null($this->spacedeckApiService->getFileFromId($this->userId, $spaceName))) {
+			error_log('!!!!!!!!!!USER '.$this->userId);
+			return true;
+		} elseif (is_null($this->userId) && !is_null($shareToken) && $this->isFileSharedWithToken($shareToken, $spaceName)) {
+			error_log('!!!!!!!!!!PUBLIC '.$shareToken);
+			return true;
+		}
+		return false;
 	}
 
 	private function proxyGet(string $path) {
@@ -146,41 +173,17 @@ class SpacedeckAPIController extends Controller {
 			return new DataDisplayResponse($result['error'], 400);
 		} else {
 			$spdResponse = $result['response'];
-			// error_log('!!!!!!!!!!!!!!! '.$path. ' ' . $spdResponse->getHeaders()['Content-Type'][0]. ' OOOOOOOOO');
 			$content = $spdResponse->getBody();
-
-			$csp = new \OCP\AppFramework\Http\ContentSecurityPolicy();
-			$csp->allowInlineScript(true);
-			$csp->allowInlineStyle(true);
-			$csp->allowEvalScript(true);
-			//$csp->useJsNonce('');
-
-			$csp->addAllowedScriptDomain("*");
-			$csp->addAllowedStyleDomain('*');
-			$csp->addAllowedFontDomain('*');
-			$csp->addAllowedImageDomain('*');
-			$csp->addAllowedConnectDomain('*');
-			$csp->addAllowedMediaDomain('*');
-			$csp->addAllowedObjectDomain('*');
-			$csp->addAllowedFrameDomain('*');
-			$csp->addAllowedChildSrcDomain('*');
 
 			$h = $spdResponse->getHeaders();
 			$h['Content-Type'] = $spdResponse->getHeaders()['Content-Type'][0];
 			$h['content-security-policy'] = 'script-src * \'unsafe-eval\' \'unsafe-inline\'';
-			// error_log('LLLLLLL '.$spdResponse->getHeaders()['Content-Type'][0]);
-			// $response = new Response(200, $h, $content);
 			$response = new DataDisplayResponse($content, 200, $h);
-			// $response = new DataDisplayResponse($content);
-			// $response->setContentSecurityPolicy($csp);
-			// $response->setHeaders($h);
-			// $response->setHeaders($spdResponse->getHeaders());
 			return $response;
 		}
 	}
 
 	private function proxyDelete(string $path) {
-		// $spaceAuth = $_SERVER['HTTP_X_SPACEDECK_SPACE_AUTH'] ?? null;
 		$reqHeaders = getallheaders();
 		$url = 'http://localhost:9666/' . $path;
 		$result = $this->spacedeckApiService->basicRequest($url, [], 'DELETE', false, $reqHeaders);
@@ -188,23 +191,7 @@ class SpacedeckAPIController extends Controller {
 			return new DataDisplayResponse($result['error'], 400);
 		} else {
 			$spdResponse = $result['response'];
-			// error_log('!!!!!!!!!!!!!!! '.$path. ' ' . $spdResponse->getHeaders()['Content-Type'][0]. ' OOOOOOOOO');
 			$content = $spdResponse->getBody();
-
-			$csp = new \OCP\AppFramework\Http\ContentSecurityPolicy();
-			$csp->allowInlineScript(true);
-			$csp->allowInlineStyle(true);
-			$csp->allowEvalScript(true);
-
-			$csp->addAllowedScriptDomain("*");
-			$csp->addAllowedStyleDomain('*');
-			$csp->addAllowedFontDomain('*');
-			$csp->addAllowedImageDomain('*');
-			$csp->addAllowedConnectDomain('*');
-			$csp->addAllowedMediaDomain('*');
-			$csp->addAllowedObjectDomain('*');
-			$csp->addAllowedFrameDomain('*');
-			$csp->addAllowedChildSrcDomain('*');
 
 			$h = $spdResponse->getHeaders();
 			$h['Content-Type'] = $spdResponse->getHeaders()['Content-Type'][0];
@@ -215,10 +202,8 @@ class SpacedeckAPIController extends Controller {
 	}
 
 	private function proxyPut(string $path) {
-		// var_dump(file_get_contents('php://input'));
 		$body = file_get_contents('php://input');
 		$bodyArray = json_decode($body, true);
-		// $spaceAuth = $_SERVER['HTTP_X_SPACEDECK_SPACE_AUTH'] ?? null;
 		$reqHeaders = getallheaders();
 		$url = 'http://localhost:9666/' . $path;
 		$result = $this->spacedeckApiService->basicRequest($url, $bodyArray, 'PUT', false, $reqHeaders);
@@ -226,23 +211,7 @@ class SpacedeckAPIController extends Controller {
 			return new DataDisplayResponse($result['error'], 400);
 		} else {
 			$spdResponse = $result['response'];
-			// error_log('!!!!!!!!!!!!!!! '.$path. ' ' . $spdResponse->getHeaders()['Content-Type'][0]. ' OOOOOOOOO');
 			$content = $spdResponse->getBody();
-
-			$csp = new \OCP\AppFramework\Http\ContentSecurityPolicy();
-			$csp->allowInlineScript(true);
-			$csp->allowInlineStyle(true);
-			$csp->allowEvalScript(true);
-
-			$csp->addAllowedScriptDomain("*");
-			$csp->addAllowedStyleDomain('*');
-			$csp->addAllowedFontDomain('*');
-			$csp->addAllowedImageDomain('*');
-			$csp->addAllowedConnectDomain('*');
-			$csp->addAllowedMediaDomain('*');
-			$csp->addAllowedObjectDomain('*');
-			$csp->addAllowedFrameDomain('*');
-			$csp->addAllowedChildSrcDomain('*');
 
 			$h = $spdResponse->getHeaders();
 			$h['Content-Type'] = $spdResponse->getHeaders()['Content-Type'][0];

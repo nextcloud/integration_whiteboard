@@ -95,11 +95,13 @@ export default {
 						+ '/spaces/' + this.fileid
 						+ '?spaceAuth=' + response.data.edit_hash
 						+ this.nicknameParam
+						+ '&spaceName=' + response.data.space_name
 					: generateUrl('/apps/integration_whiteboard/proxy')
 						+ '/spaces/' + response.data.space_name
 						+ '?spaceAuth=' + response.data.edit_hash
 						+ this.nicknameParam
 						+ '&token=' + this.sharingToken
+						+ '&spaceName=' + response.data.space_name
 				// TODO uncomment next line
 				// this.startSaveLoop()
 				// this method only exists when this component is loaded in the Viewer context
