@@ -4,8 +4,51 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ebb9a79e1d564777f13dfc159a63d45e",
+    "content-hash": "edcf23034cb75add4b75a339067b5184",
     "packages": [
+        {
+            "name": "evenement/evenement",
+            "version": "v3.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/igorw/evenement.git",
+                "reference": "531bfb9d15f8aa57454f5f0285b18bec903b8fb7"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/igorw/evenement/zipball/531bfb9d15f8aa57454f5f0285b18bec903b8fb7",
+                "reference": "531bfb9d15f8aa57454f5f0285b18bec903b8fb7",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^6.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-0": {
+                    "Evenement": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Igor Wiedler",
+                    "email": "igor@wiedler.ch"
+                }
+            ],
+            "description": "Événement is a very simple event dispatching library for PHP",
+            "keywords": [
+                "event-dispatcher",
+                "event-emitter"
+            ],
+            "time": "2017-07-23T21:35:13+00:00"
+        },
         {
             "name": "guzzlehttp/guzzle",
             "version": "6.5.5",
@@ -651,6 +694,522 @@
             ],
             "description": "A polyfill for getallheaders.",
             "time": "2019-03-08T08:55:37+00:00"
+        },
+        {
+            "name": "ratchet/pawl",
+            "version": "v0.3.5",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/ratchetphp/Pawl.git",
+                "reference": "89ec703c76dc893484a2a0ed44b48a37d445abd5"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/ratchetphp/Pawl/zipball/89ec703c76dc893484a2a0ed44b48a37d445abd5",
+                "reference": "89ec703c76dc893484a2a0ed44b48a37d445abd5",
+                "shasum": ""
+            },
+            "require": {
+                "evenement/evenement": "^3.0 || ^2.0",
+                "php": ">=5.4",
+                "ratchet/rfc6455": "^0.3",
+                "react/socket": "^1.0 || ^0.8 || ^0.7"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "~4.8"
+            },
+            "suggest": {
+                "reactivex/rxphp": "~2.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Ratchet\\Client\\": "src"
+                },
+                "files": [
+                    "src/functions_include.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "Asynchronous WebSocket client",
+            "keywords": [
+                "Ratchet",
+                "async",
+                "client",
+                "websocket",
+                "websocket client"
+            ],
+            "time": "2020-07-17T15:32:47+00:00"
+        },
+        {
+            "name": "ratchet/rfc6455",
+            "version": "v0.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/ratchetphp/RFC6455.git",
+                "reference": "c8651c7938651c2d55f5d8c2422ac5e57a183341"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/ratchetphp/RFC6455/zipball/c8651c7938651c2d55f5d8c2422ac5e57a183341",
+                "reference": "c8651c7938651c2d55f5d8c2422ac5e57a183341",
+                "shasum": ""
+            },
+            "require": {
+                "guzzlehttp/psr7": "^1.0",
+                "php": ">=5.4.2"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "5.7.*",
+                "react/socket": "^1.3"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Ratchet\\RFC6455\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Chris Boden",
+                    "email": "cboden@gmail.com",
+                    "role": "Developer"
+                },
+                {
+                    "name": "Matt Bonneau",
+                    "role": "Developer"
+                }
+            ],
+            "description": "RFC6455 WebSocket protocol handler",
+            "homepage": "http://socketo.me",
+            "keywords": [
+                "WebSockets",
+                "rfc6455",
+                "websocket"
+            ],
+            "time": "2020-05-15T18:31:24+00:00"
+        },
+        {
+            "name": "react/cache",
+            "version": "v1.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/reactphp/cache.git",
+                "reference": "44a568925556b0bd8cacc7b49fb0f1cf0d706a0c"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/reactphp/cache/zipball/44a568925556b0bd8cacc7b49fb0f1cf0d706a0c",
+                "reference": "44a568925556b0bd8cacc7b49fb0f1cf0d706a0c",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.0",
+                "react/promise": "^3.0 || ^2.0 || ^1.1"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^9.3 || ^5.7 || ^4.8.35"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "React\\Cache\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Christian Lück",
+                    "email": "christian@clue.engineering",
+                    "homepage": "https://clue.engineering/"
+                },
+                {
+                    "name": "Cees-Jan Kiewiet",
+                    "email": "reactphp@ceesjankiewiet.nl",
+                    "homepage": "https://wyrihaximus.net/"
+                },
+                {
+                    "name": "Jan Sorgalla",
+                    "email": "jsorgalla@gmail.com",
+                    "homepage": "https://sorgalla.com/"
+                },
+                {
+                    "name": "Chris Boden",
+                    "email": "cboden@gmail.com",
+                    "homepage": "https://cboden.dev/"
+                }
+            ],
+            "description": "Async, Promise-based cache interface for ReactPHP",
+            "keywords": [
+                "cache",
+                "caching",
+                "promise",
+                "reactphp"
+            ],
+            "funding": [
+                {
+                    "url": "https://github.com/WyriHaximus",
+                    "type": "github"
+                },
+                {
+                    "url": "https://github.com/clue",
+                    "type": "github"
+                }
+            ],
+            "time": "2020-09-18T12:12:35+00:00"
+        },
+        {
+            "name": "react/dns",
+            "version": "v1.4.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/reactphp/dns.git",
+                "reference": "665260757171e2ab17485b44e7ffffa7acb6ca1f"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/reactphp/dns/zipball/665260757171e2ab17485b44e7ffffa7acb6ca1f",
+                "reference": "665260757171e2ab17485b44e7ffffa7acb6ca1f",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.0",
+                "react/cache": "^1.0 || ^0.6 || ^0.5",
+                "react/event-loop": "^1.0 || ^0.5",
+                "react/promise": "^3.0 || ^2.7 || ^1.2.1",
+                "react/promise-timer": "^1.2"
+            },
+            "require-dev": {
+                "clue/block-react": "^1.2",
+                "phpunit/phpunit": "^9.3 || ^4.8.35"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "React\\Dns\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Christian Lück",
+                    "email": "christian@clue.engineering",
+                    "homepage": "https://clue.engineering/"
+                },
+                {
+                    "name": "Cees-Jan Kiewiet",
+                    "email": "reactphp@ceesjankiewiet.nl",
+                    "homepage": "https://wyrihaximus.net/"
+                },
+                {
+                    "name": "Jan Sorgalla",
+                    "email": "jsorgalla@gmail.com",
+                    "homepage": "https://sorgalla.com/"
+                },
+                {
+                    "name": "Chris Boden",
+                    "email": "cboden@gmail.com",
+                    "homepage": "https://cboden.dev/"
+                }
+            ],
+            "description": "Async DNS resolver for ReactPHP",
+            "keywords": [
+                "async",
+                "dns",
+                "dns-resolver",
+                "reactphp"
+            ],
+            "funding": [
+                {
+                    "url": "https://github.com/WyriHaximus",
+                    "type": "github"
+                },
+                {
+                    "url": "https://github.com/clue",
+                    "type": "github"
+                }
+            ],
+            "time": "2020-09-18T12:12:55+00:00"
+        },
+        {
+            "name": "react/event-loop",
+            "version": "v1.1.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/reactphp/event-loop.git",
+                "reference": "6d24de090cd59cfc830263cfba965be77b563c13"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/reactphp/event-loop/zipball/6d24de090cd59cfc830263cfba965be77b563c13",
+                "reference": "6d24de090cd59cfc830263cfba965be77b563c13",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^7.0 || ^6.4 || ^5.7 || ^4.8.35"
+            },
+            "suggest": {
+                "ext-event": "~1.0 for ExtEventLoop",
+                "ext-pcntl": "For signal handling support when using the StreamSelectLoop",
+                "ext-uv": "* for ExtUvLoop"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "React\\EventLoop\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "ReactPHP's core reactor event loop that libraries can use for evented I/O.",
+            "keywords": [
+                "asynchronous",
+                "event-loop"
+            ],
+            "time": "2020-01-01T18:39:52+00:00"
+        },
+        {
+            "name": "react/promise",
+            "version": "v2.8.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/reactphp/promise.git",
+                "reference": "f3cff96a19736714524ca0dd1d4130de73dbbbc4"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/reactphp/promise/zipball/f3cff96a19736714524ca0dd1d4130de73dbbbc4",
+                "reference": "f3cff96a19736714524ca0dd1d4130de73dbbbc4",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.4.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^7.0 || ^6.5 || ^5.7 || ^4.8.36"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "React\\Promise\\": "src/"
+                },
+                "files": [
+                    "src/functions_include.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Jan Sorgalla",
+                    "email": "jsorgalla@gmail.com"
+                }
+            ],
+            "description": "A lightweight implementation of CommonJS Promises/A for PHP",
+            "keywords": [
+                "promise",
+                "promises"
+            ],
+            "time": "2020-05-12T15:16:56+00:00"
+        },
+        {
+            "name": "react/promise-timer",
+            "version": "v1.6.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/reactphp/promise-timer.git",
+                "reference": "daee9baf6ef30c43ea4c86399f828bb5f558f6e6"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/reactphp/promise-timer/zipball/daee9baf6ef30c43ea4c86399f828bb5f558f6e6",
+                "reference": "daee9baf6ef30c43ea4c86399f828bb5f558f6e6",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3",
+                "react/event-loop": "^1.0 || ^0.5 || ^0.4 || ^0.3.5",
+                "react/promise": "^3.0 || ^2.7.0 || ^1.2.1"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^9.0 || ^5.7 || ^4.8.35"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "React\\Promise\\Timer\\": "src/"
+                },
+                "files": [
+                    "src/functions_include.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Christian Lück",
+                    "email": "christian@lueck.tv"
+                }
+            ],
+            "description": "A trivial implementation of timeouts for Promises, built on top of ReactPHP.",
+            "homepage": "https://github.com/reactphp/promise-timer",
+            "keywords": [
+                "async",
+                "event-loop",
+                "promise",
+                "reactphp",
+                "timeout",
+                "timer"
+            ],
+            "time": "2020-07-10T12:18:06+00:00"
+        },
+        {
+            "name": "react/socket",
+            "version": "v1.6.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/reactphp/socket.git",
+                "reference": "e2b96b23a13ca9b41ab343268dbce3f8ef4d524a"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/reactphp/socket/zipball/e2b96b23a13ca9b41ab343268dbce3f8ef4d524a",
+                "reference": "e2b96b23a13ca9b41ab343268dbce3f8ef4d524a",
+                "shasum": ""
+            },
+            "require": {
+                "evenement/evenement": "^3.0 || ^2.0 || ^1.0",
+                "php": ">=5.3.0",
+                "react/dns": "^1.1",
+                "react/event-loop": "^1.0 || ^0.5",
+                "react/promise": "^2.6.0 || ^1.2.1",
+                "react/promise-timer": "^1.4.0",
+                "react/stream": "^1.1"
+            },
+            "require-dev": {
+                "clue/block-react": "^1.2",
+                "phpunit/phpunit": "^9.3 || ^5.7 || ^4.8.35",
+                "react/promise-stream": "^1.2"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "React\\Socket\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Christian Lück",
+                    "email": "christian@clue.engineering",
+                    "homepage": "https://clue.engineering/"
+                },
+                {
+                    "name": "Cees-Jan Kiewiet",
+                    "email": "reactphp@ceesjankiewiet.nl",
+                    "homepage": "https://wyrihaximus.net/"
+                },
+                {
+                    "name": "Jan Sorgalla",
+                    "email": "jsorgalla@gmail.com",
+                    "homepage": "https://sorgalla.com/"
+                },
+                {
+                    "name": "Chris Boden",
+                    "email": "cboden@gmail.com",
+                    "homepage": "https://cboden.dev/"
+                }
+            ],
+            "description": "Async, streaming plaintext TCP/IP and secure TLS socket server and client connections for ReactPHP",
+            "keywords": [
+                "Connection",
+                "Socket",
+                "async",
+                "reactphp",
+                "stream"
+            ],
+            "funding": [
+                {
+                    "url": "https://github.com/WyriHaximus",
+                    "type": "github"
+                },
+                {
+                    "url": "https://github.com/clue",
+                    "type": "github"
+                }
+            ],
+            "time": "2020-08-28T12:49:05+00:00"
+        },
+        {
+            "name": "react/stream",
+            "version": "v1.1.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/reactphp/stream.git",
+                "reference": "7c02b510ee3f582c810aeccd3a197b9c2f52ff1a"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/reactphp/stream/zipball/7c02b510ee3f582c810aeccd3a197b9c2f52ff1a",
+                "reference": "7c02b510ee3f582c810aeccd3a197b9c2f52ff1a",
+                "shasum": ""
+            },
+            "require": {
+                "evenement/evenement": "^3.0 || ^2.0 || ^1.0",
+                "php": ">=5.3.8",
+                "react/event-loop": "^1.0 || ^0.5 || ^0.4 || ^0.3.5"
+            },
+            "require-dev": {
+                "clue/stream-filter": "~1.2",
+                "phpunit/phpunit": "^7.0 || ^6.4 || ^5.7 || ^4.8.35"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "React\\Stream\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "Event-driven readable and writable streams for non-blocking I/O in ReactPHP",
+            "keywords": [
+                "event-driven",
+                "io",
+                "non-blocking",
+                "pipe",
+                "reactphp",
+                "readable",
+                "stream",
+                "writable"
+            ],
+            "time": "2020-05-04T10:17:57+00:00"
         },
         {
             "name": "relay/relay",

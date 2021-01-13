@@ -29,6 +29,7 @@ use OCP\AppFramework\Http\DataDisplayResponse;
 use OCP\AppFramework\Controller;
 
 use OCA\Spacedeck\Service\SpacedeckAPIService;
+use OCA\Spacedeck\Service\SpacedeckWebsocketService;
 use OCA\Spacedeck\AppInfo\Application;
 
 if (!function_exists('getallheaders'))
@@ -64,6 +65,7 @@ class SpacedeckAPIController extends Controller {
 								IShareManager $shareManager,
 								LoggerInterface $logger,
 								SpacedeckAPIService $spacedeckApiService,
+								SpacedeckWebsocketService $spacedeckWebsocketService,
 								?string $userId) {
 		parent::__construct($AppName, $request);
 		$this->userId = $userId;
@@ -73,6 +75,7 @@ class SpacedeckAPIController extends Controller {
 		$this->config = $config;
 		$this->logger = $logger;
 		$this->spacedeckApiService = $spacedeckApiService;
+		$this->spacedeckWebsocketService = $spacedeckWebsocketService;
 		$this->apiToken = $this->config->getAppValue(Application::APP_ID, 'api_token', '');
 		$this->baseUrl = $this->config->getAppValue(Application::APP_ID, 'base_url', '');
 	}
@@ -163,9 +166,15 @@ class SpacedeckAPIController extends Controller {
 
 	private function proxyGet(string $path) {
 		if ($path === 'socket') {
-			return new DataDisplayResponse('impossible to forward socket', 400);
+			$this->spacedeckWebsocketService->proxySocket2();
+			$h = [
+				'Upgrade' => 'websocket',
+				'Sec-WebSocket-Accept' => 'iF65HlaFX55k9QY0n2DKaeX71yk=',
+				'Connection' => 'Upgrade',
+			];
+			error_log('SOSOSOSSOCKKCKCKCKCKCKCKCKC!!!!!!!!');
+			return new DataDisplayResponse('plop', 101, $h);
 		}
-		// HINT: set @PublicPage to be able to access outside NC
 		$reqHeaders = getallheaders();
 		$url = 'http://localhost:9666/' . $path;
 		$result = $this->spacedeckApiService->basicRequest($url, [], 'GET', false, $reqHeaders);
