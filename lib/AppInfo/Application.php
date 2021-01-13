@@ -69,41 +69,14 @@ class Application extends App implements IBootstrap {
 	public function updateCSP() {
 		$container = $this->getContainer();
 
-		$spacedeckUrl = $container->getServer()->getConfig()->getAppValue(self::APP_ID, 'base_url', '');
-		if ($spacedeckUrl === '') {
-			return;
-		}
+		// $spacedeckUrl = $container->getServer()->getConfig()->getAppValue(self::APP_ID, 'base_url', '');
+		// if ($spacedeckUrl === '') {
+		// 	return;
+		// }
 		$cspManager = $container->getServer()->getContentSecurityPolicyManager();
 		$policy = new ContentSecurityPolicy();
-		// $policy->addAllowedFrameDomain('\'self\'');
-		$policy->addAllowedFrameDomain($spacedeckUrl);
-
-		/**
-		 * Dynamically add CSP for federated editing
-		 */
-		// $path = '';
-		// try {
-		// 	$path = $container->getServer()->getRequest()->getPathInfo();
-		// } catch (\Exception $e) {}
-		// if (strpos($path, '/apps/files') === 0 && $container->getServer()->getAppManager()->isEnabledForUser('federation')) {
-		// 		/** @var FederationService $federationService */
-		// 		$federationService = \OC::$server->query(FederationService::class);
-
-		// 		// Always add trusted servers on global scale
-		// 		/** @var IConfig $globalScale */
-		// 		$globalScale = $container->query(IConfig::class);
-		// 		if ($globalScale->isGlobalScaleEnabled()) {
-		// 				$trustedList = \OC::$server->getConfig()->getSystemValue('gs.trustedHosts', []);
-		// 				foreach ($trustedList as $server) {
-		// 						$this->addTrustedRemote($policy, $server);
-		// 				}
-		// 		}
-		// 		$remoteAccess = $container->getServer()->getRequest()->getParam('richdocuments_remote_access');
-
-		// 		if ($remoteAccess && $federationService->isTrustedRemote($remoteAccess)) {
-		// 				$this->addTrustedRemote($policy, $remoteAccess);
-		// 		}
-		// }
+		$policy->addAllowedFrameDomain('\'self\'');
+		// $policy->addAllowedFrameDomain($spacedeckUrl);
 
 		$cspManager->addDefaultPolicy($policy);
 	}
