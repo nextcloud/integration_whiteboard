@@ -174,11 +174,12 @@ class SpacedeckAPIController extends Controller {
 		} else {
 			$spdResponse = $result['response'];
 			$content = $spdResponse->getBody();
+			$respCode = $spdResponse->getStatusCode();
 
 			$h = $spdResponse->getHeaders();
 			$h['Content-Type'] = $spdResponse->getHeaders()['Content-Type'][0];
 			$h['content-security-policy'] = 'script-src * \'unsafe-eval\' \'unsafe-inline\'';
-			$response = new DataDisplayResponse($content, 200, $h);
+			$response = new DataDisplayResponse($content, $respCode, $h);
 			return $response;
 		}
 	}
@@ -192,11 +193,12 @@ class SpacedeckAPIController extends Controller {
 		} else {
 			$spdResponse = $result['response'];
 			$content = $spdResponse->getBody();
+			$respCode = $spdResponse->getStatusCode();
 
 			$h = $spdResponse->getHeaders();
 			$h['Content-Type'] = $spdResponse->getHeaders()['Content-Type'][0];
 			$h['content-security-policy'] = 'script-src * \'unsafe-eval\' \'unsafe-inline\'';
-			$response = new DataDisplayResponse($content, 200, $h);
+			$response = new DataDisplayResponse($content, $respCode, $h);
 			return $response;
 		}
 	}
@@ -212,11 +214,12 @@ class SpacedeckAPIController extends Controller {
 		} else {
 			$spdResponse = $result['response'];
 			$content = $spdResponse->getBody();
+			$respCode = $spdResponse->getStatusCode();
 
 			$h = $spdResponse->getHeaders();
 			$h['Content-Type'] = $spdResponse->getHeaders()['Content-Type'][0];
 			$h['content-security-policy'] = 'script-src * \'unsafe-eval\' \'unsafe-inline\'';
-			$response = new DataDisplayResponse($content, 200, $h);
+			$response = new DataDisplayResponse($content, $respCode, $h);
 			return $response;
 		}
 	}
@@ -234,6 +237,7 @@ class SpacedeckAPIController extends Controller {
 		} else {
 			$spdResponse = $result['response'];
 			$content = $spdResponse->getBody();
+			$respCode = $spdResponse->getStatusCode();
 
 			$h = $spdResponse->getHeaders();
 			$h['Content-Type'] = $spdResponse->getHeaders()['Content-Type'][0];
@@ -242,7 +246,7 @@ class SpacedeckAPIController extends Controller {
 				error_log($h['Set-Cookie'][0]. ' !!!!!!!!!!');
 				$h['Set-Cookie'] = $h['Set-Cookie'][0];
 			}
-			$response = new DataDisplayResponse($content, 200, $h);
+			$response = new DataDisplayResponse($content, $respCode, $h);
 			return $response;
 		}
 	}
