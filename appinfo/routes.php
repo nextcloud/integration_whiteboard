@@ -21,11 +21,6 @@ return [
 		['name' => 'spacedeckAPI#privateProxyPut', 'url' => '/proxy/{path}', 'verb' => 'PUT', 'requirements' => ['path' => '.*']],
 		['name' => 'spacedeckAPI#privateProxyPost', 'url' => '/proxy/{path}', 'verb' => 'POST', 'requirements' => ['path' => '.*']],
 
-		// ['name' => 'spacedeckAPI#publicProxyGet', 'url' => '/proxy/{path}', 'verb' => 'GET', 'requirements' => ['path' => '.*']],
-		// ['name' => 'spacedeckAPI#publicProxyDelete', 'url' => '/proxy/{path}', 'verb' => 'DELETE', 'requirements' => ['path' => '.*']],
-		// ['name' => 'spacedeckAPI#publicProxyPut', 'url' => '/proxy/{path}', 'verb' => 'PUT', 'requirements' => ['path' => '.*']],
-		// ['name' => 'spacedeckAPI#publicProxyPost', 'url' => '/proxy/{path}', 'verb' => 'POST', 'requirements' => ['path' => '.*']],
-
 		// public share
 		['name' => 'spacedeckAPI#publicSaveSpaceToFile', 'url' => '/s/{token}/space/{space_id}/{file_id}', 'verb' => 'POST'],
 		['name' => 'spacedeckAPI#publicLoadSpaceFromFile', 'url' => '/s/{token}/space/{file_id}', 'verb' => 'GET'],

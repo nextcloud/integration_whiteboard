@@ -285,9 +285,12 @@ class SpacedeckAPIService {
 			} else {
 				return json_decode($body, true);
 			}
-		} catch (ServerException | ClientException | ConnectException $e) {
+		} catch (ServerException | ClientException $e) {
 			$response = $e->getResponse();
 			// $this->logger->warning('Spacedeck API error : '.$e->getMessage(), ['app' => $this->appName]);
+			return ['error' => $e->getMessage()];
+		} catch (ConnectException $e) {
+			$this->logger->warning('Spacedeck request connection error : '.$e->getMessage(), ['app' => $this->appName]);
 			return ['error' => $e->getMessage()];
 		}
 	}
@@ -338,9 +341,12 @@ class SpacedeckAPIService {
 					return ['response' => $response];
 				}
 			}
-		} catch (ServerException | ClientException | ConnectException $e) {
+		} catch (ServerException | ClientException $e) {
 			$response = $e->getResponse();
 			// $this->logger->warning('Spacedeck API error : '.$e->getMessage(), ['app' => $this->appName]);
+			return ['error' => $e->getMessage()];
+		} catch (ConnectException $e) {
+			$this->logger->warning('Spacedeck request connection error : '.$e->getMessage(), ['app' => $this->appName]);
 			return ['error' => $e->getMessage()];
 		}
 	}

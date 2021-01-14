@@ -228,7 +228,7 @@ class SpacedeckAPIController extends Controller {
 		// $spaceAuth = $_SERVER['HTTP_X_SPACEDECK_SPACE_AUTH'] ?? null;
 		$reqHeaders = getallheaders();
 		$url = 'http://localhost:9666/' . $path;
-		$result = $this->spacedeckApiService->basicRequest($url, $bodyArray, 'POST', false, $reqHeaders);
+		$result = $this->spacedeckApiService->basicRequest($url, $bodyArray ?: $body, 'POST', false, $reqHeaders);
 		if (isset($result['error'])) {
 			return new DataDisplayResponse($result['error'], 400);
 		} else {
