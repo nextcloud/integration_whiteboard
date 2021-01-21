@@ -103,7 +103,12 @@ class SpacedeckAPIController extends Controller {
 	 *
 	 */
 	public function privateProxyGet(string $path): DataDisplayResponse {
+		// check auth for /api/spaces/*
+		if (!preg_match('/^api\/spaces\/.*/', $path) || $this->checkAuthHeaders()) {
 			return $this->proxyGet($path);
+		} else {
+			return new DataDisplayResponse('Unauthorized!', 401);
+		}
 	}
 
 	/**
