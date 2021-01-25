@@ -182,7 +182,11 @@ class SpacedeckAPIController extends Controller {
 			$respCode = $spdResponse->getStatusCode();
 
 			$h = $spdResponse->getHeaders();
-			$h['Content-Type'] = $spdResponse->getHeaders()['Content-Type'][0];
+			foreach ($h as $k => $v) {
+				if (is_array($v)) {
+					$h[$k] = $v[0];
+				}
+			}
 			$h['content-security-policy'] = 'script-src * \'unsafe-eval\' \'unsafe-inline\'';
 			$response = new DataDisplayResponse($content, $respCode, $h);
 			return $response;
@@ -201,7 +205,11 @@ class SpacedeckAPIController extends Controller {
 			$respCode = $spdResponse->getStatusCode();
 
 			$h = $spdResponse->getHeaders();
-			$h['Content-Type'] = $spdResponse->getHeaders()['Content-Type'][0];
+			foreach ($h as $k => $v) {
+				if (is_array($v)) {
+					$h[$k] = $v[0];
+				}
+			}
 			$h['content-security-policy'] = 'script-src * \'unsafe-eval\' \'unsafe-inline\'';
 			$response = new DataDisplayResponse($content, $respCode, $h);
 			return $response;
@@ -222,7 +230,11 @@ class SpacedeckAPIController extends Controller {
 			$respCode = $spdResponse->getStatusCode();
 
 			$h = $spdResponse->getHeaders();
-			$h['Content-Type'] = $spdResponse->getHeaders()['Content-Type'][0];
+			foreach ($h as $k => $v) {
+				if (is_array($v)) {
+					$h[$k] = $v[0];
+				}
+			}
 			$h['content-security-policy'] = 'script-src * \'unsafe-eval\' \'unsafe-inline\'';
 			$response = new DataDisplayResponse($content, $respCode, $h);
 			return $response;
@@ -251,7 +263,11 @@ class SpacedeckAPIController extends Controller {
 			$respCode = $spdResponse->getStatusCode();
 
 			$h = $spdResponse->getHeaders();
-			$h['Content-Type'] = $spdResponse->getHeaders()['Content-Type'][0];
+			foreach ($h as $k => $v) {
+				if (is_array($v)) {
+					$h[$k] = $v[0];
+				}
+			}
 			if ($path === 'api/sessions') {
 				error_log('API cookie');
 				error_log($h['Set-Cookie'][0]. ' !!!!!!!!!!');
