@@ -79,8 +79,8 @@ export default {
 
 	destroyed() {
 		console.debug('DESTROYED')
-		this.saveSpace()
 		this.stopSaveLoop()
+		// this.saveSpace()
 	},
 
 	methods: {

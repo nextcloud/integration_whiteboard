@@ -200,6 +200,11 @@ class SpacedeckAPIController extends Controller {
 		if (isset($result['error'])) {
 			return new DataDisplayResponse($result['error'], 400);
 		} else {
+			// save if necessary
+			if (preg_match('/.*\/spaces\/.*\/artifacts\/.+$/', $path)) {
+				$this->saveSpace();
+			}
+
 			$spdResponse = $result['response'];
 			$content = $spdResponse->getBody();
 			$respCode = $spdResponse->getStatusCode();
@@ -225,6 +230,11 @@ class SpacedeckAPIController extends Controller {
 		if (isset($result['error'])) {
 			return new DataDisplayResponse($result['error'], 400);
 		} else {
+			// save if necessary
+			if (preg_match('/.*\/spaces\/.*\/artifacts\/.+$/', $path)) {
+				$this->saveSpace();
+			}
+
 			$spdResponse = $result['response'];
 			$content = $spdResponse->getBody();
 			$respCode = $spdResponse->getStatusCode();
@@ -258,6 +268,11 @@ class SpacedeckAPIController extends Controller {
 		if (isset($result['error'])) {
 			return new DataDisplayResponse($result['error'], 400);
 		} else {
+			// save if necessary
+			if (preg_match('/.*\/artifacts$/', $path)) {
+				$this->saveSpace();
+			}
+
 			$spdResponse = $result['response'];
 			$content = $spdResponse->getBody();
 			$respCode = $spdResponse->getStatusCode();
@@ -278,8 +293,17 @@ class SpacedeckAPIController extends Controller {
 		}
 	}
 
+	private function saveSpace(): void {
+		$spaceName = $_SERVER['HTTP_X_SPACEDECK_SPACE_NAME'] ?? null;
+		$result = $this->spacedeckApiService->saveSpaceToFile(
+			$this->baseUrl, $this->apiToken, $this->userId, $spaceName, intval($spaceName)
+		);
+	}
+
 	/**
 	 * @NoAdminRequired
+	 *
+	 * Called by private pages
 	 *
 	 * @return DataResponse
 	 */
@@ -302,6 +326,8 @@ class SpacedeckAPIController extends Controller {
 	/**
 	 * @NoAdminRequired
 	 * @PublicPage
+	 *
+	 * Called by public pages
 	 *
 	 * @return DataResponse
 	 */

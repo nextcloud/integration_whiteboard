@@ -79,7 +79,12 @@ class SpacedeckAPIService {
 
 		$targetFile = $this->getFileFromId($userId, $file_id);
 		if ($targetFile) {
-			$targetFile->putContent($strContent);
+			// this produces a file version
+			// $targetFile->putContent($strContent);
+			// and this does NOT
+			$res = $targetFile->fopen('w');
+			fwrite($res, $strContent);
+			fclose($res);
 			return ['ok' => 1];
 		} else {
 			return ['error' => 'File does not exist'];
