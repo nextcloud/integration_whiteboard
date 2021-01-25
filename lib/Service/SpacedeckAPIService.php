@@ -298,7 +298,7 @@ class SpacedeckAPIService {
 	/**
 	 */
 	public function basicRequest(string $url, array $params = [], string $method = 'GET',
-								bool $jsonOutput = false, array $extraHeaders = []): array {
+								bool $jsonOutput = false, array $extraHeaders = [], ?string $stringBody = null): array {
 		try {
 			$options = [
 				'headers' => [
@@ -318,6 +318,8 @@ class SpacedeckAPIService {
 					$options['headers']['Content-Type'] = 'application/json';
 					$options['body'] = json_encode($params);
 				}
+			} elseif ($stringBody) {
+				$options['body'] = $stringBody;
 			}
 
 			if ($method === 'GET') {

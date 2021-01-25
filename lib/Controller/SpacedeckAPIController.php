@@ -84,12 +84,12 @@ class SpacedeckAPIController extends Controller {
 	 *
 	 */
 	public function privateProxyGetMain(string $file_id, ?string $token = null): DataDisplayResponse {
-		error_log('fid '. $file_id. ' and token '. $token);
+		// error_log('fid '. $file_id. ' and token '. $token);
 		if (!is_null($this->userId) && !is_null($this->spacedeckApiService->getFileFromId($this->userId, $file_id))) {
-			error_log('============USER '.$this->userId);
+			// error_log('============USER '.$this->userId);
 			return $this->proxyGet('spaces/' . $file_id);
 		} elseif (is_null($this->userId) && !is_null($token) && $this->isFileSharedWithToken($token, $file_id)) {
-			error_log('============public '.$token);
+			// error_log('============public '.$token);
 			return $this->proxyGet('spaces/' . $file_id);
 		} else {
 			return new DataDisplayResponse('Unauthorized', 400);
@@ -157,10 +157,10 @@ class SpacedeckAPIController extends Controller {
 		$spaceName = $_SERVER['HTTP_X_SPACEDECK_SPACE_NAME'] ?? null;
 		$shareToken = $_SERVER['HTTP_X_SPACEDECK_SPACE_TOKEN'] ?? null;
 		if (!is_null($this->userId) && !is_null($this->spacedeckApiService->getFileFromId($this->userId, $spaceName))) {
-			error_log('!!!!!!!!!!USER '.$this->userId);
+			// error_log('!!!!!!!!!!USER '.$this->userId);
 			return true;
 		} elseif (is_null($this->userId) && !is_null($shareToken) && $this->isFileSharedWithToken($shareToken, $spaceName)) {
-			error_log('!!!!!!!!!!PUBLIC '.$shareToken);
+			// error_log('!!!!!!!!!!PUBLIC '.$shareToken);
 			return true;
 		}
 		return false;
@@ -236,7 +236,13 @@ class SpacedeckAPIController extends Controller {
 		// $spaceAuth = $_SERVER['HTTP_X_SPACEDECK_SPACE_AUTH'] ?? null;
 		$reqHeaders = getallheaders();
 		$url = 'http://localhost:9666/' . $path;
-		$result = $this->spacedeckApiService->basicRequest($url, $bodyArray ?: $body, 'POST', false, $reqHeaders);
+		if (preg_match('/.*\/payload$/', $path)) {
+			$url .= '?filename=' . urlencode($_GET['filename']);
+			error_log('GGGET '.$_GET['filename'].' |||||');
+			error_log('PPPPPPPPPPPPPPPPPPPPP '.$url.' |||||||||||||||||');
+			//error_log($bodyArray ?: $body);
+		}
+		$result = $this->spacedeckApiService->basicRequest($url, $bodyArray ?: [], 'POST', false, $reqHeaders, $bodyArray ? null : $body);
 		if (isset($result['error'])) {
 			return new DataDisplayResponse($result['error'], 400);
 		} else {
