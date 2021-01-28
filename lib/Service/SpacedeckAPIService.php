@@ -17,6 +17,7 @@ use OCP\IConfig;
 use OCP\Files\IRootFolder;
 use OCP\Files\FileInfo;
 use OCP\Files\Node;
+use OCP\Lock\LockedException;
 use OCP\Http\Client\IClientService;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\ServerException;
@@ -58,31 +59,35 @@ class SpacedeckAPIService {
 	 * @return array success state
 	 */
 	public function saveSpaceToFile(string $baseUrl, string $apiToken, ?string $userId, string $space_id, int $file_id): array {
-		// get db content !!!OR!!! directly get json artifacts and json space
-		// endpoints:
-		// * GET spaces/space_id
-		// * GET spaces/space_id/artifacts
-		// write { space: space_response, artifacts: artifacts_response }
-		$space = $this->request($baseUrl, $apiToken, 'spaces/' . $space_id);
-		if (isset($space['error'])) {
-			return $space;
-		}
-		$artifacts = $this->request($baseUrl, $apiToken, 'spaces/' . $space_id . '/artifacts');
-		if (isset($artifacts['error'])) {
-			return $artifacts;
-		}
-		$content = [
-			'space' => $space,
-			'artifacts' => $artifacts,
-		];
-		$strContent = json_encode($content);
-
 		$targetFile = $this->getFileFromId($userId, $file_id);
 		if ($targetFile) {
+			try {
+				$res = $targetFile->fopen('w');
+			} catch (LockedException $e) {
+				return ['error' => 'File is locked'];
+			}
+
+			// get db content !!!OR!!! directly get json artifacts and json space
+			// endpoints:
+			// * GET spaces/space_id
+			// * GET spaces/space_id/artifacts
+			// write { space: space_response, artifacts: artifacts_response }
+			$space = $this->request($baseUrl, $apiToken, 'spaces/' . $space_id);
+			if (isset($space['error'])) {
+				return $space;
+			}
+			$artifacts = $this->request($baseUrl, $apiToken, 'spaces/' . $space_id . '/artifacts');
+			if (isset($artifacts['error'])) {
+				return $artifacts;
+			}
+			$content = [
+				'space' => $space,
+				'artifacts' => $artifacts,
+			];
+			$strContent = json_encode($content);
+
 			// this produces a file version
 			// $targetFile->putContent($strContent);
-			// and this does NOT
-			$res = $targetFile->fopen('w');
 			fwrite($res, $strContent);
 			fclose($res);
 			return ['ok' => 1];
