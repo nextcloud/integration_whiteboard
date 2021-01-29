@@ -5,7 +5,11 @@
 			{{ t('integration_whiteboard', 'Spacedeck whiteboard integration') }}
 		</h2>
 		<p class="settings-hint">
-			{{ t('integration_whiteboard', 'Create a dedicated user in Spacedeck and set an API token in user account settings.') }}
+			<span class="icon icon-details" />
+			{{ t('integration_whiteboard', 'Leave those values empty to use the default included Spacedeck server.') }}
+		</p>
+		<p class="settings-hint">
+			{{ t('integration_whiteboard', 'If you set up Spacedeck yourself, create a dedicated user in Spacedeck and set an API token in user account settings.') }}
 		</p>
 		<div class="grid-form">
 			<label for="spacedeck-baseurl">

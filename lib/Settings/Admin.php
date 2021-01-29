@@ -12,6 +12,8 @@ use OCP\IInitialStateService;
 
 use OCA\Spacedeck\AppInfo\Application;
 
+require_once __DIR__ . '/../constants.php';
+
 class Admin implements ISettings {
 
 	private $request;

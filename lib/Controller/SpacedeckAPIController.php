@@ -31,6 +31,8 @@ use OCP\AppFramework\Controller;
 use OCA\Spacedeck\Service\SpacedeckAPIService;
 use OCA\Spacedeck\AppInfo\Application;
 
+require_once __DIR__ . '/../constants.php';
+
 if (!function_exists('getallheaders'))
 {
 	// polyfill, e.g. on PHP 7.2 setups with nginx.
@@ -73,8 +75,10 @@ class SpacedeckAPIController extends Controller {
 		$this->config = $config;
 		$this->logger = $logger;
 		$this->spacedeckApiService = $spacedeckApiService;
-		$this->apiToken = $this->config->getAppValue(Application::APP_ID, 'api_token', '');
-		$this->baseUrl = $this->config->getAppValue(Application::APP_ID, 'base_url', '');
+		$this->apiToken = $this->config->getAppValue(Application::APP_ID, 'api_token', DEFAULT_SPACEDECK_API_KEY);
+		$this->apiToken = $this->apiToken ?: DEFAULT_SPACEDECK_API_KEY;
+		$this->baseUrl = $this->config->getAppValue(Application::APP_ID, 'base_url', DEFAULT_SPACEDECK_URL);
+		$this->baseUrl = $this->baseUrl ?: DEFAULT_SPACEDECK_URL;
 	}
 
 	/**
@@ -157,10 +161,8 @@ class SpacedeckAPIController extends Controller {
 		$spaceName = $_SERVER['HTTP_X_SPACEDECK_SPACE_NAME'] ?? null;
 		$shareToken = $_SERVER['HTTP_X_SPACEDECK_SPACE_TOKEN'] ?? null;
 		if (!is_null($this->userId) && !is_null($this->spacedeckApiService->getFileFromId($this->userId, $spaceName))) {
-			// error_log('!!!!!!!!!!USER '.$this->userId);
 			return true;
 		} elseif (is_null($this->userId) && !is_null($shareToken) && $this->isFileSharedWithToken($shareToken, $spaceName)) {
-			// error_log('!!!!!!!!!!PUBLIC '.$shareToken);
 			return true;
 		}
 		return false;
@@ -172,7 +174,7 @@ class SpacedeckAPIController extends Controller {
 		}
 		// HINT: set @PublicPage to be able to access outside NC
 		$reqHeaders = getallheaders();
-		$url = 'http://localhost:9666/' . $path;
+		$url = $this->baseUrl . '/' . $path;
 		$result = $this->spacedeckApiService->basicRequest($url, [], 'GET', false, $reqHeaders);
 		if (isset($result['error'])) {
 			return new DataDisplayResponse($result['error'], 400);
@@ -195,7 +197,7 @@ class SpacedeckAPIController extends Controller {
 
 	private function proxyDelete(string $path) {
 		$reqHeaders = getallheaders();
-		$url = 'http://localhost:9666/' . $path;
+		$url = $this->baseUrl . '/' . $path;
 		$result = $this->spacedeckApiService->basicRequest($url, [], 'DELETE', false, $reqHeaders);
 		if (isset($result['error'])) {
 			return new DataDisplayResponse($result['error'], 400);
@@ -225,7 +227,7 @@ class SpacedeckAPIController extends Controller {
 		$body = file_get_contents('php://input');
 		$bodyArray = json_decode($body, true);
 		$reqHeaders = getallheaders();
-		$url = 'http://localhost:9666/' . $path;
+		$url = $this->baseUrl . '/' . $path;
 		$result = $this->spacedeckApiService->basicRequest($url, $bodyArray, 'PUT', false, $reqHeaders);
 		if (isset($result['error'])) {
 			return new DataDisplayResponse($result['error'], 400);
@@ -252,17 +254,13 @@ class SpacedeckAPIController extends Controller {
 	}
 
 	private function proxyPost(string $path) {
-		// var_dump(file_get_contents('php://input'));
 		$body = file_get_contents('php://input');
 		$bodyArray = json_decode($body, true);
-		// $spaceAuth = $_SERVER['HTTP_X_SPACEDECK_SPACE_AUTH'] ?? null;
 		$reqHeaders = getallheaders();
-		$url = 'http://localhost:9666/' . $path;
+		$url = $this->baseUrl . '/' . $path;
+		// don't miss the get param in post request...
 		if (preg_match('/.*\/payload$/', $path)) {
 			$url .= '?filename=' . urlencode($_GET['filename']);
-			error_log('GGGET '.$_GET['filename'].' |||||');
-			error_log('PPPPPPPPPPPPPPPPPPPPP '.$url.' |||||||||||||||||');
-			//error_log($bodyArray ?: $body);
 		}
 		$result = $this->spacedeckApiService->basicRequest($url, $bodyArray ?: [], 'POST', false, $reqHeaders, $bodyArray ? null : $body);
 		if (isset($result['error'])) {
@@ -284,8 +282,6 @@ class SpacedeckAPIController extends Controller {
 				}
 			}
 			if ($path === 'api/sessions') {
-				error_log('API cookie');
-				error_log($h['Set-Cookie'][0]. ' !!!!!!!!!!');
 				$h['Set-Cookie'] = $h['Set-Cookie'][0];
 			}
 			$response = new DataDisplayResponse($content, $respCode, $h);

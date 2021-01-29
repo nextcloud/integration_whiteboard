@@ -40,7 +40,6 @@ export default {
 		return {
 			spaceId: null,
 			spaceUrl: '',
-			loop: null,
 			user: getCurrentUser(),
 		}
 	},
@@ -79,8 +78,6 @@ export default {
 
 	destroyed() {
 		console.debug('DESTROYED')
-		this.stopSaveLoop()
-		// this.saveSpace()
 	},
 
 	methods: {
@@ -88,7 +85,6 @@ export default {
 			console.debug(this.loadSpaceUrl)
 			// load the file into spacedeck (only if no related space exists)
 			axios.get(this.loadSpaceUrl).then((response) => {
-				// console.debug(response.data)
 				this.spaceId = response.data.space_id
 				this.spaceUrl = this.user
 					? generateUrl('/apps/integration_whiteboard/proxy')
@@ -102,8 +98,6 @@ export default {
 						+ this.nicknameParam
 						+ '&token=' + this.sharingToken
 						+ '&spaceName=' + response.data.space_name
-				// TODO uncomment next line
-				// this.startSaveLoop()
 				// this method only exists when this component is loaded in the Viewer context
 				if (this.doneLoading) {
 					this.doneLoading()
@@ -128,24 +122,6 @@ export default {
 			// const doc = this.$refs.frame.contentDocument
 			// doc.body.innerHTML = doc.body.innerHTML + style
 			// this.$refs.frame.append('style', style)
-		},
-		startSaveLoop() {
-			this.loop = setInterval(() => this.saveSpace(), 30000)
-		},
-		stopSaveLoop() {
-			clearInterval(this.loop)
-		},
-		saveSpace() {
-			if (this.spaceUrl) {
-				axios.post(this.saveSpaceUrl).then((response) => {
-					console.debug('SAVED')
-					console.debug(response.data)
-				}).catch((error) => {
-					console.error(error)
-					this.stopSaveLoop()
-					showError(t('integration_spacedeck', 'Error while saving Spacedeck whiteboard'))
-				})
-			}
 		},
 		openSidebar() {
 			/*

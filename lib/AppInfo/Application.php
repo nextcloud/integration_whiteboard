@@ -46,7 +46,7 @@ class Application extends App implements IBootstrap {
 		$server = $container->getServer();
 		$eventDispatcher = $server->getEventDispatcher();
 		$this->addPrivateListeners($eventDispatcher);
-		$this->updateCSP();
+		// $this->updateCSP();
 	}
 
 	protected function addPrivateListeners($eventDispatcher) {
@@ -66,17 +66,15 @@ class Application extends App implements IBootstrap {
 		Util::addStyle(self::APP_ID, 'style');
 	}
 
+	/**
+	 * this might have been necessary in the past
+	 */
 	public function updateCSP() {
 		$container = $this->getContainer();
 
-		// $spacedeckUrl = $container->getServer()->getConfig()->getAppValue(self::APP_ID, 'base_url', '');
-		// if ($spacedeckUrl === '') {
-		// 	return;
-		// }
 		$cspManager = $container->getServer()->getContentSecurityPolicyManager();
 		$policy = new ContentSecurityPolicy();
 		$policy->addAllowedFrameDomain('\'self\'');
-		// $policy->addAllowedFrameDomain($spacedeckUrl);
 
 		$cspManager->addDefaultPolicy($policy);
 	}
