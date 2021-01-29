@@ -4,7 +4,7 @@
     <name>Whiteboard integration</name>
     <summary>Collaborative whiteboard integration</summary>
     <description><![CDATA[Whiteboard integration allows you to create whiteboards.]]></description>
-    <version>0.0.2</version>
+    <version>0.0.3</version>
     <licence>agpl</licence>
     <author>Julien Veyssier</author>
     <namespace>Spacedeck</namespace>
@@ -28,6 +28,10 @@
     <repair-steps>
         <install>
             <step>OCA\Spacedeck\Migration\RegisterMimeType</step>
+            <step>OCA\Spacedeck\Migration\CopySpacedeckAppData</step>
         </install>
+        <post-migration>
+            <step>OCA\Spacedeck\Migration\CopySpacedeckAppData</step>
+        </post-migration>
     </repair-steps>
 </info>

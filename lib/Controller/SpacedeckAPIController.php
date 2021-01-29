@@ -353,6 +353,7 @@ class SpacedeckAPIController extends Controller {
 	 * @return DataResponse
 	 */
 	public function loadSpaceFromFile(int $file_id): DataResponse {
+		error_log('API controller => loadSpaceFromFile');
 		if (!$this->apiToken || !$this->baseUrl) {
 			return new DataResponse('Spacedeck not configured', 400);
 		}

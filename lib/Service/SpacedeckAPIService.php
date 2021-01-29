@@ -23,6 +23,7 @@ use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\ServerException;
 use GuzzleHttp\Exception\ConnectException;
 
+use OCA\Spacedeck\Service\SpacedeckBundleService;
 use OCA\Spacedeck\AppInfo\Application;
 
 class SpacedeckAPIService {
@@ -38,6 +39,7 @@ class SpacedeckAPIService {
 								LoggerInterface $logger,
 								IL10N $l10n,
 								IConfig $config,
+								SpacedeckBundleService $spacedeckBundleService,
 								IClientService $clientService) {
 		$this->appName = $appName;
 		$this->l10n = $l10n;
@@ -46,6 +48,7 @@ class SpacedeckAPIService {
 		$this->root = $root;
 		$this->clientService = $clientService;
 		$this->client = $clientService->newClient();
+		$this->spacedeckBundleService = $spacedeckBundleService;
 	}
 
 	/**
@@ -108,6 +111,9 @@ class SpacedeckAPIService {
 	 * @return array error or space information
 	 */
 	public function loadSpaceFromFile(string $baseUrl, string $apiToken, ?string $userId, int $file_id): array {
+		error_log('WILL LAUNCH   ');
+		$pid = $this->spacedeckBundleService->launchSpacedeck();
+		error_log('LAUNCH SPACEDECK PID ' . $pid);
 		// load file json content
 		$file = $this->getFileFromId($userId, $file_id);
 		if (is_null($file)) {
