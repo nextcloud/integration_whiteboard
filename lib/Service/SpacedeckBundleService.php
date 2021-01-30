@@ -40,9 +40,11 @@ function recursiveDelete($str) {
 	if (is_file($str)) {
 		return @unlink($str);
 	} elseif (is_dir($str)) {
-		$scan = glob(rtrim($str, '/') . '/*');
-		foreach ($scan as $index=>$path) {
-			recursiveDelete($path);
+		$scan = glob(rtrim($str, '/') . '/{,.}*', GLOB_BRACE);
+		foreach ($scan as $index => $path) {
+			if (!preg_match('/.*\/\.+$/', $path)) {
+				recursiveDelete($path);
+			}
 		}
 		return @rmdir($str);
 	}
@@ -176,11 +178,15 @@ class SpacedeckBundleService {
 		// keep old storage and database
 		if (is_dir($this->appDataDirPath . '.bak')) {
 			if (is_dir($this->appDataDirPath . '.bak/storage')) {
-				recursiveDelete($this->appDataDirPath . '/storage');
+				if (is_dir($this->appDataDirPath . '/storage')) {
+					recursiveDelete($this->appDataDirPath . '/storage');
+				}
 				recursiveCopy($this->appDataDirPath . '.bak/storage', $this->appDataDirPath . '/storage');
 			}
 			if (file_exists($this->appDataDirPath . '.bak/database.sqlite')) {
-				unlink($this->appDataDirPath . '/database.sqlite');
+				if (file_exists($this->appDataDirPath . '/database.sqlite')) {
+					unlink($this->appDataDirPath . '/database.sqlite');
+				}
 				copy($this->appDataDirPath . '.bak/database.sqlite', $this->appDataDirPath . '/database.sqlite');
 			}
 			recursiveDelete($this->appDataDirPath . '.bak');
