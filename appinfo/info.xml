@@ -33,5 +33,8 @@
         <post-migration>
             <step>OCA\Spacedeck\Migration\CopySpacedeckAppData</step>
         </post-migration>
+        <uninstall>
+            <step>OCA\Spacedeck\Migration\StopSpacedeck</step>
+        </uninstall>
     </repair-steps>
 </info>

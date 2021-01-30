@@ -23,18 +23,18 @@ use OCP\IURLGenerator;
 use OCA\Spacedeck\AppInfo\Application;
 
 function recursiveCopy($src, $dst) {
-    $dir = opendir($src);
-    @mkdir($dst);
-    while (($file = readdir($dir)) !== false) {
-        if (($file !== '.') && ($file !== '..')) {
-            if (is_dir($src . '/' . $file)) {
-                recursiveCopy($src . '/' . $file, $dst . '/' . $file);
-            } else {
-                copy($src . '/' . $file, $dst . '/' . $file);
-            }
-        }
-    }
-    closedir($dir);
+	$dir = opendir($src);
+	@mkdir($dst);
+	while (($file = readdir($dir)) !== false) {
+		if (($file !== '.') && ($file !== '..')) {
+			if (is_dir($src . '/' . $file)) {
+				recursiveCopy($src . '/' . $file, $dst . '/' . $file);
+			} else {
+				copy($src . '/' . $file, $dst . '/' . $file);
+			}
+		}
+	}
+	closedir($dir);
 }
 
 function recursiveDelete($str) {
@@ -121,21 +121,24 @@ class SpacedeckBundleService {
 		return (count($pids) > 0) ? $pids[0] : null;
 	}
 
-	private function killSpacedeck(): ?int {
-		$cmd = 'ps x -o user,pid,args';
-		$cmdResult = $this->runCommand($cmd);
-		if ($cmdResult && isset($cmdResult['return_code']) && $cmdResult['return_code'] === 0) {
-			$lines = explode("\n", $cmdResult['stdout']);
-			foreach ($lines as $l) {
-				if (preg_match('/spacedeck.*\.bin/i', $l)) {
-					$items = preg_split('/\s+/', $l);
-					if (count($items) > 1 && is_numeric($items[1])) {
-						return (int) $items[1];
-					}
-				}
-			}
+	public function killSpacedeck(): bool {
+		$pids = $this->getSpacedeckPids();
+		foreach ($pids as $pid) {
+			$this->killOneSpacedeck($pid);
 		}
-		return null;
+		return !$this->spacedeckIsRunning();
+	}
+
+	/**
+	 * Utility to kill a process
+	 *
+	 * @param int $pid the process ID to kill
+	 * @return bool if it was successfully killed
+	 */
+	private function killOneSpacedeck(int $pid): bool {
+		// kill
+		$cmdResult = $this->runCommand(sprintf('kill -9 %d', $pid));
+		return !is_null($cmdResult) && $cmdResult['return_code'] === 0;
 	}
 
 	public function launchSpacedeck(): ?int {
@@ -146,7 +149,6 @@ class SpacedeckBundleService {
 			$binaryName = 'spacedeck.pkg.bin';
 			$outputName = 'spacedeck.log';
 			$cmd = sprintf('cd "%s" ; nice -n19 ./%s > %s 2>&1 & echo $!', $binaryDirPath, $binaryName, $outputName);
-			error_log('!! CMD : ' . $cmd . ' !!');
 			$cmdResult = $this->runCommand($cmd);
 			if (!is_null($cmdResult) && $cmdResult['return_code'] === 0 && is_numeric($cmdResult['stdout'] ?? 0)) {
 				sleep(5);
@@ -191,7 +193,7 @@ class SpacedeckBundleService {
 				if (is_dir($this->appDataDirPath . '/storage')) {
 					recursiveDelete($this->appDataDirPath . '/storage');
 				}
-				recursiveCopy($this->appDataDirPath . '.bak/storage', $this->appDataDirPath . '/storage');
+				rename($this->appDataDirPath . '.bak/storage', $this->appDataDirPath . '/storage');
 			}
 			if (file_exists($this->appDataDirPath . '.bak/database.sqlite')) {
 				if (file_exists($this->appDataDirPath . '/database.sqlite')) {
