@@ -17,4 +17,6 @@ rm -rf spacedeck/storage spacedeck/database.sqlite
 cp database.sqlite spacedeck/
 # cleanup
 cd spacedeck
-rm -rf .dockerignore .git/ .github/ .gitignore Dockerfile spacedeck.nexe.bin
+rm -rf .dockerignore .git/ .github/ .gitignore Dockerfile spacedeck.nexe.bin spacedeck.pkg.bin
+npm run pkg
+#npm run nexe
