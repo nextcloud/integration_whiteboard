@@ -175,7 +175,7 @@ class SpacedeckBundleService {
 		$newSpacedeckDataPath = dirname(__DIR__, 2) . '/data/spacedeck';
 		recursiveCopy($newSpacedeckDataPath, $this->appDataDirPath);
 		// change rights of binaries
-		chmod($this->appDataDirPath . '/spacedeck.nexe.bin', 0700);
+		// chmod($this->appDataDirPath . '/spacedeck.nexe.bin', 0700);
 		chmod($this->appDataDirPath . '/spacedeck.pkg.bin', 0700);
 
 		// set base URL
