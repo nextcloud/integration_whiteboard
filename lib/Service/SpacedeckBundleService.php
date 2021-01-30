@@ -18,6 +18,7 @@ use OCP\Files\IRootFolder;
 use OCP\Files\FileInfo;
 use OCP\Files\Node;
 use OCP\Lock\LockedException;
+use OCP\IURLGenerator;
 
 use OCA\Spacedeck\AppInfo\Application;
 
@@ -59,12 +60,14 @@ class SpacedeckBundleService {
 								IRootFolder $root,
 								LoggerInterface $logger,
 								IL10N $l10n,
+								IURLGenerator $urlGenerator,
 								IConfig $config) {
 		$this->appName = $appName;
 		$this->l10n = $l10n;
 		$this->logger = $logger;
 		$this->config = $config;
 		$this->root = $root;
+		$this->urlGenerator = $urlGenerator;
 
 		$dataDirPath = $this->config->getSystemValue('datadirectory');
 		$instanceId = $this->config->getSystemValue('instanceid');
@@ -149,11 +152,9 @@ class SpacedeckBundleService {
 				sleep(5);
 				return (int) $cmdResult['stdout'];
 			} else {
-				error_log('1111');
 				return null;
 			}
 		} else {
-			error_log('ALREADY RUNNING   ');
 			return $pid;
 		}
 	}
@@ -169,11 +170,20 @@ class SpacedeckBundleService {
 		}
 
 		// copy the one from the app directory
-		$newSpacedeckDataPath = dirname(__DIR__, 2) . '/spacedeck';
+		$newSpacedeckDataPath = dirname(__DIR__, 2) . '/data/spacedeck';
 		recursiveCopy($newSpacedeckDataPath, $this->appDataDirPath);
 		// change rights of binaries
 		chmod($this->appDataDirPath . '/spacedeck.nexe.bin', 0700);
 		chmod($this->appDataDirPath . '/spacedeck.pkg.bin', 0700);
+
+		// set base URL
+		$configPath = $this->appDataDirPath . '/config/default.json';
+		if (file_exists($configPath)) {
+			$config = json_decode(file_get_contents($configPath), true);
+			$config['endpoint'] = $this->getEndpoint();
+			file_put_contents($configPath, json_encode($config, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
+		}
+
 
 		// keep old storage and database
 		if (is_dir($this->appDataDirPath . '.bak')) {
@@ -191,5 +201,11 @@ class SpacedeckBundleService {
 			}
 			recursiveDelete($this->appDataDirPath . '.bak');
 		}
+	}
+
+	private function getEndpoint() {
+		$endpoint = $this->urlGenerator->linkToRouteAbsolute('integration_whiteboard.spacedeckAPI.privateProxyGet', ['path' => '']);
+		$endpoint = rtrim($endpoint, '/');
+		return $endpoint;
 	}
 }
