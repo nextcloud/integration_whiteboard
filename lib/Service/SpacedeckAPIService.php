@@ -22,6 +22,7 @@ use OCP\Http\Client\IClientService;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\ServerException;
 use GuzzleHttp\Exception\ConnectException;
+use OCP\Http\Client\LocalServerException;
 
 use OCA\Spacedeck\Service\SpacedeckBundleService;
 use OCA\Spacedeck\AppInfo\Application;
@@ -154,7 +155,11 @@ class SpacedeckAPIService {
 			return ['error' => 'File is invalid, no "_id"'];
 		}
 		// check if space_id exists: GET spaces/space_id
-		$space = $this->request($baseUrl, $apiToken, 'spaces/' . $spaceId);
+		try {
+			$space = $this->request($baseUrl, $apiToken, 'spaces/' . $spaceId);
+		} catch (LocalServerException $e) {
+			return ['error' => 'Nextcloud refuses to connect to local remote servers'];
+		}
 		// does not exist or wrong file ID
 		if (isset($space['error']) || $decoded['space']['name'] !== strval($file_id)) {
 			// create new space
