@@ -23,7 +23,7 @@ use OCA\Viewer\Event\LoadViewer;
 
 use OC\Security\CSP\ContentSecurityPolicy;
 
-use OCA\Spacedeck\Notification\Notifier;
+require_once __DIR__ . '/../constants.php';
 
 /**
  * Class Application
@@ -46,7 +46,11 @@ class Application extends App implements IBootstrap {
 		$server = $container->getServer();
 		$eventDispatcher = $server->getEventDispatcher();
 		$this->addPrivateListeners($eventDispatcher);
-		// $this->updateCSP();
+
+		$spacedeckUrl = $container->getServer()->getConfig()->getAppValue(self::APP_ID, 'base_url', DEFAULT_SPACEDECK_URL);
+		if ($spacedeckUrl !== DEFAULT_SPACEDECK_URL) {
+			$this->updateCSP($spacedeckUrl);
+		}
 	}
 
 	protected function addPrivateListeners($eventDispatcher) {
@@ -69,12 +73,13 @@ class Application extends App implements IBootstrap {
 	/**
 	 * this might have been necessary in the past
 	 */
-	public function updateCSP() {
+	public function updateCSP(string $url) {
 		$container = $this->getContainer();
 
 		$cspManager = $container->getServer()->getContentSecurityPolicyManager();
 		$policy = new ContentSecurityPolicy();
 		$policy->addAllowedFrameDomain('\'self\'');
+		$policy->addAllowedFrameDomain($url);
 
 		$cspManager->addDefaultPolicy($policy);
 	}
