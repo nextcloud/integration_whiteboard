@@ -51,7 +51,6 @@ jobs:
           git clone https://github.com/eneiluj/spacedeck-open -b eneiluj-master --single-branch ~/spacedeck-open
           cd ~/spacedeck-open
           npm install
-          npm run pkg
 
           cd $GITHUB_WORKSPACE/data
           ./getSpacedeck.sh ~/spacedeck-open

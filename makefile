@@ -77,6 +77,8 @@ appstore: clean
 	--exclude=/package.json \
 	--exclude=/package-lock.json \
 	--exclude=/js/node_modules \
+	--exclude=/data/database.sqlite \
+	--exclude=/data/getSpacedeck.sh \
 	--exclude=/node_modules \
 	--exclude=/src \
 	--exclude=translationfiles \
