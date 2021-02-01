@@ -30,8 +30,8 @@ jobs:
           echo "##[set-output name=app_id;]$APP_ID"
           echo "###### copy certificate"
           mkdir -p ~/.nextcloud/certificates
-          echo "$APP_CRT" > ~/.nextcloud/certificates/${APP_ID}.crt
-          echo "$APP_KEY" > ~/.nextcloud/certificates/${APP_ID}.key
+          # echo "$APP_CRT" > ~/.nextcloud/certificates/${APP_ID}.crt
+          # echo "$APP_KEY" > ~/.nextcloud/certificates/${APP_ID}.key
           echo "###### install dependencies"
           export DEBIAN_FRONTEND=noninteractive
           sudo apt update -y
@@ -41,13 +41,21 @@ jobs:
           mkdir ~/html
           git clone https://github.com/nextcloud/server.git --recursive --depth 1 -b master ~/html/nextcloud
           sed -i $'s|if (substr($fullPath, 0, strlen($root) + 1) === $root . \'/\')|if (is_string($root) and substr($fullPath, 0, strlen($root) + 1) === $root . \'/\')|g' ~/html/nextcloud/lib/autoloader.php
-          cp -r $GITHUB_WORKSPACE ~/html/nextcloud/apps/${APP_ID}
-          php ~/html/nextcloud/occ maintenance:install --database "sqlite" --admin-user "admin" --admin-pass "password"
-          php ~/html/nextcloud/occ app:enable ${APP_ID}
-          php ~/html/nextcloud/occ maintenance:mode --off
-          cd ~/html/nextcloud/apps/${APP_ID}
+          # cp -r $GITHUB_WORKSPACE ~/html/nextcloud/apps/${APP_ID}
+          # php ~/html/nextcloud/occ maintenance:install --database "sqlite" --admin-user "admin" --admin-pass "password"
+          # php ~/html/nextcloud/occ app:enable ${APP_ID}
+          # php ~/html/nextcloud/occ maintenance:mode --off
+          # cd ~/html/nextcloud/apps/${APP_ID}
+          echo "###### prepare spacedeck"
+          git clone https://github.com/eneiluj/spacedeck-open -b eneiluj-master --single-branch ~/spacedeck-open
+          cd ~/spacedeck-open
+          npm run pkg
+
+          cd $GITHUB_WORKSPACE/data
+          ./getSpacedeck.sh ~/spacedeck-open
+          cd ..
           echo "###### npm install"
-          npm install
+          npm ci
           echo "###### npm run build"
           npm run build
           echo "###### make appstore"
@@ -83,24 +91,24 @@ jobs:
           asset_name: ${{ steps.build_release.outputs.app_id }}-${{ steps.build_release.outputs.version }}.tar.gz
           asset_content_type: application/gzip
 
-      - name: Publish to appstore
-        if: ${{ startsWith( steps.tag.outputs.currenttag , 'v' ) && !endsWith( steps.tag.outputs.currenttag , 'nightly' ) }}
-        id: publish
-        run: |
-          SIGNATURE=$(cat /tmp/build/sign.txt | tr -d '\n')
-          VERSION=${{ steps.build_release.outputs.version }}
-          DOWNLOAD_URL=https://github.com/${{ github.repository }}/releases/download/v${VERSION}/${APP_ID}-${VERSION}.tar.gz
-          curl -X POST -H "Authorization: Token $APPSTORE_TOKEN" https://apps.nextcloud.com/api/v1/apps/releases -H "Content-Type: application/json" -d '{"download":"'${DOWNLOAD_URL}'", "signature": "'${SIGNATURE}'"}'
-        env:
-          APPSTORE_TOKEN: ${{ secrets.APPSTORE_TOKEN }}
+      # - name: Publish to appstore
+      #   if: ${{ startsWith( steps.tag.outputs.currenttag , 'v' ) && !endsWith( steps.tag.outputs.currenttag , 'nightly' ) }}
+      #   id: publish
+      #   run: |
+      #     SIGNATURE=$(cat /tmp/build/sign.txt | tr -d '\n')
+      #     VERSION=${{ steps.build_release.outputs.version }}
+      #     DOWNLOAD_URL=https://github.com/${{ github.repository }}/releases/download/v${VERSION}/${APP_ID}-${VERSION}.tar.gz
+      #     curl -X POST -H "Authorization: Token $APPSTORE_TOKEN" https://apps.nextcloud.com/api/v1/apps/releases -H "Content-Type: application/json" -d '{"download":"'${DOWNLOAD_URL}'", "signature": "'${SIGNATURE}'"}'
+      #   env:
+      #     APPSTORE_TOKEN: ${{ secrets.APPSTORE_TOKEN }}
 
-      - name: Publish nightly build to appstore
-        if: ${{ startsWith( steps.tag.outputs.currenttag , 'v' ) && endsWith( steps.tag.outputs.currenttag , 'nightly' ) }}
-        id: nightly
-        run: |
-          SIGNATURE=$(cat /tmp/build/sign.txt | tr -d '\n')
-          VERSION=${{ steps.build_release.outputs.version }}
-          DOWNLOAD_URL=https://github.com/${{ github.repository }}/releases/download/v${VERSION}/${APP_ID}-${VERSION}.tar.gz
-          curl -X POST -H "Authorization: Token $APPSTORE_TOKEN" https://apps.nextcloud.com/api/v1/apps/releases -H "Content-Type: application/json" -d '{"download":"'${DOWNLOAD_URL}'", "signature": "'${SIGNATURE}'", "nightly": true}'
-        env:
-          APPSTORE_TOKEN: ${{ secrets.APPSTORE_TOKEN }}
+      # - name: Publish nightly build to appstore
+      #   if: ${{ startsWith( steps.tag.outputs.currenttag , 'v' ) && endsWith( steps.tag.outputs.currenttag , 'nightly' ) }}
+      #   id: nightly
+      #   run: |
+      #     SIGNATURE=$(cat /tmp/build/sign.txt | tr -d '\n')
+      #     VERSION=${{ steps.build_release.outputs.version }}
+      #     DOWNLOAD_URL=https://github.com/${{ github.repository }}/releases/download/v${VERSION}/${APP_ID}-${VERSION}.tar.gz
+      #     curl -X POST -H "Authorization: Token $APPSTORE_TOKEN" https://apps.nextcloud.com/api/v1/apps/releases -H "Content-Type: application/json" -d '{"download":"'${DOWNLOAD_URL}'", "signature": "'${SIGNATURE}'", "nightly": true}'
+      #   env:
+      #     APPSTORE_TOKEN: ${{ secrets.APPSTORE_TOKEN }}
