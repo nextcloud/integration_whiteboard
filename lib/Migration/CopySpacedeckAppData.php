@@ -43,6 +43,7 @@ class CopySpacedeckAppData implements IRepairStep {
 	public function run(IOutput $output) {
 		$this->logger->info('Copying Spacedeck data...');
 
+		$this->service->killSpacedeck();
 		$this->service->copySpacedeckData();
 
 		$this->logger->info('Spacedeck data successfully copied!');
