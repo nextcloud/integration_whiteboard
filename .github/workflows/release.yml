@@ -12,6 +12,11 @@ jobs:
       APP_ID: integration_whiteboard
     runs-on: ubuntu-latest
     steps:
+      - name: Use Node 10
+        uses: actions/setup-node@v1
+        with:
+          node-version: 10
+
       - name: Checkout code
         uses: actions/checkout@v2
 
@@ -36,7 +41,7 @@ jobs:
           export DEBIAN_FRONTEND=noninteractive
           sudo apt update -y
           # sudo apt upgrade -y
-          sudo apt install php-mbstring php-sqlite3 npm make openssl -y
+          sudo apt install php-mbstring php-sqlite3 make openssl -y
           sudo npm install -g pkg
           echo "###### installing nextcloud"
           mkdir ~/html

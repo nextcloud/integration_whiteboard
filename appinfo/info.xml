@@ -4,7 +4,7 @@
     <name>Whiteboard integration</name>
     <summary>Collaborative whiteboard integration</summary>
     <description><![CDATA[Whiteboard integration allows you to create whiteboards.]]></description>
-    <version>0.0.4</version>
+    <version>0.0.7</version>
     <licence>agpl</licence>
     <author>Julien Veyssier</author>
     <namespace>Spacedeck</namespace>
