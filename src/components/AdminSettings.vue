@@ -32,6 +32,14 @@
 				:placeholder="t('integration_whiteboard', 'Your Spacedeck API token')"
 				@input="onInput"
 				@focus="readonly = false">
+			<button
+				:class="{ 'icon-loading-small': checking }"
+				@click="checkSpacedeck">
+				{{ t('integration_whiteboard', 'Check Spacedeck config') }}
+			</button>
+			<label>
+				{{ checkText }}
+			</label>
 		</div>
 	</div>
 </template>
@@ -43,6 +51,11 @@ import axios from '@nextcloud/axios'
 import { showSuccess, showError } from '@nextcloud/dialogs'
 
 import { delay } from '../utils'
+
+const CHECK_NOT_DONE = 0
+const CHECK_OK = 1
+const CHECK_NO_INTERFACE_ACCESS = 2
+const CHECK_NO_API_ACCESS = 3
 
 export default {
 	name: 'AdminSettings',
@@ -57,11 +70,25 @@ export default {
 			state: loadState('integration_whiteboard', 'admin-config'),
 			// to prevent some browsers to fill fields with remembered passwords
 			readonly: true,
-			// /////////////// TO DELETE later
-			loadFileId: '',
-			saveFileId: '',
-			saveSpaceId: '',
+			checking: false,
+			checkState: CHECK_NOT_DONE,
+			checkMessage: '',
 		}
+	},
+
+	computed: {
+		checkText() {
+			if (this.checkState === CHECK_NOT_DONE) {
+				return ''
+			} else if (this.checkState === CHECK_OK) {
+				return t('integration_whiteboard', 'Everything is fine!')
+			} else if (this.checkState === CHECK_NO_INTERFACE_ACCESS) {
+				return t('integration_whiteboard', 'Spacedeck interface is not accessible.') + ' ' + this.checkMessage
+			} else if (this.checkState === CHECK_NO_API_ACCESS) {
+				return t('integration_whiteboard', 'Spacedeck API is not accessible.') + ' ' + this.checkMessage
+			}
+			return ''
+		},
 	},
 
 	watch: {
@@ -87,44 +114,85 @@ export default {
 			axios.put(url, req)
 				.then((response) => {
 					showSuccess(t('integration_whiteboard', 'Spacedeck admin options saved'))
-				})
-				.catch((error) => {
+				}).catch((error) => {
 					showError(
 						t('integration_whiteboard', 'Failed to save Spacedeck options')
 						+ ': ' + error.response?.request?.responseText
 					)
 					console.error(error)
+				}).then(() => {
 				})
-				.then(() => {
+		},
+		checkSpacedeck() {
+			this.checking = true
+			this.checkState = CHECK_NOT_DONE
+			this.checkSpacedeckApi()
+				.then((response) => {
+					showSuccess(t('integration_whiteboard', 'Spacedeck API is accessible!'))
+					this.checkSpacedeckInterface()
+						.then((response) => {
+							showSuccess(t('integration_whiteboard', 'Spacedeck interface is accessible!'))
+							this.checkState = CHECK_OK
+						}).catch((error) => {
+							showError(
+								t('integration_whiteboard', 'Failed to contact Spacedeck interface')
+								+ ': ' + (error.response?.data || error.response?.request?.responseText)
+							)
+							this.checkState = CHECK_NO_INTERFACE_ACCESS
+							console.error(error)
+							this.checkMessage = error.response?.data || error.response?.request?.responseText
+						}).then(() => {
+							this.checking = false
+						})
+				}).catch((error) => {
+					showError(
+						t('integration_whiteboard', 'Failed to contact Spacedeck API')
+						+ ': ' + (error.response?.data || error.response?.request?.responseText)
+					)
+					console.error(error)
+					this.checkState = CHECK_NO_API_ACCESS
+					this.checkMessage = error.response?.data || error.response?.request?.responseText
+					this.checking = false
 				})
+		},
+		checkSpacedeckInterface() {
+			const url = generateUrl('/apps/integration_whiteboard/proxy/stylesheets/style.css')
+			return axios.get(url)
+		},
+		checkSpacedeckApi() {
+			const url = generateUrl('/apps/integration_whiteboard/spaces')
+			return axios.get(url)
 		},
 	},
 }
 </script>
 
 <style scoped lang="scss">
-.grid-form label {
-	line-height: 38px;
-}
+#spacedeck_prefs {
+	.grid-form {
+		max-width: 500px;
+		display: grid;
+		grid-template: 1fr / 1fr 1fr;
+		margin-left: 30px;
 
-.grid-form input {
-	width: 100%;
-}
+		.icon {
+			margin-bottom: -3px;
+		}
+		input {
+			width: 100%;
+		}
+		label {
+			line-height: 38px;
+		}
+		button {
+			height: 34px;
+		}
+	}
 
-.grid-form {
-	max-width: 500px;
-	display: grid;
-	grid-template: 1fr / 1fr 1fr;
-	margin-left: 30px;
-}
-
-#spacedeck_prefs .icon {
-	display: inline-block;
-	width: 32px;
-}
-
-#spacedeck_prefs .grid-form .icon {
-	margin-bottom: -3px;
+	.icon {
+		display: inline-block;
+		width: 32px;
+	}
 }
 
 .icon-spacedeck {

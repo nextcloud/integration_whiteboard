@@ -144,7 +144,6 @@ class SpacedeckBundleService {
 	public function launchSpacedeck(): ?int {
 		$pid = $this->spacedeckIsRunning();
 		if (!$pid) {
-			error_log('NOT RUNNING   ');
 			$binaryDirPath = $this->appDataDirPath;
 			$binaryName = 'spacedeck.pkg.bin';
 			$outputName = 'spacedeck.log';

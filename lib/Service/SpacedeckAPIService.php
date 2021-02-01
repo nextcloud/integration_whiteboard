@@ -112,9 +112,7 @@ class SpacedeckAPIService {
 	 * @return array error or space information
 	 */
 	public function loadSpaceFromFile(string $baseUrl, string $apiToken, ?string $userId, int $file_id): array {
-		error_log('WILL LAUNCH   ');
 		$pid = $this->spacedeckBundleService->launchSpacedeck();
-		error_log('LAUNCH SPACEDECK PID ' . $pid);
 		// load file json content
 		$file = $this->getFileFromId($userId, $file_id);
 		if (is_null($file)) {
@@ -259,6 +257,22 @@ class SpacedeckAPIService {
 			return $file;
 		}
 		return null;
+	}
+
+	/**
+	 * Get spaces list from spacedeck API
+	 *
+	 * @param string $baseUrl
+	 * @param string $apiToken
+	 * @return array API response or request error
+	 */
+	public function getSpaceList(string $baseUrl, string $apiToken): array {
+		$this->spacedeckBundleService->launchSpacedeck();
+		try {
+			return $this->request($baseUrl, $apiToken, 'spaces');
+		} catch (LocalServerException $e) {
+			return ['error' => 'Nextcloud refuses to connect to local remote servers'];
+		}
 	}
 
 	/**

@@ -82,6 +82,25 @@ class SpacedeckAPIController extends Controller {
 	}
 
 	/**
+	 * Get spaces list, used by admin settings to test if spacedeck API is accessible
+	 *
+	 * @return DataResponse
+	 */
+	public function getSpaceList(): DataResponse {
+		if (!$this->apiToken || !$this->baseUrl) {
+			return new DataResponse('Spacedeck not configured', 400);
+		}
+
+		$result = $this->spacedeckApiService->getSpaceList($this->baseUrl, $this->apiToken);
+		if (isset($result['error'])) {
+			$response = new DataResponse($result['error'], 401);
+		} else {
+			$response = new DataResponse($result);
+		}
+		return $response;
+	}
+
+	/**
 	 * @NoAdminRequired
 	 * @NoCSRFRequired
 	 * @PublicPage
