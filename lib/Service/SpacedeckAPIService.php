@@ -27,6 +27,8 @@ use OCP\Http\Client\LocalServerException;
 use OCA\Spacedeck\Service\SpacedeckBundleService;
 use OCA\Spacedeck\AppInfo\Application;
 
+require_once __DIR__ . '/../constants.php';
+
 class SpacedeckAPIService {
 
 	private $l10n;
@@ -112,7 +114,9 @@ class SpacedeckAPIService {
 	 * @return array error or space information
 	 */
 	public function loadSpaceFromFile(string $baseUrl, string $apiToken, ?string $userId, int $file_id): array {
-		$pid = $this->spacedeckBundleService->launchSpacedeck();
+		if ($baseUrl === DEFAULT_SPACEDECK_URL) {
+			$pid = $this->spacedeckBundleService->launchSpacedeck();
+		}
 		// load file json content
 		$file = $this->getFileFromId($userId, $file_id);
 		if (is_null($file)) {
@@ -267,7 +271,9 @@ class SpacedeckAPIService {
 	 * @return array API response or request error
 	 */
 	public function getSpaceList(string $baseUrl, string $apiToken): array {
-		$this->spacedeckBundleService->launchSpacedeck();
+		if ($baseUrl === DEFAULT_SPACEDECK_URL) {
+			$this->spacedeckBundleService->launchSpacedeck();
+		}
 		try {
 			return $this->request($baseUrl, $apiToken, 'spaces');
 		} catch (LocalServerException $e) {
