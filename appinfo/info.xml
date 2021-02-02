@@ -3,7 +3,11 @@
     <id>integration_whiteboard</id>
     <name>Whiteboard integration</name>
     <summary>Collaborative whiteboard integration</summary>
-    <description><![CDATA[Whiteboard integration allows you to create whiteboards.]]></description>
+    <description><![CDATA[Modern collaborative whiteboard in Nextcloud.
+
+This app integrates Spacedeck whiteboard server. It lets Nextcloud users create `.whiteboard` files
+which can then be opened in the Files app and in Talk. Those files can be shared to other users
+or via public links. Everyone having access to such a file can edit it collaboratively.]]></description>
     <version>0.0.8</version>
     <licence>agpl</licence>
     <author>Julien Veyssier</author>

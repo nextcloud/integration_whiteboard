@@ -32,10 +32,11 @@ OCA.integration_whiteboard = ApplicationPrototype
 document.addEventListener('DOMContentLoaded', () => {
 	// add the + action to create a file
 	OCA.integration_whiteboard.initialize(APP_NAME, APP_EXT, APP_MIME)
+	OCA.integration_whiteboard.registerExportFileAction()
 
-	// if there is no viewer, do as the Whiteboard app: register a file action
+	// if there is no viewer, do as the Whiteboard app: register a file action to edit
 	if (!OCA.Viewer) {
-		OCA.integration_whiteboard.registerFileActions()
+		OCA.integration_whiteboard.registerMainFileAction()
 
 		// check if we need to open the file directly
 		const dir = document.getElementById('dir').value

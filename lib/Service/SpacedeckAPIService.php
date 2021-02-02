@@ -19,6 +19,8 @@ use OCP\Files\IRootFolder;
 use OCP\Files\FileInfo;
 use OCP\Files\Node;
 use OCP\Lock\LockedException;
+use OCP\Files\NotFoundException;
+use OCP\Files\NotPermittedException;
 use OCP\Http\Client\IClientService;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\ServerException;
@@ -65,6 +67,74 @@ class SpacedeckAPIService {
 	 * @param int $file_id
 	 * @return array success state
 	 */
+	public function exportSpaceToPdf(string $baseUrl, string $apiToken, string $userId, int $file_id, string $outputDirPath): array {
+		$spaceFile = $this->getFileFromId($userId, $file_id);
+		if ($spaceFile) {
+			$spaceFileName = $spaceFile->getName();
+			$targetFileName = preg_replace('/\.whiteboard$/', '.pdf', $spaceFileName);
+			$userFolder = $this->root->getUserFolder($userId);
+
+			try {
+				$outputDir = $userFolder->get($outputDirPath);
+			} catch (NotFoundException $e) {
+				return ['error' => 'Output dir not found'];
+			}
+			if ($outputDir->getType() !== FileInfo::TYPE_FOLDER || ($outputDir->getPermissions() & Constants::PERMISSION_CREATE) === 0) {
+				return ['error' => 'Not enough permissions'];
+			}
+			if ($outputDir->nodeExists($targetFileName)) {
+				$targetFile = $outputDir->get($targetFileName);
+				if ($targetFile->getType() !== FileInfo::TYPE_FILE) {
+					return ['error' => 'Target file is a directory'];
+				}
+			} else {
+				try {
+					$targetFile = $outputDir->newFile($targetFileName);
+				} catch (NotPermittedException $e) {
+					return ['error' => 'Not enough permissions'];
+				}
+			}
+
+			try {
+				$res = $targetFile->fopen('w');
+			} catch (LockedException $e) {
+				return ['error' => 'File is locked'];
+			}
+
+			$response = $this->request($baseUrl, $apiToken, 'spaces/' . $file_id . '/pdf');
+			if (isset($response['error'])) {
+				return $response;
+			} elseif (!isset($response['url'])) {
+				return ['error' => 'Invalid spacedeck response'];
+			}
+
+			$path = $response['url'];
+			$url = $baseUrl . $path;
+			$result = $this->basicRequest($url);
+			$strContent = $result['response']->getBody();
+
+			fwrite($res, $strContent);
+			fclose($res);
+			$targetFile->touch();
+			return [
+				'ok' => 1,
+				'name' => $targetFileName,
+			];
+		} else {
+			return ['error' => 'File does not exist'];
+		}
+	}
+
+	/**
+	 * Save a space content in a file
+	 *
+	 * @param string $baseUrl
+	 * @param string $apiToken
+	 * @param ?string $userId
+	 * @param string $space_id
+	 * @param int $file_id
+	 * @return array success state
+	 */
 	public function saveSpaceToFile(string $baseUrl, string $apiToken, ?string $userId, string $space_id, int $file_id): array {
 		$targetFile = $this->getFileFromId($userId, $file_id);
 		if ($targetFile) {
@@ -74,7 +144,7 @@ class SpacedeckAPIService {
 				return ['error' => 'File is locked'];
 			}
 
-			// get db content !!!OR!!! directly get json artifacts and json space
+			// directly get json artifacts and json space through API
 			// endpoints:
 			// * GET spaces/space_id
 			// * GET spaces/space_id/artifacts
@@ -91,12 +161,11 @@ class SpacedeckAPIService {
 				'space' => $space,
 				'artifacts' => $artifacts,
 			];
-			$strContent = json_encode($content);
+			$strContent = json_encode($content, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
 
-			// this produces a file version
-			// $targetFile->putContent($strContent);
 			fwrite($res, $strContent);
 			fclose($res);
+			$targetFile->touch();
 			return ['ok' => 1];
 		} else {
 			return ['error' => 'File does not exist'];

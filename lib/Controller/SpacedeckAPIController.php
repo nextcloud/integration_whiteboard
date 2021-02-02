@@ -103,6 +103,28 @@ class SpacedeckAPIController extends Controller {
 
 	/**
 	 * @NoAdminRequired
+	 * Export the space related to a file to PDF
+	 *
+	 * @param string $file_id
+	 *
+	 * @return DataResponse
+	 */
+	public function exportSpaceToPdf(int $file_id, string $outputDir): DataResponse {
+		if (!$this->apiToken || !$this->baseUrl) {
+			return new DataResponse('Spacedeck not configured', 400);
+		}
+
+		$result = $this->spacedeckApiService->exportSpaceToPdf($this->baseUrl, $this->apiToken, $this->userId, $file_id,  $outputDir);
+		if (isset($result['error'])) {
+			$response = new DataResponse(['message' => $result['error']], 401);
+		} else {
+			$response = new DataResponse($result);
+		}
+		return $response;
+	}
+
+	/**
+	 * @NoAdminRequired
 	 * @NoCSRFRequired
 	 * @PublicPage
 	 *

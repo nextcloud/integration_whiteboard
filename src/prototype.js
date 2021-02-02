@@ -19,12 +19,15 @@
  */
 
 import { subscribe, unsubscribe } from '@nextcloud/event-bus'
-import { imagePath } from '@nextcloud/router'
+import { imagePath, generateUrl } from '@nextcloud/router'
+import axios from '@nextcloud/axios'
+import { showError, showSuccess } from '@nextcloud/dialogs'
 
 import Vue from 'vue'
 import PrototypeView from './PrototypeView'
 
-const FILE_ACTION_IDENTIFIER = 'edit-spacedeck'
+const FILE_ACTION_EDIT_IDENTIFIER = 'edit-spacedeck'
+const FILE_ACTION_EXPORT_IDENTIFIER = 'export-spacedeck'
 
 /**
 * @namespace ApplicationPrototype
@@ -91,11 +94,11 @@ export default {
 	},
 
 	// register file handler
-	registerFileActions() {
+	registerMainFileAction() {
 		/*
 		// this is done like that in Whiteboard App
 		OCA.Files.fileActions.registerAction({
-			name: FILE_ACTION_IDENTIFIER,
+			name: FILE_ACTION_EDIT_IDENTIFIER,
 			mime: this.APP_MIME,
 			permissions: OC.PERMISSION_UPDATE | OC.PERMISSION_READ,
 			icon() {
@@ -110,7 +113,7 @@ export default {
 		// this is how Text app does it
 		OCA.Files.fileActions.register(
 			this.APP_MIME,
-			FILE_ACTION_IDENTIFIER,
+			FILE_ACTION_EDIT_IDENTIFIER,
 			OC.PERMISSION_UPDATE | OC.PERMISSION_READ,
 			imagePath('core', 'actions/edit'),
 			(filename, context) => {
@@ -119,7 +122,20 @@ export default {
 			t(this.APP_NAME, 'Edit')
 		)
 
-		OCA.Files.fileActions.setDefault(this.APP_MIME, FILE_ACTION_IDENTIFIER)
+		OCA.Files.fileActions.setDefault(this.APP_MIME, FILE_ACTION_EDIT_IDENTIFIER)
+	},
+
+	registerExportFileAction() {
+		OCA.Files.fileActions.register(
+			this.APP_MIME,
+			FILE_ACTION_EXPORT_IDENTIFIER,
+			OC.PERMISSION_READ,
+			imagePath('core', 'filetypes/application-pdf'),
+			(filename, context) => {
+				this.exportToPdf(filename, context)
+			},
+			t(this.APP_NAME, 'Export to Pdf')
+		)
 	},
 
 	// register "New" in Files app
@@ -144,7 +160,7 @@ export default {
 						} else if (typeof OCA.Viewer === 'undefined') {
 							// this still has some style issues
 							// TODO fix
-							// OCA.Files.fileActions.triggerAction(FILE_ACTION_IDENTIFIER, fileInfoModel, fileList)
+							// OCA.Files.fileActions.triggerAction(FILE_ACTION_EDIT_IDENTIFIER, fileInfoModel, fileList)
 						}
 					})
 				},
@@ -160,5 +176,23 @@ export default {
 
 		// remove app container
 		this.vm.$destroy()
+	},
+
+	exportToPdf(filename, context) {
+		const fileId = context.fileInfoModel.id
+		const url = generateUrl('/apps/integration_whiteboard/space/' + fileId + '/pdf')
+		const req = {
+			outputDir: context.dir,
+		}
+		axios.post(url, req).then((response) => {
+			console.debug(response)
+			showSuccess(t('integration_spacedeck', 'Whiteboard exported to {name}', { name: response.data.name }))
+		}).catch((error) => {
+			console.error(error)
+			showError(
+				t('integration_spacedeck', 'Impossible to export {filename} to Pdf', { filename })
+				+ ' ' + (error.response?.data?.message || error.response?.request?.responseText)
+			)
+		})
 	},
 }

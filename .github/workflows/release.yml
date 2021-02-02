@@ -40,6 +40,8 @@ jobs:
           echo "###### install dependencies"
           export DEBIAN_FRONTEND=noninteractive
           sudo apt update -y
+          # to make sure we get it in spacedeck
+          sudo rm -rf /usr/local/bin/phantomjs
           # sudo apt upgrade -y
           sudo apt install php-mbstring php-sqlite3 make openssl -y
           sudo npm install -g pkg
