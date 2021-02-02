@@ -185,8 +185,9 @@ export default {
 			outputDir: context.dir,
 		}
 		axios.post(url, req).then((response) => {
-			console.debug(response)
 			showSuccess(t('integration_spacedeck', 'Whiteboard exported to {name}', { name: response.data.name }))
+			const fileList = OCA?.Files?.App?.currentFileList
+			fileList?.reload?.() || window.location.reload()
 		}).catch((error) => {
 			console.error(error)
 			showError(
