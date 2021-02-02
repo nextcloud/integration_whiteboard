@@ -70,6 +70,9 @@ class SpacedeckAPIService {
 	public function exportSpaceToPdf(string $baseUrl, string $apiToken, string $userId, int $file_id, string $outputDirPath): array {
 		$spaceFile = $this->getFileFromId($userId, $file_id);
 		if ($spaceFile) {
+			if ($baseUrl === DEFAULT_SPACEDECK_URL) {
+				$this->spacedeckBundleService->launchSpacedeck();
+			}
 			$spaceFileName = $spaceFile->getName();
 			$targetFileName = preg_replace('/\.whiteboard$/', '.pdf', $spaceFileName);
 			$userFolder = $this->root->getUserFolder($userId);

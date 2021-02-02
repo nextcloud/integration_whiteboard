@@ -145,7 +145,7 @@ class SpacedeckBundleService {
 		$pid = $this->spacedeckIsRunning();
 		if (!$pid) {
 			$binaryDirPath = $this->appDataDirPath;
-			$binaryName = 'spacedeck.pkg.bin';
+			$binaryName = 'spacedeck.nexe.bin';
 			$outputName = 'spacedeck.log';
 			$cmd = sprintf('cd "%s" ; nice -n19 ./%s > %s 2>&1 & echo $!', $binaryDirPath, $binaryName, $outputName);
 			$cmdResult = $this->runCommand($cmd);
@@ -174,8 +174,8 @@ class SpacedeckBundleService {
 		$newSpacedeckDataPath = dirname(__DIR__, 2) . '/data/spacedeck';
 		recursiveCopy($newSpacedeckDataPath, $this->appDataDirPath);
 		// change rights of binaries
-		// chmod($this->appDataDirPath . '/spacedeck.nexe.bin', 0700);
-		chmod($this->appDataDirPath . '/spacedeck.pkg.bin', 0700);
+		chmod($this->appDataDirPath . '/spacedeck.nexe.bin', 0700);
+		// chmod($this->appDataDirPath . '/spacedeck.pkg.bin', 0700);
 
 		// set base URL
 		$configPath = $this->appDataDirPath . '/config/default.json';
