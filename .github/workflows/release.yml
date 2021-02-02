@@ -44,7 +44,7 @@ jobs:
           sudo rm -rf /usr/local/bin/phantomjs
           # sudo apt upgrade -y
           sudo apt install php-mbstring php-sqlite3 make openssl -y
-          sudo npm install -g pkg
+          sudo npm install -g nexe
           echo "###### installing nextcloud"
           mkdir ~/html
           git clone https://github.com/nextcloud/server.git --recursive --depth 1 -b master ~/html/nextcloud
