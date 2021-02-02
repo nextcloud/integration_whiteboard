@@ -14,6 +14,7 @@ namespace OCA\Spacedeck\Service;
 use OCP\IL10N;
 use Psr\Log\LoggerInterface;
 use OCP\IConfig;
+use OCP\Constants;
 use OCP\Files\IRootFolder;
 use OCP\Files\FileInfo;
 use OCP\Files\Node;
@@ -261,6 +262,28 @@ class SpacedeckAPIService {
 			return $file;
 		}
 		return null;
+	}
+
+	/**
+	 * Check if user has write access on a file
+	 *
+	 * @param ?string $userId
+	 * @param int $fileID
+	 * @return bool true if the user can write the file
+	 */
+	public function userHasWriteAccess(string $userId, int $fileId): bool {
+		$userFolder = $this->root->getUserFolder($userId);
+		$file = $userFolder->getById($fileId);
+		if (is_array($file)) {
+			foreach ($file as $f) {
+				if ($f->getType() === FileInfo::TYPE_FILE && ($f->getPermissions() & Constants::PERMISSION_UPDATE) !== 0) {
+					return true;
+				}
+			}
+		} elseif (!is_array($file) && $file->getType() === FileInfo::TYPE_FILE) {
+			return (($file->getPermissions() & Constants::PERMISSION_UPDATE) !== 0);
+		}
+		return false;
 	}
 
 	/**

@@ -22,6 +22,7 @@ use OCP\AppFramework\Http\ContentSecurityPolicy;
 
 use OCP\Files\FileInfo;
 use OCP\Share\IManager as IShareManager;
+use OCP\Constants;
 use Psr\Log\LoggerInterface;
 use OCP\IRequest;
 use OCP\AppFramework\Http\DataResponse;
@@ -141,7 +142,7 @@ class SpacedeckAPIController extends Controller {
 	 *
 	 */
 	public function privateProxyDelete(string $path): DataDisplayResponse {
-		if ($this->checkAuthHeaders()) {
+		if ($this->checkAuthHeaders(true)) {
 			return $this->proxyDelete($path);
 		} else {
 			return new DataDisplayResponse('Unauthorized!', 401);
@@ -155,7 +156,7 @@ class SpacedeckAPIController extends Controller {
 	 *
 	 */
 	public function privateProxyPut(string $path): DataDisplayResponse {
-		if ($this->checkAuthHeaders()) {
+		if ($this->checkAuthHeaders(true)) {
 			return $this->proxyPut($path);
 		} else {
 			return new DataDisplayResponse('Unauthorized!', 401);
@@ -169,19 +170,29 @@ class SpacedeckAPIController extends Controller {
 	 *
 	 */
 	public function privateProxyPost(string $path): DataDisplayResponse {
-		if ($this->checkAuthHeaders()) {
+		if ($this->checkAuthHeaders(true)) {
 			return $this->proxyPost($path);
 		} else {
 			return new DataDisplayResponse('Unauthorized!', 401);
 		}
 	}
 
-	private function checkAuthHeaders(): bool {
+	private function checkAuthHeaders(bool $needWriteAccess = false): bool {
 		$spaceName = $_SERVER['HTTP_X_SPACEDECK_SPACE_NAME'] ?? null;
 		$shareToken = $_SERVER['HTTP_X_SPACEDECK_SPACE_TOKEN'] ?? null;
-		if (!is_null($this->userId) && !is_null($this->spacedeckApiService->getFileFromId($this->userId, $spaceName))) {
+		if (!is_null($this->userId) && !is_null($spaceName)
+			&& (
+				($needWriteAccess && $this->spacedeckApiService->userHasWriteAccess($this->userId, $spaceName))
+				|| (!$needWriteAccess && !is_null($this->spacedeckApiService->getFileFromId($this->userId, $spaceName)))
+			)
+		) {
 			return true;
-		} elseif (is_null($this->userId) && !is_null($shareToken) && $this->isFileSharedWithToken($shareToken, $spaceName)) {
+		} elseif (is_null($this->userId) && !is_null($shareToken)
+			&& (
+				($needWriteAccess && $this->isFileWriteableWithToken($shareToken, $spaceName))
+				|| (!$needWriteAccess && $this->isFileSharedWithToken($shareToken, $spaceName))
+			)
+		) {
 			return true;
 		}
 		return false;
@@ -433,5 +444,16 @@ class SpacedeckAPIController extends Controller {
 			return null;
 		}
 		return null;
+	}
+
+	private function isFileWriteableWithToken(string $token, int $file_id): bool {
+		try {
+			$share = $this->shareManager->getShareByToken($token);
+			$perms = $share->getPermissions();
+			return (($perms & Constants::PERMISSION_UPDATE) !== 0);
+		} catch (ShareNotFound $e) {
+			return false;
+		}
+		return false;
 	}
 }
