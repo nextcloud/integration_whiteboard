@@ -164,7 +164,9 @@ class SpacedeckAPIController extends Controller {
 	 *
 	 */
 	public function privateProxyDelete(string $path): DataDisplayResponse {
-		if (preg_match('/^api\/sessions\/current$/', $path) || $this->checkAuthHeaders(true)) {
+		if (preg_match('/^api\/sessions\/current$/', $path)) {
+			return new DataDisplayResponse('', 400);
+		} elseif ($this->checkAuthHeaders(true)) {
 			return $this->proxyDelete($path);
 		} else {
 			return new DataDisplayResponse('Unauthorized!', 401);
