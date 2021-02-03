@@ -160,7 +160,13 @@ class SpacedeckBundleService {
 		}
 	}
 
-	public function copySpacedeckData() {
+	public function copySpacedeckData(): void {
+		$newSpacedeckDataPath = dirname(__DIR__, 2) . '/data/spacedeck';
+		// check if the app contains spacedeck
+		if (!is_dir($newSpacedeckDataPath)) {
+			return;
+		}
+
 		if (is_dir($this->appDataDirPath . '.bak')) {
 			// just in case
 			recursiveDelete($this->appDataDirPath . '.bak');
@@ -171,7 +177,6 @@ class SpacedeckBundleService {
 		}
 
 		// copy the one from the app directory
-		$newSpacedeckDataPath = dirname(__DIR__, 2) . '/data/spacedeck';
 		recursiveCopy($newSpacedeckDataPath, $this->appDataDirPath);
 		// change rights of binaries
 		chmod($this->appDataDirPath . '/spacedeck.nexe.bin', 0700);
