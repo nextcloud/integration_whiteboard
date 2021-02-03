@@ -4,15 +4,15 @@
 			<a class="icon icon-spacedeck" />
 			{{ t('integration_whiteboard', 'Spacedeck whiteboard integration') }}
 		</h2>
-		<p class="settings-hint">
+		<!--p class="settings-hint">
 			<span class="icon icon-details" />
 			{{ t('integration_whiteboard', 'Leave those values empty to use the default included Spacedeck server.') }}
 		</p>
 		<p class="settings-hint">
 			{{ t('integration_whiteboard', 'If you set up Spacedeck yourself, create a dedicated user in Spacedeck and set an API token in user account settings.') }}
-		</p>
+		</p-->
 		<div class="grid-form">
-			<label for="spacedeck-baseurl">
+			<!--label for="spacedeck-baseurl">
 				<a class="icon icon-link" />
 				{{ t('integration_whiteboard', 'Base URL') }}
 			</label>
@@ -31,13 +31,13 @@
 				:readonly="readonly"
 				:placeholder="t('integration_whiteboard', 'Your Spacedeck API token')"
 				@input="onInput"
-				@focus="readonly = false">
+				@focus="readonly = false"-->
 			<button
 				:class="{ 'icon-loading-small': checking }"
 				@click="checkSpacedeck">
 				{{ t('integration_whiteboard', 'Check Spacedeck config') }}
 			</button>
-			<label>
+			<label class="check-label">
 				{{ checkText }}
 			</label>
 		</div>
@@ -186,6 +186,9 @@ export default {
 		}
 		button {
 			height: 34px;
+		}
+		.check-label {
+			padding-left: 5px;
 		}
 	}
 
