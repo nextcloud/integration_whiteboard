@@ -200,8 +200,8 @@ class SpacedeckAPIService {
 		// file is empty: create a space
 		if (!$fileContent) {
 			$newSpace = $this->createSpace($baseUrl, $apiToken, $userId, $file_id);
-			if (is_null($newSpace)) {
-				return ['error' => 'Impossible to create space'];
+			if (isset($newSpace['error'])) {
+				return $newSpace;
 			}
 			// write it to the file to update space_id
 			$decoded['space']['_id'] = $newSpace['_id'];
@@ -230,17 +230,16 @@ class SpacedeckAPIService {
 			return ['error' => 'File is invalid, no "_id"'];
 		}
 		// check if space_id exists: GET spaces/space_id
-		try {
-			$space = $this->request($baseUrl, $apiToken, 'spaces/' . $spaceId);
-		} catch (LocalServerException $e) {
-			return ['error' => 'Nextcloud refuses to connect to local remote servers'];
+		$space = $this->request($baseUrl, $apiToken, 'spaces/' . $spaceId);
+		if (isset($space['error'], $space['errorType']) && $space['errorType'] === 'LocalServerException') {
+			return $space;
 		}
 		// does not exist or wrong file ID
 		if (isset($space['error']) || $decoded['space']['name'] !== strval($file_id)) {
 			// create new space
 			$newSpace = $this->createSpace($baseUrl, $apiToken, $userId, $file_id);
-			if (is_null($newSpace)) {
-				return ['error' => 'Impossible to create space'];
+			if (isset($newSpace['error'])) {
+				return $newSpace;
 			}
 			// load artifacts
 			if (isset($decoded['artifacts']) && is_array($decoded['artifacts'])) {
@@ -287,7 +286,7 @@ class SpacedeckAPIService {
 	private function loadArtifact(string $baseUrl, string $apiToken, string $spaceId, array $artifact): void {
 		$response = $this->request($baseUrl, $apiToken, 'spaces/' . $spaceId . '/artifacts', $artifact, 'POST');
 		if (isset($response['error'])) {
-			$this->logger->error('Creating artifact in ' . $spaceId);
+			$this->logger->error('Error creating artifact in ' . $spaceId . ' : ' . $response['error']);
 		}
 	}
 
@@ -298,20 +297,15 @@ class SpacedeckAPIService {
 	 * @param string $apiToken
 	 * @param ?string $userId
 	 * @param int $fileId
-	 * @return ?array new space information or null if failed to create
+	 * @return array new space request result
 	 */
-	private function createSpace(string $baseUrl, string $apiToken, ?string $userId, int $fileId): ?array {
+	private function createSpace(string $baseUrl, string $apiToken, ?string $userId, int $fileId): array {
 		$strFileId = strval($fileId);
 		$params = [
 			'name' => $strFileId,
 			'edit_slug' => $strFileId,
 		];
-		$newSpace = $this->request($baseUrl, $apiToken, 'spaces', $params, 'POST');
-		if (isset($newSpace['error'])) {
-			return null;
-		} else {
-			return $newSpace;
-		}
+		return $this->request($baseUrl, $apiToken, 'spaces', $params, 'POST');
 	}
 
 	/**
@@ -369,11 +363,7 @@ class SpacedeckAPIService {
 		if ($baseUrl === DEFAULT_SPACEDECK_URL) {
 			$this->spacedeckBundleService->launchSpacedeck();
 		}
-		try {
-			return $this->request($baseUrl, $apiToken, 'spaces');
-		} catch (LocalServerException $e) {
-			return ['error' => 'Nextcloud refuses to connect to local remote servers'];
-		}
+		return $this->request($baseUrl, $apiToken, 'spaces');
 	}
 
 	/**
@@ -428,6 +418,12 @@ class SpacedeckAPIService {
 		} catch (ConnectException $e) {
 			$this->logger->warning('Spacedeck request connection error : '.$e->getMessage(), ['app' => $this->appName]);
 			return ['error' => $e->getMessage()];
+		} catch (LocalServerException $e) {
+			$this->logger->warning('Spacedeck request LocalServerException : '.$e->getMessage(), ['app' => $this->appName]);
+			return [
+				'error' => 'Nextcloud refuses to connect to local remote servers',
+				'errorType' => 'LocalServerException',
+			];
 		}
 	}
 
@@ -486,6 +482,12 @@ class SpacedeckAPIService {
 		} catch (ConnectException $e) {
 			$this->logger->warning('Spacedeck request connection error : '.$e->getMessage(), ['app' => $this->appName]);
 			return ['error' => $e->getMessage()];
+		} catch (LocalServerException $e) {
+			$this->logger->warning('Spacedeck request LocalServerException : '.$e->getMessage(), ['app' => $this->appName]);
+			return [
+				'error' => 'Nextcloud refuses to connect to local remote servers',
+				'errorType' => 'LocalServerException',
+			];
 		}
 	}
 }

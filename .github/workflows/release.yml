@@ -43,7 +43,7 @@ jobs:
           # to make sure we get it in spacedeck
           sudo rm -rf /usr/local/bin/phantomjs
           # sudo apt upgrade -y
-          sudo apt install php-mbstring php-sqlite3 make openssl -y
+          sudo apt install php-mbstring php-sqlite3 make openssl sed -y
           sudo npm install -g nexe
           echo "###### installing nextcloud"
           mkdir ~/html
