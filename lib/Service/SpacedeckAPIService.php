@@ -67,11 +67,12 @@ class SpacedeckAPIService {
 	 * @param int $file_id
 	 * @return array success state
 	 */
-	public function exportSpaceToPdf(string $baseUrl, string $apiToken, string $userId, int $file_id, string $outputDirPath): array {
+	public function exportSpaceToPdf(string $baseUrl, string $apiToken, string $userId, int $file_id, string $outputDirPath,
+									bool $usesIndexDotPhp): array {
 		$spaceFile = $this->getFileFromId($userId, $file_id);
 		if ($spaceFile) {
 			if ($baseUrl === DEFAULT_SPACEDECK_URL) {
-				$this->spacedeckBundleService->launchSpacedeck();
+				$this->spacedeckBundleService->launchSpacedeck($usesIndexDotPhp);
 			}
 			$spaceFileName = $spaceFile->getName();
 			$targetFileName = preg_replace('/\.whiteboard$/', '.pdf', $spaceFileName);
@@ -186,9 +187,9 @@ class SpacedeckAPIService {
 	 * @param int $file_id
 	 * @return array error or space information
 	 */
-	public function loadSpaceFromFile(string $baseUrl, string $apiToken, ?string $userId, int $file_id): array {
+	public function loadSpaceFromFile(string $baseUrl, string $apiToken, ?string $userId, int $file_id, bool $usesIndexDotPhp): array {
 		if ($baseUrl === DEFAULT_SPACEDECK_URL) {
-			$pid = $this->spacedeckBundleService->launchSpacedeck();
+			$pid = $this->spacedeckBundleService->launchSpacedeck($usesIndexDotPhp);
 		}
 		// load file json content
 		$file = $this->getFileFromId($userId, $file_id);
@@ -359,9 +360,9 @@ class SpacedeckAPIService {
 	 * @param string $apiToken
 	 * @return array API response or request error
 	 */
-	public function getSpaceList(string $baseUrl, string $apiToken): array {
+	public function getSpaceList(string $baseUrl, string $apiToken, bool $usesIndexDotPhp): array {
 		if ($baseUrl === DEFAULT_SPACEDECK_URL) {
-			$this->spacedeckBundleService->launchSpacedeck();
+			$this->spacedeckBundleService->launchSpacedeck($usesIndexDotPhp);
 		}
 		return $this->request($baseUrl, $apiToken, 'spaces');
 	}

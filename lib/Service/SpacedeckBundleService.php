@@ -141,9 +141,10 @@ class SpacedeckBundleService {
 		return !is_null($cmdResult) && $cmdResult['return_code'] === 0;
 	}
 
-	public function launchSpacedeck(): ?int {
+	public function launchSpacedeck(bool $usesIndexDotPhp): ?int {
 		$pid = $this->spacedeckIsRunning();
 		if (!$pid) {
+			$this->setBaseUrl($usesIndexDotPhp);
 			$binaryDirPath = $this->appDataDirPath;
 			$binaryName = 'spacedeck.nexe.bin';
 			$outputName = 'spacedeck.log';
@@ -182,15 +183,6 @@ class SpacedeckBundleService {
 		chmod($this->appDataDirPath . '/spacedeck.nexe.bin', 0700);
 		// chmod($this->appDataDirPath . '/spacedeck.pkg.bin', 0700);
 
-		// set base URL
-		$configPath = $this->appDataDirPath . '/config/default.json';
-		if (file_exists($configPath)) {
-			$config = json_decode(file_get_contents($configPath), true);
-			$config['endpoint'] = $this->getEndpoint();
-			file_put_contents($configPath, json_encode($config, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
-		}
-
-
 		// keep old storage and database
 		if (is_dir($this->appDataDirPath . '.bak')) {
 			if (is_dir($this->appDataDirPath . '.bak/storage')) {
@@ -209,9 +201,18 @@ class SpacedeckBundleService {
 		}
 	}
 
-	private function getEndpoint() {
-		$endpoint = $this->urlGenerator->linkToRouteAbsolute('integration_whiteboard.spacedeckAPI.privateProxyGet', ['path' => '']);
-		$endpoint = rtrim($endpoint, '/');
-		return $endpoint;
+	/**
+	 * add or remove index.php to spacedeck config baseUrl
+	 */
+	private function setBaseUrl(bool $usesIndexDotPhp): void {
+		$instanceBaseUrl = rtrim($this->urlGenerator->getBaseUrl(), '/');
+		$configPath = $this->appDataDirPath . '/config/default.json';
+		if (file_exists($configPath)) {
+			$config = json_decode(file_get_contents($configPath), true);
+			$config['endpoint'] = $usesIndexDotPhp
+				? $instanceBaseUrl . '/index.php/apps/integration_whiteboard/proxy'
+				: $instanceBaseUrl . '/apps/integration_whiteboard/proxy';
+			file_put_contents($configPath, json_encode($config, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
+		}
 	}
 }

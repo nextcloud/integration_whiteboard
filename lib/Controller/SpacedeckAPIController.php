@@ -92,7 +92,7 @@ class SpacedeckAPIController extends Controller {
 			return new DataResponse('Spacedeck not configured', 400);
 		}
 
-		$result = $this->spacedeckApiService->getSpaceList($this->baseUrl, $this->apiToken);
+		$result = $this->spacedeckApiService->getSpaceList($this->baseUrl, $this->apiToken, $this->usesIndexDotPhp());
 		if (isset($result['error'])) {
 			$response = new DataResponse($result['error'], 401);
 		} else {
@@ -111,10 +111,12 @@ class SpacedeckAPIController extends Controller {
 	 */
 	public function exportSpaceToPdf(int $file_id, string $outputDir): DataResponse {
 		if (!$this->apiToken || !$this->baseUrl) {
-			return new DataResponse('Spacedeck not configured', 400);
+			return new DataResponse('Spacedeck is not configured', 400);
 		}
 
-		$result = $this->spacedeckApiService->exportSpaceToPdf($this->baseUrl, $this->apiToken, $this->userId, $file_id,  $outputDir);
+		$result = $this->spacedeckApiService->exportSpaceToPdf(
+			$this->baseUrl, $this->apiToken, $this->userId, $file_id,  $outputDir, $this->usesIndexDotPhp()
+		);
 		if (isset($result['error'])) {
 			$response = new DataResponse(['message' => $result['error']], 401);
 		} else {
@@ -407,13 +409,12 @@ class SpacedeckAPIController extends Controller {
 	 * @return DataResponse
 	 */
 	public function loadSpaceFromFile(int $file_id): DataResponse {
-		error_log('API controller => loadSpaceFromFile');
 		if (!$this->apiToken || !$this->baseUrl) {
 			return new DataResponse('Spacedeck not configured', 400);
 		}
 
 		$result = $this->spacedeckApiService->loadSpaceFromFile(
-			$this->baseUrl, $this->apiToken, $this->userId, $file_id
+			$this->baseUrl, $this->apiToken, $this->userId, $file_id, $this->usesIndexDotPhp()
 		);
 		if (isset($result['error'])) {
 			$response = new DataResponse($result['error'], 401);
@@ -439,7 +440,7 @@ class SpacedeckAPIController extends Controller {
 		}
 
 		$result = $this->spacedeckApiService->loadSpaceFromFile(
-			$this->baseUrl, $this->apiToken, $this->userId, $foundFileId
+			$this->baseUrl, $this->apiToken, $this->userId, $foundFileId, $this->usesIndexDotPhp()
 		);
 		if (isset($result['error'])) {
 			$response = new DataResponse($result['error'], 401);
@@ -479,5 +480,9 @@ class SpacedeckAPIController extends Controller {
 			return false;
 		}
 		return false;
+	}
+
+	private function usesIndexDotPhp(): bool {
+		return preg_match('/index\.php\/apps\/integration_whiteboard/', $_SERVER['REQUEST_URI']) === 1;
 	}
 }
