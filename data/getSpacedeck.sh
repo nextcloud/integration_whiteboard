@@ -14,6 +14,8 @@ cp -r "$1" ./spacedeck
 # fix style.css
 sed -i 's|"/images/|"../images/|g' spacedeck/public/stylesheets/style.css
 sed -i 's|"/fonts/|"../fonts/|g' spacedeck/public/stylesheets/style.css
+sed -i 's|#account-forms > div.active#login form {|#account-forms > div.active#login form {\n      display: none;|g' spacedeck/public/stylesheets/style.css
+sed -i 's|#landing-header {|#landing-header {\n  display: none;|g' spacedeck/public/stylesheets/style.css
 # cleanup
 rm -rf spacedeck/storage spacedeck/database.sqlite
 # put our initial database

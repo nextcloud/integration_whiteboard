@@ -103,7 +103,6 @@ export default {
 				if (this.doneLoading) {
 					this.doneLoading()
 				}
-				this.$nextTick(() => this.applyFrameStyle())
 			}).catch((error) => {
 				console.error(error)
 				showError(
@@ -116,19 +115,11 @@ export default {
 				this.$emit('close')
 			})
 		},
-		applyFrameStyle() {
-			// const style = '.btn-group.vertical > .btn:first-child { display: none !important; }'
-			console.debug('FRRRRRRRR')
-			console.debug(this.$refs.frame.getElementsByClassName('toolbar-elements'))
-			// const doc = this.$refs.frame.contentDocument
-			// doc.body.innerHTML = doc.body.innerHTML + style
-			// this.$refs.frame.append('style', style)
-		},
 		openSidebar() {
 			/*
 			if (OCA.Files.Sidebar && OCA.Viewer) {
 				const filePath = OCA.Viewer.file
-				console.debug('FFPFPFPFPFPF')
+				console.debug('openSidebar')
 				console.debug(filePath)
 				OCA.Files.Sidebar.open(filePath).then((e) => {
 					console.debug('IS open')
@@ -139,7 +130,7 @@ export default {
 			// kind of a trick...until a better way is found
 			const sidebarButtons = document.getElementsByClassName('icon-menu-sidebar-white-forced')
 			if (sidebarButtons.length > 0) {
-				// sidebarButtons[0].click()
+				sidebarButtons[0].click()
 			}
 		},
 	},
