@@ -13,6 +13,7 @@
 import { generateUrl } from '@nextcloud/router'
 import axios from '@nextcloud/axios'
 import { showError } from '@nextcloud/dialogs'
+import '@nextcloud/dialogs/styles/toast.scss'
 import { getCurrentUser } from '@nextcloud/auth'
 
 export default {

@@ -22,6 +22,7 @@ import { subscribe, unsubscribe } from '@nextcloud/event-bus'
 import { imagePath, generateUrl } from '@nextcloud/router'
 import axios from '@nextcloud/axios'
 import { showError, showSuccess } from '@nextcloud/dialogs'
+import '@nextcloud/dialogs/styles/toast.scss'
 
 import Vue from 'vue'
 import PrototypeView from './PrototypeView'
