@@ -223,10 +223,29 @@ class SpacedeckBundleService {
 		}
 	}
 
-	public function deleteArtifactStorage(string $spaceId, string $artifactId): void {
-		$artifactStoragePath = $this->appDataDirPath . '/storage/my_spacedeck_bucket/s' . $spaceId . '/a' . $artifactId;
-		if (is_dir($artifactStoragePath)) {
-			recursiveDelete($artifactStoragePath);
+	public function cleanArtifactStorage(string $spaceId, array $dbArtifactIds): array {
+		$idsToDelete = [];
+		$spaceStoragePath = $this->appDataDirPath . '/storage/my_spacedeck_bucket/s' . $spaceId;
+
+		if (is_dir($spaceStoragePath)) {
+			$dir = opendir($spaceStoragePath);
+			while (($elem = readdir($dir)) !== false) {
+				if (($elem !== '.') && ($elem !== '..') && is_dir($spaceStoragePath . '/' . $elem) && preg_match('/^a/', $elem) === 1) {
+					$fsId = preg_replace('/^a/', '', $elem);
+					if (!in_array($fsId, $dbArtifactIds)) {
+						$idsToDelete[] = $fsId;
+					}
+				}
+			}
+			closedir($dir);
+
+			foreach ($idsToDelete as $id) {
+				$artifactStoragePath = $spaceStoragePath . '/a' . $id;
+				if (is_dir($artifactStoragePath)) {
+					recursiveDelete($artifactStoragePath);
+				}
+			}
 		}
+		return $idsToDelete;
 	}
 }

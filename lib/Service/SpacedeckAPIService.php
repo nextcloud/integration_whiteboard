@@ -417,6 +417,21 @@ class SpacedeckAPIService {
 				} else {
 					$actions[] = 'Deleted space ' . $spaceId;
 				}
+			} else {
+				// file exist: check if storage artifact data should be deleted
+				$artifacts = $this->request($baseUrl, $apiToken, 'spaces/' . $spaceId . '/artifacts');
+				if (isset($artifacts['error'])) {
+					$this->logger->error('Error getting artifacts of space ' . $spaceId . ' : ' . $artifacts['error']);
+				} else {
+					$artifactIds = [];
+					foreach ($artifacts as $artifact) {
+						$artifactIds[] = $artifact['_id'];
+					}
+					$deletedIds = $this->spacedeckBundleService->cleanArtifactStorage($spaceId, $artifactIds);
+					foreach ($deletedIds as $id) {
+						$actions[] = 'Space ' . $spaceId . ' artifact ' . $id . ' deleted';
+					}
+				}
 			}
 		}
 		return ['actions' => $actions];
