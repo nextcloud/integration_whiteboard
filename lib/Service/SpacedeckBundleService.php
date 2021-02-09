@@ -215,4 +215,18 @@ class SpacedeckBundleService {
 			file_put_contents($configPath, json_encode($config, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
 		}
 	}
+
+	public function deleteSpaceStorage(string $spaceId): void {
+		$spaceStoragePath = $this->appDataDirPath . '/storage/my_spacedeck_bucket/s' . $spaceId;
+		if (is_dir($spaceStoragePath)) {
+			recursiveDelete($spaceStoragePath);
+		}
+	}
+
+	public function deleteArtifactStorage(string $spaceId, string $artifactId): void {
+		$artifactStoragePath = $this->appDataDirPath . '/storage/my_spacedeck_bucket/s' . $spaceId . '/a' . $artifactId;
+		if (is_dir($artifactStoragePath)) {
+			recursiveDelete($artifactStoragePath);
+		}
+	}
 }

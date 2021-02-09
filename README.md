@@ -11,6 +11,11 @@ It is required to enable local remote servers requests. Add (or edit) this line 
 'allow_local_remote_servers' => '1',
 ```
 
+Spacedeck has a few optional requirements to be able to convert media files:
+* `graphicsmagick` to convert images
+* `ffmpeg` to convert audio and video files
+* `ghostscript` for pdf import
+
 # Features
 
 * Drawing

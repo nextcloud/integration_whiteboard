@@ -25,6 +25,9 @@ or via public links. Everyone having access to such a file can edit it collabora
         <database min-version="5.5">mysql</database>
         <nextcloud min-version="20" max-version="21"/>
     </dependencies>
+    <commands>
+        <command>OCA\Spacedeck\Command\CleanupSpacedeck</command>
+    </commands>
     <settings>
         <admin>OCA\Spacedeck\Settings\Admin</admin>
         <admin-section>OCA\Spacedeck\Settings\AdminSection</admin-section>

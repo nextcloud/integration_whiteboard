@@ -26,6 +26,8 @@ use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\ServerException;
 use GuzzleHttp\Exception\ConnectException;
 use OCP\Http\Client\LocalServerException;
+use OCP\IUser;
+use OCP\IUserManager;
 
 use OCA\Spacedeck\Service\SpacedeckBundleService;
 use OCA\Spacedeck\AppInfo\Application;
@@ -42,6 +44,7 @@ class SpacedeckAPIService {
 	 */
 	public function __construct (string $appName,
 								IRootFolder $root,
+								IUserManager $userManager,
 								LoggerInterface $logger,
 								IL10N $l10n,
 								IConfig $config,
@@ -52,6 +55,7 @@ class SpacedeckAPIService {
 		$this->logger = $logger;
 		$this->config = $config;
 		$this->root = $root;
+		$this->userManager = $userManager;
 		$this->clientService = $clientService;
 		$this->client = $clientService->newClient();
 		$this->spacedeckBundleService = $spacedeckBundleService;
@@ -368,6 +372,57 @@ class SpacedeckAPIService {
 	}
 
 	/**
+	 * Delete storage data that is not used anymore:
+	 * - everything related to spaces that have no corresponding file
+	 * - data of artifacts that don't exist anymore
+	 * This should be done by spacedeck...
+	 *
+	 * @param string $baseUrl
+	 * @param string $apiToken
+	 * @return array with status and errors
+	 */
+	public function cleanupSpacedeckStorage(string $baseUrl, string $apiToken): array {
+		$spaces = $this->getSpaceList($baseUrl, $apiToken, true);
+		if (isset($spaces['error'])) {
+			return $spaces;
+		}
+		$actions = [];
+		// get all whiteboard file IDs
+		$fileIds = [];
+		$this->userManager->callForSeenUsers(function (IUser $user) use (&$fileIds) {
+			$userFolder = $this->root->getUserFolder($user->getUID());
+			$wbFiles = $userFolder->searchByMime('application/spacedeck');
+			foreach ($wbFiles as $wbFile) {
+				if (!in_array($wbFile->getId())) {
+					$fileIds[] = $wbFile->getId();
+				}
+			}
+		});
+		// check all spaces in spacedeck
+		foreach ($spaces as $space) {
+			$spaceId = $space['_id'];
+			$spaceName = $space['name'];
+			$spaceEditSlug = $space['edit_slug'];
+			// this does not work in the "Command" context because the storage is not set
+			// if ($this->getFileFromId(null, (int) $spaceName) === null) {
+			if (!in_array((int) $spaceName, $fileIds)) {
+				// file does not exist
+				// => delete all data
+				$this->spacedeckBundleService->deleteSpaceStorage($spaceId);
+				$actions[] = 'Deleted storage of space ' . $spaceId;
+				// => and delete the space via the API
+				$response = $this->request($baseUrl, $apiToken, 'spaces/' . $spaceId, [], 'DELETE');
+				if (isset($response['error'])) {
+					$this->logger->error('Error deleting space ' . $spaceId . ' : ' . $response['error']);
+				} else {
+					$actions[] = 'Deleted space ' . $spaceId;
+				}
+			}
+		}
+		return ['actions' => $actions];
+	}
+
+	/**
 	 * @param string $baseUrl
 	 * @param string $apiToken
 	 * @param string $endPoint
@@ -410,7 +465,7 @@ class SpacedeckAPIService {
 			if ($respCode >= 400) {
 				return ['error' => 'Bad credentials'];
 			} else {
-				return json_decode($body, true);
+				return json_decode($body, true) ?? [];
 			}
 		} catch (ServerException | ClientException $e) {
 			$response = $e->getResponse();
