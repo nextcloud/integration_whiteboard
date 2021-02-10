@@ -6,7 +6,7 @@
  * later. See the COPYING file.
  *
  * @author Julien Veyssier <eneiluj@posteo.net>
- * @copyright Julien Veyssier 2020
+ * @copyright Julien Veyssier 2021
  */
 
 namespace OCA\Spacedeck\Controller;

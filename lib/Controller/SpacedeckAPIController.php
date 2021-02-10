@@ -126,18 +126,21 @@ class SpacedeckAPIController extends Controller {
 	}
 
 	/**
+	 * Get main spacedeck public page
+	 * This checks the corresponding file is accessible by requesting user (or the provided token)
+	 *
 	 * @NoAdminRequired
 	 * @NoCSRFRequired
 	 * @PublicPage
 	 *
+	 * @param int $file_id the file ID (which is also the space name and edit_slug)
+	 * @param ?string $token the public share token
+	 * @return DataDisplayResponse
 	 */
-	public function privateProxyGetMain(string $file_id, ?string $token = null): DataDisplayResponse {
-		// error_log('fid '. $file_id. ' and token '. $token);
+	public function privateProxyGetMain(int $file_id, ?string $token = null): DataDisplayResponse {
 		if (!is_null($this->userId) && !is_null($this->spacedeckApiService->getFileFromId($this->userId, $file_id))) {
-			// error_log('============USER '.$this->userId);
 			return $this->proxyGet('spaces/' . $file_id);
 		} elseif (is_null($this->userId) && !is_null($token) && $this->isFileSharedWithToken($token, $file_id)) {
-			// error_log('============public '.$token);
 			return $this->proxyGet('spaces/' . $file_id);
 		} else {
 			return new DataDisplayResponse('Unauthorized', 400);
@@ -145,10 +148,15 @@ class SpacedeckAPIController extends Controller {
 	}
 
 	/**
+	 * Proxy a GET request to Spacedeck
+	 * This checks auth headers for API requests only
+	 *
 	 * @NoAdminRequired
 	 * @NoCSRFRequired
 	 * @PublicPage
 	 *
+	 * @param string $path requested spacedeck path
+	 * @return DataDisplayResponse
 	 */
 	public function privateProxyGet(string $path): DataDisplayResponse {
 		// check auth for /api/spaces/*
@@ -160,10 +168,15 @@ class SpacedeckAPIController extends Controller {
 	}
 
 	/**
+	 * Proxy a DELETE request to Spacedeck
+	 * This checks auth headers
+	 *
 	 * @NoAdminRequired
 	 * @NoCSRFRequired
 	 * @PublicPage
 	 *
+	 * @param string $path requested spacedeck path
+	 * @return DataDisplayResponse
 	 */
 	public function privateProxyDelete(string $path): DataDisplayResponse {
 		if (preg_match('/^api\/sessions\/current$/', $path)) {
@@ -176,10 +189,15 @@ class SpacedeckAPIController extends Controller {
 	}
 
 	/**
+	 * Proxy a PUT request to Spacedeck
+	 * This checks auth headers
+	 *
 	 * @NoAdminRequired
 	 * @NoCSRFRequired
 	 * @PublicPage
 	 *
+	 * @param string $path requested spacedeck path
+	 * @return DataDisplayResponse
 	 */
 	public function privateProxyPut(string $path): DataDisplayResponse {
 		if ($this->checkAuthHeaders(true)) {
@@ -190,10 +208,15 @@ class SpacedeckAPIController extends Controller {
 	}
 
 	/**
+	 * Proxy a POST request to Spacedeck
+	 * This checks auth headers
+	 *
 	 * @NoAdminRequired
 	 * @NoCSRFRequired
 	 * @PublicPage
 	 *
+	 * @param string $path requested spacedeck path
+	 * @return DataDisplayResponse
 	 */
 	public function privateProxyPost(string $path): DataDisplayResponse {
 		if ($this->checkAuthHeaders(true)) {
@@ -203,6 +226,12 @@ class SpacedeckAPIController extends Controller {
 		}
 	}
 
+	/**
+	 * Check if current user (or share token found in auth headers) has access to a spacedeck file
+	 *
+	 * @param bool $needWriteAccess
+	 * @return bool true if has access
+	 */
 	private function checkAuthHeaders(bool $needWriteAccess = false): bool {
 		$spaceName = $_SERVER['HTTP_X_SPACEDECK_SPACE_NAME'] ?? null;
 		$shareToken = $_SERVER['HTTP_X_SPACEDECK_SPACE_TOKEN'] ?? null;
@@ -224,11 +253,17 @@ class SpacedeckAPIController extends Controller {
 		return false;
 	}
 
-	private function proxyGet(string $path) {
+	/**
+	 * Actually forward a GET request with all headers
+	 * Change the response CSP to let Spacedeck live
+	 *
+	 * @param string $path requested spacedeck path
+	 * @return DataDisplayResponse
+	 */
+	private function proxyGet(string $path): DataDisplayResponse {
 		if ($path === 'socket') {
 			return new DataDisplayResponse('impossible to forward socket', 400);
 		}
-		// HINT: set @PublicPage to be able to access outside NC
 		$reqHeaders = getallheaders();
 		$url = $this->baseUrl . '/' . $path;
 		$result = $this->spacedeckApiService->basicRequest($url, [], 'GET', false, $reqHeaders);
@@ -246,12 +281,17 @@ class SpacedeckAPIController extends Controller {
 				}
 			}
 			$h['content-security-policy'] = 'script-src * \'unsafe-eval\' \'unsafe-inline\'';
-			$response = new DataDisplayResponse($content, $respCode, $h);
-			return $response;
+			return new DataDisplayResponse($content, $respCode, $h);
 		}
 	}
 
-	private function proxyDelete(string $path) {
+	/**
+	 * Actually forward a DELETE request with all headers
+	 *
+	 * @param string $path requested spacedeck path
+	 * @return DataDisplayResponse
+	 */
+	private function proxyDelete(string $path): DataDisplayResponse {
 		$reqHeaders = getallheaders();
 		$url = $this->baseUrl . '/' . $path;
 		$result = $this->spacedeckApiService->basicRequest($url, [], 'DELETE', false, $reqHeaders);
@@ -273,13 +313,17 @@ class SpacedeckAPIController extends Controller {
 					$h[$k] = $v[0];
 				}
 			}
-			$h['content-security-policy'] = 'script-src * \'unsafe-eval\' \'unsafe-inline\'';
-			$response = new DataDisplayResponse($content, $respCode, $h);
-			return $response;
+			return new DataDisplayResponse($content, $respCode, $h);
 		}
 	}
 
-	private function proxyPut(string $path) {
+	/**
+	 * Actually forward a PUT request with all headers
+	 *
+	 * @param string $path requested spacedeck path
+	 * @return DataDisplayResponse
+	 */
+	private function proxyPut(string $path): DataDisplayResponse {
 		$body = file_get_contents('php://input');
 		$bodyArray = json_decode($body, true);
 		$reqHeaders = getallheaders();
@@ -303,13 +347,17 @@ class SpacedeckAPIController extends Controller {
 					$h[$k] = $v[0];
 				}
 			}
-			$h['content-security-policy'] = 'script-src * \'unsafe-eval\' \'unsafe-inline\'';
-			$response = new DataDisplayResponse($content, $respCode, $h);
-			return $response;
+			return new DataDisplayResponse($content, $respCode, $h);
 		}
 	}
 
-	private function proxyPost(string $path) {
+	/**
+	 * Actually forward a POST request with all headers
+	 *
+	 * @param string $path requested spacedeck path
+	 * @return DataDisplayResponse
+	 */
+	private function proxyPost(string $path): DataDisplayResponse {
 		$body = file_get_contents('php://input');
 		$bodyArray = json_decode($body, true);
 		$reqHeaders = getallheaders();
@@ -340,11 +388,13 @@ class SpacedeckAPIController extends Controller {
 			if ($path === 'api/sessions') {
 				$h['Set-Cookie'] = $h['Set-Cookie'][0];
 			}
-			$response = new DataDisplayResponse($content, $respCode, $h);
-			return $response;
+			return new DataDisplayResponse($content, $respCode, $h);
 		}
 	}
 
+	/**
+	 * Save space to file
+	 */
 	private function saveSpace(): void {
 		$spaceName = $_SERVER['HTTP_X_SPACEDECK_SPACE_NAME'] ?? null;
 		$result = $this->spacedeckApiService->saveSpaceToFile(
@@ -404,8 +454,11 @@ class SpacedeckAPIController extends Controller {
 	}
 
 	/**
+	 * Load space information from a file
+	 *
 	 * @NoAdminRequired
 	 *
+	 * @param int $file_id
 	 * @return DataResponse
 	 */
 	public function loadSpaceFromFile(int $file_id): DataResponse {
@@ -425,6 +478,8 @@ class SpacedeckAPIController extends Controller {
 	}
 
 	/**
+	 * Load space information from a file
+	 *
 	 * @NoAdminRequired
 	 * @PublicPage
 	 *
@@ -450,6 +505,13 @@ class SpacedeckAPIController extends Controller {
 		return $response;
 	}
 
+	/**
+	 * Check if a share token can access a file
+	 *
+	 * @param string $token
+	 * @param int $file_id the file ID or 0 if the token target is a file (public file share page context)
+	 * @return ?int the file ID or null if this token does not exist or can't access this file
+	 */
 	private function isFileSharedWithToken(string $token, int $file_id): ?int {
 		try {
 			$share = $this->shareManager->getShareByToken($token);
@@ -471,6 +533,13 @@ class SpacedeckAPIController extends Controller {
 		return null;
 	}
 
+	/**
+	 * Check if a token has write access to a file
+	 *
+	 * @param string $token
+	 * @param int $file_id
+	 * @return bool true if has write access
+	 */
 	private function isFileWriteableWithToken(string $token, int $file_id): bool {
 		try {
 			$share = $this->shareManager->getShareByToken($token);
@@ -482,6 +551,11 @@ class SpacedeckAPIController extends Controller {
 		return false;
 	}
 
+	/**
+	 * Check if current request URI includes index.php
+	 *
+	 * @return bool
+	 */
 	private function usesIndexDotPhp(): bool {
 		return preg_match('/index\.php\/apps\/integration_whiteboard/', $_SERVER['REQUEST_URI']) === 1;
 	}

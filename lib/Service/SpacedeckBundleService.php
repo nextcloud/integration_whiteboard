@@ -6,7 +6,7 @@
  * later. See the COPYING file.
  *
  * @author Julien Veyssier
- * @copyright Julien Veyssier 2020
+ * @copyright Julien Veyssier 2021
  */
 
 namespace OCA\Spacedeck\Service;
@@ -98,6 +98,11 @@ class SpacedeckBundleService {
 		return null;
 	}
 
+	/**
+	 * Get a list of Spacedeck process IDs that were launched by the webserver user
+	 *
+	 * @return array list of pids
+	 */
 	private function getSpacedeckPids(): array {
 		$pids = [];
 		$cmd = 'ps x -o user,pid,args';
@@ -116,11 +121,21 @@ class SpacedeckBundleService {
 		return $pids;
 	}
 
+	/**
+	 * Check if there is at least one spacedeck process (launched by the webserver user) running
+	 *
+	 * @return ?int one spacedeck pid, null if there is none
+	 */
 	private function spacedeckIsRunning(): ?int {
 		$pids = $this->getSpacedeckPids();
 		return (count($pids) > 0) ? $pids[0] : null;
 	}
 
+	/**
+	 * Kill all Spacedeck processes
+	 *
+	 * @return bool true on success, false if there is still a process running
+	 */
 	public function killSpacedeck(): bool {
 		$pids = $this->getSpacedeckPids();
 		foreach ($pids as $pid) {
@@ -141,6 +156,12 @@ class SpacedeckBundleService {
 		return !is_null($cmdResult) && $cmdResult['return_code'] === 0;
 	}
 
+	/**
+	 * Launch Spacedeck binary if it's not running already
+	 *
+	 * @param bool $usesIndexDotPhp is this instance accessed with index.php?
+	 * @return ?int the pid of the created/existing process, null if there was a problem
+	 */
 	public function launchSpacedeck(bool $usesIndexDotPhp): ?int {
 		$pid = $this->spacedeckIsRunning();
 		if (!$pid) {
@@ -161,6 +182,9 @@ class SpacedeckBundleService {
 		}
 	}
 
+	/**
+	 * On app install/upgrade, the new spacedeck sources+bin is copied in appdata
+	 */
 	public function copySpacedeckData(): void {
 		$newSpacedeckDataPath = dirname(__DIR__, 2) . '/data/spacedeck';
 		// check if the app contains spacedeck
@@ -202,7 +226,7 @@ class SpacedeckBundleService {
 	}
 
 	/**
-	 * add or remove index.php to spacedeck config baseUrl
+	 * Add or remove index.php to spacedeck config baseUrl
 	 */
 	private function setBaseUrl(bool $usesIndexDotPhp): void {
 		$instanceBaseUrl = rtrim($this->urlGenerator->getBaseUrl(), '/');
@@ -216,6 +240,12 @@ class SpacedeckBundleService {
 		}
 	}
 
+	/**
+	 * Delete all files related to a space in Spacedeck storage
+	 *
+	 * @param string $spaceId
+	 * @return void
+	 */
 	public function deleteSpaceStorage(string $spaceId): void {
 		$spaceStoragePath = $this->appDataDirPath . '/storage/my_spacedeck_bucket/s' . $spaceId;
 		if (is_dir($spaceStoragePath)) {
@@ -223,6 +253,13 @@ class SpacedeckBundleService {
 		}
 	}
 
+	/**
+	 * For a given space, delete all artifact files that are not present in the database
+	 *
+	 * @param string $spaceId
+	 * @param array $dbArtifactIds list of artifact IDs obtained from Spacedeck API
+	 * @return array list of deleted artifact IDs
+	 */
 	public function cleanArtifactStorage(string $spaceId, array $dbArtifactIds): array {
 		$idsToDelete = [];
 		$spaceStoragePath = $this->appDataDirPath . '/storage/my_spacedeck_bucket/s' . $spaceId;

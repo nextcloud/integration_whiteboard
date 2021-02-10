@@ -6,7 +6,7 @@
  * later. See the COPYING file.
  *
  * @author Julien Veyssier
- * @copyright Julien Veyssier 2020
+ * @copyright Julien Veyssier 2021
  */
 
 namespace OCA\Spacedeck\Service;
@@ -62,7 +62,7 @@ class SpacedeckAPIService {
 	}
 
 	/**
-	 * Save a space content in a file
+	 * Trigger Spacedeck pdf export
 	 *
 	 * @param string $baseUrl
 	 * @param string $apiToken
@@ -109,7 +109,7 @@ class SpacedeckAPIService {
 				return ['error' => 'File is locked'];
 			}
 
-			$response = $this->request($baseUrl, $apiToken, 'spaces/' . $file_id . '/pdf');
+			$response = $this->apiRequest($baseUrl, $apiToken, 'spaces/' . $file_id . '/pdf');
 			if (isset($response['error'])) {
 				return $response;
 			} elseif (!isset($response['url'])) {
@@ -157,11 +157,11 @@ class SpacedeckAPIService {
 			// * GET spaces/space_id
 			// * GET spaces/space_id/artifacts
 			// write { space: space_response, artifacts: artifacts_response }
-			$space = $this->request($baseUrl, $apiToken, 'spaces/' . $space_id);
+			$space = $this->apiRequest($baseUrl, $apiToken, 'spaces/' . $space_id);
 			if (isset($space['error'])) {
 				return $space;
 			}
-			$artifacts = $this->request($baseUrl, $apiToken, 'spaces/' . $space_id . '/artifacts');
+			$artifacts = $this->apiRequest($baseUrl, $apiToken, 'spaces/' . $space_id . '/artifacts');
 			if (isset($artifacts['error'])) {
 				return $artifacts;
 			}
@@ -235,7 +235,7 @@ class SpacedeckAPIService {
 			return ['error' => 'File is invalid, no "_id"'];
 		}
 		// check if space_id exists: GET spaces/space_id
-		$space = $this->request($baseUrl, $apiToken, 'spaces/' . $spaceId);
+		$space = $this->apiRequest($baseUrl, $apiToken, 'spaces/' . $spaceId);
 		if (isset($space['error'], $space['errorType']) && $space['errorType'] === 'LocalServerException') {
 			return $space;
 		}
@@ -289,7 +289,7 @@ class SpacedeckAPIService {
 	 * @return void
 	 */
 	private function loadArtifact(string $baseUrl, string $apiToken, string $spaceId, array $artifact): void {
-		$response = $this->request($baseUrl, $apiToken, 'spaces/' . $spaceId . '/artifacts', $artifact, 'POST');
+		$response = $this->apiRequest($baseUrl, $apiToken, 'spaces/' . $spaceId . '/artifacts', $artifact, 'POST');
 		if (isset($response['error'])) {
 			$this->logger->error('Error creating artifact in ' . $spaceId . ' : ' . $response['error']);
 		}
@@ -310,7 +310,7 @@ class SpacedeckAPIService {
 			'name' => $strFileId,
 			'edit_slug' => $strFileId,
 		];
-		return $this->request($baseUrl, $apiToken, 'spaces', $params, 'POST');
+		return $this->apiRequest($baseUrl, $apiToken, 'spaces', $params, 'POST');
 	}
 
 	/**
@@ -368,7 +368,7 @@ class SpacedeckAPIService {
 		if ($baseUrl === DEFAULT_SPACEDECK_URL) {
 			$this->spacedeckBundleService->launchSpacedeck($usesIndexDotPhp);
 		}
-		return $this->request($baseUrl, $apiToken, 'spaces');
+		return $this->apiRequest($baseUrl, $apiToken, 'spaces');
 	}
 
 	/**
@@ -411,7 +411,7 @@ class SpacedeckAPIService {
 				$this->spacedeckBundleService->deleteSpaceStorage($spaceId);
 				$actions[] = 'Deleted storage of space ' . $spaceId;
 				// => and delete the space via the API
-				$response = $this->request($baseUrl, $apiToken, 'spaces/' . $spaceId, [], 'DELETE');
+				$response = $this->apiRequest($baseUrl, $apiToken, 'spaces/' . $spaceId, [], 'DELETE');
 				if (isset($response['error'])) {
 					$this->logger->error('Error deleting space ' . $spaceId . ' : ' . $response['error']);
 				} else {
@@ -419,7 +419,7 @@ class SpacedeckAPIService {
 				}
 			} else {
 				// file exist: check if storage artifact data should be deleted
-				$artifacts = $this->request($baseUrl, $apiToken, 'spaces/' . $spaceId . '/artifacts');
+				$artifacts = $this->apiRequest($baseUrl, $apiToken, 'spaces/' . $spaceId . '/artifacts');
 				if (isset($artifacts['error'])) {
 					$this->logger->error('Error getting artifacts of space ' . $spaceId . ' : ' . $artifacts['error']);
 				} else {
@@ -438,14 +438,16 @@ class SpacedeckAPIService {
 	}
 
 	/**
+	 * Perform a Spacedeck API HTTP request
+	 *
 	 * @param string $baseUrl
 	 * @param string $apiToken
 	 * @param string $endPoint
 	 * @param array $params
 	 * @param string $method
-	 * @return array
+	 * @return array json decoded response or error
 	 */
-	private function request(string $baseUrl, string $apiToken, string $endPoint, array $params = [], string $method = 'GET'): array {
+	private function apiRequest(string $baseUrl, string $apiToken, string $endPoint, array $params = [], string $method = 'GET'): array {
 		try {
 			$url = $baseUrl . '/api/' . $endPoint;
 			$options = [
@@ -499,6 +501,15 @@ class SpacedeckAPIService {
 	}
 
 	/**
+	 * Perform a basic HTTP request
+	 *
+	 * @param string $url
+	 * @param array $params
+	 * @param string $method
+	 * @param bool $jsonOutput
+	 * @param array $extraHeaders
+	 * @param ?string $stringBody
+	 * @return array depending on $jsonOutput: json decoded response or text response body or error
 	 */
 	public function basicRequest(string $url, array $params = [], string $method = 'GET',
 								bool $jsonOutput = false, array $extraHeaders = [], ?string $stringBody = null): array {
@@ -509,7 +520,6 @@ class SpacedeckAPIService {
 				],
 			];
 			foreach ($extraHeaders as $key => $val) {
-				// $options['headers']['X-Spacedeck-Space-Auth'] = $spaceAuth;
 				$options['headers'][$key] = $val;
 			}
 

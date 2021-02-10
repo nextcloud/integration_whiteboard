@@ -41,7 +41,8 @@ class CleanupSpacedeck extends Command {
 
     protected function execute(InputInterface $input, OutputInterface $output) {
         // TODO find a way to setup the filesystem without any user ID
-        // for the moment, cleanup will fail
+        // for the moment, in cleanup command context, root FS is not available
+        // and we have to iterate on all users to get all application/spacedeck files
         // \OC_Util::setupFS('');
 		$apiToken = $this->config->getAppValue(Application::APP_ID, 'api_token', DEFAULT_SPACEDECK_API_KEY);
 		$apiToken = $apiToken ?: DEFAULT_SPACEDECK_API_KEY;
