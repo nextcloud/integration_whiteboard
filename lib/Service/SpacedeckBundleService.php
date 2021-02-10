@@ -164,6 +164,12 @@ class SpacedeckBundleService {
 	 */
 	public function launchSpacedeck(bool $usesIndexDotPhp): ?int {
 		$pid = $this->spacedeckIsRunning();
+		$indexDotPhpMismastch = ($usesIndexDotPhp !== $this->configUsesIndexDotPhp());
+		// if it's running but config base URL is incorrect, kill it
+		if ($pid && $indexDotPhpMismastch) {
+			$this->killSpacedeck();
+			$pid = 0;
+		}
 		if (!$pid) {
 			$this->setBaseUrl($usesIndexDotPhp);
 			$binaryDirPath = $this->appDataDirPath;
@@ -223,6 +229,20 @@ class SpacedeckBundleService {
 			}
 			recursiveDelete($this->appDataDirPath . '.bak');
 		}
+	}
+
+	/**
+	 * Check if congif base URL value contains index.php
+	 *
+	 * @return bool
+	 */
+	private function configUsesIndexDotPhp(): bool {
+		$configPath = $this->appDataDirPath . '/config/default.json';
+		if (file_exists($configPath)) {
+			$config = json_decode(file_get_contents($configPath), true);
+			return preg_match('/index\.php\/apps\/integration_whiteboard/', $config['endpoint']) === 1;
+		}
+		return false;
 	}
 
 	/**

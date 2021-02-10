@@ -375,16 +375,18 @@ class SpacedeckAPIService {
 	 * Delete storage data that is not used anymore:
 	 * - everything related to spaces that have no corresponding file
 	 * - data of artifacts that don't exist anymore
-	 * This should be done by spacedeck...
+	 * This should be done by spacedeck...but it's not ATM
 	 *
 	 * @param string $baseUrl
 	 * @param string $apiToken
 	 * @return array with status and errors
 	 */
 	public function cleanupSpacedeckStorage(string $baseUrl, string $apiToken): array {
-		$spaces = $this->getSpaceList($baseUrl, $apiToken, true);
+		// we don't try to launch spacedeck here because urlGenerator->getBaseUrl()
+		// gives a bad result (path is missing) in a job/command context
+		$spaces = $this->apiRequest($baseUrl, $apiToken, 'spaces');
 		if (isset($spaces['error'])) {
-			return $spaces;
+			return ['error' => 'Spacedeck is unreachable, it might not be running. ' . $spaces['error']];
 		}
 		$actions = [];
 		// get all whiteboard file IDs
