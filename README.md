@@ -1,15 +1,10 @@
 # Whiteboard integration into Nextcloud
 
-🖵 Whiteboard integration into Nextcloud, powered by Spacedeck.
+🖵 Whiteboard integration into Nextcloud, powered by [Spacedeck](https://github.com/spacedeck/spacedeck-open).
 
 # Install
 
 This app will work on 64 bits GNU/Linux servers.
-
-It is required to enable local remote servers requests. Add (or edit) this line in `nextcloud/config/config.php`:
-```
-'allow_local_remote_servers' => '1',
-```
 
 Spacedeck has a few optional requirements to be able to convert media files:
 * `graphicsmagick` to convert images
