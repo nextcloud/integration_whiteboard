@@ -271,7 +271,7 @@ class SpacedeckAPIController extends Controller {
 			return new DataDisplayResponse($result['error'], 400);
 		} else {
 			$spdResponse = $result['response'];
-			$content = $spdResponse->getBody()->getContents();
+			$content = $spdResponse->getBody();
 			$respCode = $spdResponse->getStatusCode();
 
 			$h = $spdResponse->getHeaders();
@@ -304,7 +304,7 @@ class SpacedeckAPIController extends Controller {
 			}
 
 			$spdResponse = $result['response'];
-			$content = $spdResponse->getBody()->getContents();
+			$content = $spdResponse->getBody();
 			$respCode = $spdResponse->getStatusCode();
 
 			$h = $spdResponse->getHeaders();
@@ -338,7 +338,7 @@ class SpacedeckAPIController extends Controller {
 			}
 
 			$spdResponse = $result['response'];
-			$content = $spdResponse->getBody()->getContents();
+			$content = $spdResponse->getBody();
 			$respCode = $spdResponse->getStatusCode();
 
 			$h = $spdResponse->getHeaders();
@@ -376,7 +376,7 @@ class SpacedeckAPIController extends Controller {
 			}
 
 			$spdResponse = $result['response'];
-			$content = $spdResponse->getBody()->getContents();
+			$content = $spdResponse->getBody();
 			$respCode = $spdResponse->getStatusCode();
 
 			$h = $spdResponse->getHeaders();

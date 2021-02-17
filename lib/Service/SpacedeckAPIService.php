@@ -29,8 +29,6 @@ use OCP\Http\Client\LocalServerException;
 use OCP\IUser;
 use OCP\IUserManager;
 
-use GuzzleHttp;
-
 use OCA\Spacedeck\Service\SpacedeckBundleService;
 use OCA\Spacedeck\AppInfo\Application;
 
@@ -59,8 +57,7 @@ class SpacedeckAPIService {
 		$this->root = $root;
 		$this->userManager = $userManager;
 		$this->clientService = $clientService;
-		// $this->client = $clientService->newClient();
-		$this->client = new GuzzleHttp\Client();
+		$this->client = $clientService->allowUnsafeLocalConnection_I_KNOW_WHAT_I_AM_DOING()->newClient();
 		$this->spacedeckBundleService = $spacedeckBundleService;
 	}
 
@@ -473,13 +470,13 @@ class SpacedeckAPIService {
 			}
 
 			if ($method === 'GET') {
-				$response = $this->client->request('GET', $url, $options);
+				$response = $this->client->get($url, $options);
 			} else if ($method === 'POST') {
-				$response = $this->client->request('POST', $url, $options);
+				$response = $this->client->post($url, $options);
 			} else if ($method === 'PUT') {
-				$response = $this->client->request('PUT', $url, $options);
+				$response = $this->client->put($url, $options);
 			} else if ($method === 'DELETE') {
-				$response = $this->client->request('DELETE', $url, $options);
+				$response = $this->client->delete($url, $options);
 			}
 			$body = $response->getBody();
 			$respCode = $response->getStatusCode();
@@ -541,13 +538,13 @@ class SpacedeckAPIService {
 			}
 
 			if ($method === 'GET') {
-				$response = $this->client->request('GET', $url, $options);
+				$response = $this->client->get($url, $options);
 			} else if ($method === 'POST') {
-				$response = $this->client->request('POST', $url, $options);
+				$response = $this->client->post($url, $options);
 			} else if ($method === 'PUT') {
-				$response = $this->client->request('PUT', $url, $options);
+				$response = $this->client->put($url, $options);
 			} else if ($method === 'DELETE') {
-				$response = $this->client->request('DELETE', $url, $options);
+				$response = $this->client->delete($url, $options);
 			}
 			$respCode = $response->getStatusCode();
 
