@@ -57,7 +57,7 @@ class SpacedeckAPIService {
 		$this->root = $root;
 		$this->userManager = $userManager;
 		$this->clientService = $clientService;
-		$this->client = $clientService->allowUnsafeLocalConnection_I_KNOW_WHAT_I_AM_DOING()->newClient();
+		$this->client = $clientService->newClient()->allowUnsafeLocalConnection_I_KNOW_WHAT_I_AM_DOING();
 		$this->spacedeckBundleService = $spacedeckBundleService;
 	}
 
