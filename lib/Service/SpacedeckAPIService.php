@@ -57,7 +57,7 @@ class SpacedeckAPIService {
 		$this->root = $root;
 		$this->userManager = $userManager;
 		$this->clientService = $clientService;
-		$this->client = $clientService->newClient()->allowUnsafeLocalConnection_I_KNOW_WHAT_I_AM_DOING();
+		$this->client = $clientService->newClient();
 		$this->spacedeckBundleService = $spacedeckBundleService;
 	}
 
@@ -457,6 +457,9 @@ class SpacedeckAPIService {
 					'X-Spacedeck-API-Token' => $apiToken,
 					'User-Agent' => 'Nextcloud Spacedeck integration',
 				],
+				'nextcloud' => [
+					'allow_local_address' => true,
+				],
 			];
 
 			if (count($params) > 0) {
@@ -519,6 +522,9 @@ class SpacedeckAPIService {
 			$options = [
 				'headers' => [
 					'User-Agent' => 'Nextcloud Spacedeck integration',
+				],
+				'nextcloud' => [
+					'allow_local_address' => true,
 				],
 			];
 			foreach ($extraHeaders as $key => $val) {
