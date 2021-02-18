@@ -44,8 +44,8 @@ jobs:
           echo "##[set-output name=app_id;]$APP_ID"
           echo "###### copy certificate"
           mkdir -p ~/.nextcloud/certificates
-          # echo "$APP_CRT" > ~/.nextcloud/certificates/${APP_ID}.crt
-          # echo "$APP_KEY" > ~/.nextcloud/certificates/${APP_ID}.key
+          echo "$APP_CRT" > ~/.nextcloud/certificates/${APP_ID}.crt
+          echo "$APP_KEY" > ~/.nextcloud/certificates/${APP_ID}.key
           echo "###### install dependencies"
           export DEBIAN_FRONTEND=noninteractive
           sudo apt update -y
