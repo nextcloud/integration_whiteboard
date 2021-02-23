@@ -12,9 +12,6 @@ or via public links. Everyone having access to such a file can edit it collabora
     <licence>agpl</licence>
     <author>Julien Veyssier</author>
     <namespace>Spacedeck</namespace>
-    <documentation>
-        <developer>https://github.com/nextcloud/integration_whiteboard/wikis</developer>
-    </documentation>
     <category>integration</category>
     <website>https://github.com/nextcloud/integration_whiteboard</website>
     <bugs>https://github.com/nextcloud/integration_whiteboard/issues</bugs>
