@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## 0.0.13 – 2021-02-23
 ### Fixed
 - app extraction failing with "Out-of-path file extraction" because of symlinks
 

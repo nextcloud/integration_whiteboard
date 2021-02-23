@@ -10,10 +10,12 @@ or via public links. Everyone having access with write permissions to such a fil
 
 This app works on 64 bits GNU/Linux servers.
 
-Spacedeck has a few optional requirements to be able to convert media files:
+Spacedeck has a few **optional** requirements to be able to convert media files:
 * `graphicsmagick` to convert images
 * `ffmpeg` to convert audio and video files
 * `ghostscript` for pdf import
+
+As the app includes a bundled Spacedeck server, just install this app in Nextcloud app settings.
 
 # 𝄘 Features
 
