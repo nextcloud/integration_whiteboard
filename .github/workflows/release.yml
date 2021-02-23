@@ -67,6 +67,8 @@ jobs:
           git clone https://github.com/eneiluj/spacedeck-open -b eneiluj-master --single-branch ~/spacedeck-open
           cd ~/spacedeck-open
           npm install
+          # this fixes the app extraction issue
+          find ./node_modules -type l -delete
 
           cd $GITHUB_WORKSPACE/data
           ./getSpacedeck.sh ~/spacedeck-open
