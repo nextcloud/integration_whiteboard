@@ -13,12 +13,12 @@ or via public links. Everyone having access to such a file can edit it collabora
     <author>Julien Veyssier</author>
     <namespace>Spacedeck</namespace>
     <documentation>
-        <developer>https://github.com/eneiluj/integration_whiteboard/wikis</developer>
+        <developer>https://github.com/nextcloud/integration_whiteboard/wikis</developer>
     </documentation>
     <category>integration</category>
-    <website>https://github.com/eneiluj/integration_whiteboard</website>
-    <bugs>https://github.com/eneiluj/integration_whiteboard/issues</bugs>
-    <screenshot>https://github.com/eneiluj/integration_whiteboard/raw/master/img/screenshot1.jpg</screenshot>
+    <website>https://github.com/nextcloud/integration_whiteboard</website>
+    <bugs>https://github.com/nextcloud/integration_whiteboard/issues</bugs>
+    <screenshot>https://raw.githubusercontent.com/nextcloud/integration_whiteboard/master/img/screenshot1.jpg</screenshot>
     <dependencies>
         <database min-version="9.4">pgsql</database>
         <database>sqlite</database>
