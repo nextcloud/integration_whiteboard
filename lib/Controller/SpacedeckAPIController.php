@@ -84,10 +84,10 @@ class SpacedeckAPIController extends Controller {
 
 	/**
 	 * Wrapper for getallheaders to unset 0 length strings
-	 * 
+	 *
 	 * @return Array
 	 */
-	public function getallheadersWrapper(): Array {
+	private function getallheadersWrapper(): Array {
 		$headers = getallheaders();
 
 		foreach ($headers as $name => $value) {
