@@ -83,6 +83,23 @@ class SpacedeckAPIController extends Controller {
 	}
 
 	/**
+	 * Wrapper for getallheaders to unset 0 length strings
+	 * 
+	 * @return Array
+	 */
+	public function getallheadersWrapper(): Array {
+		$headers = getallheaders();
+
+		foreach ($headers as $name => $value) {
+			if ($value === '') {
+				unset($headers[$name]);
+			}
+		}
+
+		return $headers;
+	}
+
+	/**
 	 * Get spaces list, used by admin settings to test if spacedeck API is accessible
 	 *
 	 * @return DataResponse
@@ -264,7 +281,7 @@ class SpacedeckAPIController extends Controller {
 		if ($path === 'socket') {
 			return new DataDisplayResponse('impossible to forward socket', 400);
 		}
-		$reqHeaders = getallheaders();
+		$reqHeaders = $this->getallheadersWrapper();
 		$url = $this->baseUrl . '/' . $path;
 		$result = $this->spacedeckApiService->basicRequest($url, [], 'GET', false, $reqHeaders);
 		if (isset($result['error'])) {
@@ -292,7 +309,7 @@ class SpacedeckAPIController extends Controller {
 	 * @return DataDisplayResponse
 	 */
 	private function proxyDelete(string $path): DataDisplayResponse {
-		$reqHeaders = getallheaders();
+		$reqHeaders = $this->getallheadersWrapper();
 		$url = $this->baseUrl . '/' . $path;
 		$result = $this->spacedeckApiService->basicRequest($url, [], 'DELETE', false, $reqHeaders);
 		if (isset($result['error'])) {
@@ -326,7 +343,7 @@ class SpacedeckAPIController extends Controller {
 	private function proxyPut(string $path): DataDisplayResponse {
 		$body = file_get_contents('php://input');
 		$bodyArray = json_decode($body, true);
-		$reqHeaders = getallheaders();
+		$reqHeaders = $this->getallheadersWrapper();
 		$url = $this->baseUrl . '/' . $path;
 		$result = $this->spacedeckApiService->basicRequest($url, $bodyArray, 'PUT', false, $reqHeaders);
 		if (isset($result['error'])) {
@@ -360,7 +377,7 @@ class SpacedeckAPIController extends Controller {
 	private function proxyPost(string $path): DataDisplayResponse {
 		$body = file_get_contents('php://input');
 		$bodyArray = json_decode($body, true);
-		$reqHeaders = getallheaders();
+		$reqHeaders = $this->getallheadersWrapper();
 		$url = $this->baseUrl . '/' . $path;
 		// don't miss the get param in post request...
 		if (preg_match('/.*\/payload$/', $path)) {
