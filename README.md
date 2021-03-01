@@ -6,6 +6,8 @@ This app integrates Spacedeck whiteboard server. It lets Nextcloud users create 
 which can then be opened in the Files app and in Talk. Those files can be shared to other users
 or via public links. Everyone having access with write permissions to such a file can edit it collaboratively.
 
+⚠ This app is still experimental and can fail in some custom Nextcloud setups.
+
 # 🛠 Install
 
 This app works on 64 bits GNU/Linux servers.
