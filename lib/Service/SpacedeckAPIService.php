@@ -59,6 +59,7 @@ class SpacedeckAPIService {
 		$this->clientService = $clientService;
 		$this->client = $clientService->newClient();
 		$this->spacedeckBundleService = $spacedeckBundleService;
+		$this->useLocalSpacedeck = $this->config->getAppValue(Application::APP_ID, 'use_local_spacedeck', '1') === '1';
 	}
 
 	/**
@@ -75,7 +76,7 @@ class SpacedeckAPIService {
 									bool $usesIndexDotPhp): array {
 		$spaceFile = $this->getFileFromId($userId, $file_id);
 		if ($spaceFile) {
-			if ($baseUrl === DEFAULT_SPACEDECK_URL) {
+			if ($this->useLocalSpacedeck) {
 				$this->spacedeckBundleService->launchSpacedeck($usesIndexDotPhp);
 			}
 			$spaceFileName = $spaceFile->getName();
@@ -192,7 +193,7 @@ class SpacedeckAPIService {
 	 * @return array error or space information
 	 */
 	public function loadSpaceFromFile(string $baseUrl, string $apiToken, ?string $userId, int $file_id, bool $usesIndexDotPhp): array {
-		if ($baseUrl === DEFAULT_SPACEDECK_URL) {
+		if ($this->useLocalSpacedeck) {
 			$pid = $this->spacedeckBundleService->launchSpacedeck($usesIndexDotPhp);
 		}
 		// load file json content
@@ -365,7 +366,7 @@ class SpacedeckAPIService {
 	 * @return array API response or request error
 	 */
 	public function getSpaceList(string $baseUrl, string $apiToken, bool $usesIndexDotPhp): array {
-		if ($baseUrl === DEFAULT_SPACEDECK_URL) {
+		if ($this->useLocalSpacedeck) {
 			$this->spacedeckBundleService->launchSpacedeck($usesIndexDotPhp);
 		}
 		return $this->apiRequest($baseUrl, $apiToken, 'spaces');

@@ -78,8 +78,14 @@ class SpacedeckAPIController extends Controller {
 		$this->spacedeckApiService = $spacedeckApiService;
 		$this->apiToken = $this->config->getAppValue(Application::APP_ID, 'api_token', DEFAULT_SPACEDECK_API_KEY);
 		$this->apiToken = $this->apiToken ?: DEFAULT_SPACEDECK_API_KEY;
-		$this->baseUrl = $this->config->getAppValue(Application::APP_ID, 'base_url', DEFAULT_SPACEDECK_URL);
-		$this->baseUrl = $this->baseUrl ?: DEFAULT_SPACEDECK_URL;
+
+		$useLocalSpacedeck = $this->config->getAppValue(Application::APP_ID, 'use_local_spacedeck', '1') === '1';
+		if ($useLocalSpacedeck) {
+			$this->baseUrl = DEFAULT_SPACEDECK_URL;
+		} else {
+			$this->baseUrl = $this->config->getAppValue(Application::APP_ID, 'base_url', DEFAULT_SPACEDECK_URL);
+			$this->baseUrl = $this->baseUrl ?: DEFAULT_SPACEDECK_URL;
+		}
 	}
 
 	/**

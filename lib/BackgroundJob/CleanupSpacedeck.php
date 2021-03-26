@@ -64,18 +64,21 @@ class CleanupSpacedeck extends TimedJob {
 	}
 
 	protected function run($argument): void {
-		$apiToken = $this->config->getAppValue(Application::APP_ID, 'api_token', DEFAULT_SPACEDECK_API_KEY);
-		$apiToken = $apiToken ?: DEFAULT_SPACEDECK_API_KEY;
-		$baseUrl = $this->config->getAppValue(Application::APP_ID, 'base_url', DEFAULT_SPACEDECK_URL);
-		$baseUrl = $baseUrl ?: DEFAULT_SPACEDECK_URL;
+		$useLocalSpacedeck = $this->config->getAppValue(Application::APP_ID, 'use_local_spacedeck', '1') === '1';
+		if ($useLocalSpacedeck) {
+			$apiToken = $this->config->getAppValue(Application::APP_ID, 'api_token', DEFAULT_SPACEDECK_API_KEY);
+			$apiToken = $apiToken ?: DEFAULT_SPACEDECK_API_KEY;
+			$baseUrl = $this->config->getAppValue(Application::APP_ID, 'base_url', DEFAULT_SPACEDECK_URL);
+			$baseUrl = $baseUrl ?: DEFAULT_SPACEDECK_URL;
 
-        $result = $this->apiService->cleanupSpacedeckStorage($baseUrl, $apiToken);
-        if (isset($result['error'])) {
-			$this->logger->error('[ERROR] ' . $result['error']);
-        } elseif (isset($result['actions'])) {
-            foreach ($result['actions'] as $action) {
-				$this->logger->info($action);
-            }
-        }
+			$result = $this->apiService->cleanupSpacedeckStorage($baseUrl, $apiToken);
+			if (isset($result['error'])) {
+				$this->logger->error('[ERROR] ' . $result['error']);
+			} elseif (isset($result['actions'])) {
+				foreach ($result['actions'] as $action) {
+					$this->logger->info($action);
+				}
+			}
+		}
 	}
 }

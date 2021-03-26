@@ -25,39 +25,42 @@ require_once __DIR__ . '/../constants.php';
 
 class CleanupSpacedeck extends Command {
 
-    protected $output;
+	protected $output;
 
-    public function __construct(SpacedeckAPIService $apiService,
-                                IConfig $config) {
-        parent::__construct();
-        $this->config = $config;
-        $this->apiService = $apiService;
-    }
+	public function __construct(SpacedeckAPIService $apiService,
+								IConfig $config) {
+		parent::__construct();
+		$this->config = $config;
+		$this->apiService = $apiService;
+	}
 
-    protected function configure() {
-        $this->setName('integration_whiteboard:cleanup-spacedeck')
-            ->setDescription('Cleanup Spacedeck storage and database');
-    }
+	protected function configure() {
+		$this->setName('integration_whiteboard:cleanup-spacedeck')
+			->setDescription('Cleanup Spacedeck storage and database');
+	}
 
-    protected function execute(InputInterface $input, OutputInterface $output) {
-        // TODO find a way to setup the filesystem without any user ID
-        // for the moment, in cleanup command context, root FS is not available
-        // and we have to iterate on all users to get all application/spacedeck files
-        // \OC_Util::setupFS('');
-		$apiToken = $this->config->getAppValue(Application::APP_ID, 'api_token', DEFAULT_SPACEDECK_API_KEY);
-		$apiToken = $apiToken ?: DEFAULT_SPACEDECK_API_KEY;
-		$baseUrl = $this->config->getAppValue(Application::APP_ID, 'base_url', DEFAULT_SPACEDECK_URL);
-		$baseUrl = $baseUrl ?: DEFAULT_SPACEDECK_URL;
+	protected function execute(InputInterface $input, OutputInterface $output) {
+		// TODO find a way to setup the filesystem without any user ID
+		// for the moment, in cleanup command context, root FS is not available
+		// and we have to iterate on all users to get all application/spacedeck files
+		// \OC_Util::setupFS('');
+		$useLocalSpacedeck = $this->config->getAppValue(Application::APP_ID, 'use_local_spacedeck', '1') === '1';
+		if ($useLocalSpacedeck) {
+			$apiToken = $this->config->getAppValue(Application::APP_ID, 'api_token', DEFAULT_SPACEDECK_API_KEY);
+			$apiToken = $apiToken ?: DEFAULT_SPACEDECK_API_KEY;
+			$baseUrl = $this->config->getAppValue(Application::APP_ID, 'base_url', DEFAULT_SPACEDECK_URL);
+			$baseUrl = $baseUrl ?: DEFAULT_SPACEDECK_URL;
 
-        $result = $this->apiService->cleanupSpacedeckStorage($baseUrl, $apiToken);
-        if (isset($result['error'])) {
-            $output->writeln('[ERROR] ' . $result['error']);
-            return 1;
-        } elseif (isset($result['actions'])) {
-            foreach ($result['actions'] as $action) {
-                $output->writeln($action);
-            }
-        }
-        return 0;
-    }
+			$result = $this->apiService->cleanupSpacedeckStorage($baseUrl, $apiToken);
+			if (isset($result['error'])) {
+				$output->writeln('[ERROR] ' . $result['error']);
+				return 1;
+			} elseif (isset($result['actions'])) {
+				foreach ($result['actions'] as $action) {
+					$output->writeln($action);
+				}
+			}
+		}
+		return 0;
+	}
 }

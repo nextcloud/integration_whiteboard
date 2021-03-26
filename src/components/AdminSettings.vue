@@ -4,43 +4,60 @@
 			<a class="icon icon-spacedeck" />
 			{{ t('integration_whiteboard', 'Spacedeck whiteboard integration') }}
 		</h2>
-		<!--p class="settings-hint">
-			<span class="icon icon-details" />
-			{{ t('integration_whiteboard', 'Leave those values empty to use the default included Spacedeck server.') }}
-		</p>
 		<p class="settings-hint">
+			<span class="icon icon-error" />
+			{{ t('integration_whiteboard', 'Spacedeck data couldn\'t be copied to local data directory. Please deploy Spacedeck yourself.') }}
+			<a class="external"
+				href="">
+				{{ t('integration_whiteboard', 'How to deploy Spacedeck for Nextcloud') }}
+			</a>
+		</p>
+		<!--p class="settings-hint">
 			{{ t('integration_whiteboard', 'If you set up Spacedeck yourself, create a dedicated user in Spacedeck and set an API token in user account settings.') }}
 		</p-->
-		<div class="grid-form">
-			<!--label for="spacedeck-baseurl">
-				<a class="icon icon-link" />
-				{{ t('integration_whiteboard', 'Base URL') }}
+		<div id="toggle-local">
+			<input id="spacedeck-local"
+				type="checkbox"
+				class="checkbox"
+				:checked="state.use_local_spacedeck"
+				@input="onLocalInput">
+			<label for="spacedeck-local">
+				{{ t('integration_whiteboard', 'Use integrated Spacedeck server') }}
 			</label>
-			<input id="spacedeck-baseurl"
+			<br>
+			<br>
+			<p v-if="!state.use_local_spacedeck"
+				class="settings-hint">
+				<span class="icon icon-info" />
+				{{ t('integration_whiteboard', 'The "endpoint" value of Spacedeck config should be "{spacedeckEndpoint}".', { spacedeckEndpoint }) }}
+			</p>
+			<p v-if="!state.use_local_spacedeck"
+				class="settings-hint">
+				<span class="icon icon-info" />
+				{{ t('integration_whiteboard', 'Spacedeck base URL is the address where Spacedeck can be contacted, from your webserver point of view.') }}
+			</p>
+		</div>
+		<div class="grid-form">
+			<label v-if="!state.use_local_spacedeck"
+				for="spacedeck-baseurl">
+				<a class="icon icon-link" />
+				{{ t('integration_whiteboard', 'Spacedeck base URL') }}
+			</label>
+			<input v-if="!state.use_local_spacedeck"
+				id="spacedeck-baseurl"
 				v-model="state.base_url"
 				type="text"
 				:placeholder="t('integration_whiteboard', 'Your Spacedeck base URL')"
 				@input="onInput">
-			<label for="spacedeck-apitoken">
-				<a class="icon icon-category-auth" />
-				{{ t('integration_whiteboard', 'API token') }}
-			</label>
-			<input id="spacedeck-apitoken"
-				v-model="state.api_token"
-				type="password"
-				:readonly="readonly"
-				:placeholder="t('integration_whiteboard', 'Your Spacedeck API token')"
-				@input="onInput"
-				@focus="readonly = false"-->
-			<button
-				:class="{ 'icon-loading-small': checking }"
-				@click="checkSpacedeck">
-				{{ t('integration_whiteboard', 'Check Spacedeck config') }}
-			</button>
-			<label class="check-label">
-				{{ checkText }}
-			</label>
 		</div>
+		<button
+			:class="{ 'icon-loading-small': checking }"
+			@click="checkSpacedeck">
+			{{ t('integration_whiteboard', 'Check Spacedeck config') }}
+		</button>
+		<label class="check-label">
+			{{ checkText }}
+		</label>
 	</div>
 </template>
 
@@ -69,6 +86,7 @@ export default {
 	data() {
 		return {
 			state: loadState('integration_whiteboard', 'admin-config'),
+			spacedeckEndpoint: window.location.protocol + '//' + window.location.host + generateUrl('/apps/integration_whiteboard/proxy'),
 			// to prevent some browsers to fill fields with remembered passwords
 			readonly: true,
 			checking: false,
@@ -99,17 +117,18 @@ export default {
 	},
 
 	methods: {
+		onLocalInput(e) {
+			this.state.use_local_spacedeck = e.target.checked
+			this.saveOptions({ use_local_spacedeck: e.target.checked })
+		},
 		onInput() {
 			delay(() => {
-				this.saveOptions()
+				this.saveOptions({ base_url: this.state.base_url })
 			}, 2000)()
 		},
-		saveOptions() {
+		saveOptions(values) {
 			const req = {
-				values: {
-					base_url: this.state.base_url,
-					api_token: this.state.api_token,
-				},
+				values,
 			}
 			const url = generateUrl('/apps/integration_whiteboard/admin-config')
 			axios.put(url, req)
@@ -174,7 +193,7 @@ export default {
 		max-width: 500px;
 		display: grid;
 		grid-template: 1fr / 1fr 1fr;
-		margin-left: 30px;
+		margin: 0 0 40px 30px;
 
 		.icon {
 			margin-bottom: -3px;
@@ -196,6 +215,14 @@ export default {
 	.icon {
 		display: inline-block;
 		width: 32px;
+	}
+
+	#toggle-local {
+		margin-left: 35px;
+		.settings-hint .icon {
+			width: 24px;
+			padding: 11px 11px;
+		}
 	}
 }
 

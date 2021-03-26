@@ -47,12 +47,7 @@ class Application extends App implements IBootstrap {
 		$eventDispatcher = $server->getEventDispatcher();
 		$this->addPrivateListeners($eventDispatcher);
 
-		$spacedeckUrl = $container->getServer()->getConfig()->getAppValue(self::APP_ID, 'base_url', DEFAULT_SPACEDECK_URL);
-		if ($spacedeckUrl !== DEFAULT_SPACEDECK_URL) {
-			$this->updateCSP($spacedeckUrl);
-		} else {
-			$this->updateCSP();
-		}
+		$this->updateCSP();
 	}
 
 	protected function addPrivateListeners($eventDispatcher) {

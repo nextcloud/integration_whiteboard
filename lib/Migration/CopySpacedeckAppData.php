@@ -24,16 +24,21 @@ namespace OCA\Spacedeck\Migration;
 use OCP\Migration\IOutput;
 use OCP\Migration\IRepairStep;
 use OCP\ILogger;
+use OCP\IConfig;
 
+use OCA\Spacedeck\AppInfo\Application;
 use OCA\Spacedeck\Service\SpacedeckBundleService;
 
 class CopySpacedeckAppData implements IRepairStep {
 	protected $logger;
 	private $customMimetypeMapping;
 
-	public function __construct(ILogger $logger, SpacedeckBundleService $service) {
+	public function __construct(ILogger $logger,
+								SpacedeckBundleService $service,
+								IConfig $config) {
 		$this->logger = $logger;
 		$this->service = $service;
+		$this->config = $config;
 	}
 
 	public function getName() {
@@ -44,8 +49,13 @@ class CopySpacedeckAppData implements IRepairStep {
 		$this->logger->info('Copying Spacedeck data...');
 
 		$this->service->killSpacedeck();
-		$this->service->copySpacedeckData();
-
-		$this->logger->info('Spacedeck data successfully copied!');
+		try {
+			$this->service->copySpacedeckData();
+			$this->config->setAppValue(Application::APP_ID, 'spacedeck_data_copied', '1');
+			$this->logger->info('Spacedeck data successfully copied!');
+		} catch (Exception | Throwable $e) {
+			$this->config->setAppValue(Application::APP_ID, 'spacedeck_data_copied', '0');
+			$this->logger->warning('Impossible to copy Spacedeck data');
+		}
 	}
 }

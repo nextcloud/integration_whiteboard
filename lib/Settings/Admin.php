@@ -43,12 +43,14 @@ class Admin implements ISettings {
 	 * @return TemplateResponse
 	 */
 	public function getForm(): TemplateResponse {
-		$apiToken = $this->config->getAppValue(Application::APP_ID, 'api_token', '');
+		$useLocalSpacedeck = $this->config->getAppValue(Application::APP_ID, 'use_local_spacedeck', '1') === '1';
 		$baseUrl = $this->config->getAppValue(Application::APP_ID, 'base_url', '');
+		$dataCopied = $this->config->getAppValue(Application::APP_ID, 'spacedeck_data_copied', '0') === '1';
 
 		$adminConfig = [
-			'api_token' => $apiToken,
+			'use_local_spacedeck' => $useLocalSpacedeck,
 			'base_url' => $baseUrl,
+			'spacedeck_data_copied' => $dataCopied,
 		];
 		$this->initialStateService->provideInitialState($this->appName, 'admin-config', $adminConfig);
 		return new TemplateResponse(Application::APP_ID, 'adminSettings');
