@@ -9,6 +9,7 @@
 
 namespace OCA\Spacedeck\AppInfo;
 
+use OCP\IConfig;
 use OCP\IContainer;
 use OCP\Util;
 use OCP\AppFramework\App;
@@ -47,7 +48,15 @@ class Application extends App implements IBootstrap {
 		$eventDispatcher = $server->getEventDispatcher();
 		$this->addPrivateListeners($eventDispatcher);
 
-		$this->updateCSP();
+		$config = $container->get(IConfig::class);
+		$useLocalSpacedeck = $config->getAppValue(self::APP_ID, 'use_local_spacedeck', '1') === '1';
+		$url = '';
+		if (!$useLocalSpacedeck) {
+			$url = $config->getAppValue(Application::APP_ID, 'base_url', DEFAULT_SPACEDECK_URL);
+			$url = $url ?: DEFAULT_SPACEDECK_URL;
+		}
+
+		$this->updateCSP($url);
 	}
 
 	protected function addPrivateListeners($eventDispatcher) {
