@@ -79,6 +79,7 @@ export default {
 
 	destroyed() {
 		console.debug('DESTROYED')
+		this.saveSpace()
 	},
 
 	methods: {
@@ -122,6 +123,13 @@ export default {
 					OCA.Viewer.close()
 				}
 				this.$emit('close')
+			})
+		},
+		saveSpace() {
+			axios.post(this.saveSpaceUrl).then((response) => {
+				console.debug('FILE SAVED', response.data)
+			}).catch((error) => {
+				console.error(error)
 			})
 		},
 		openSidebar() {
