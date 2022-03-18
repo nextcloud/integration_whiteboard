@@ -86,29 +86,28 @@ export default {
 			console.debug(this.loadSpaceUrl)
 			// load the file into spacedeck (only if no related space exists)
 			axios.get(this.loadSpaceUrl).then((response) => {
-				this.spaceId = response.data.space_id
-				// TODO get the isLocal param in this response to decide if we use base_url or the proxy
-				this.spaceUrl = response.data.base_url + '/spaces/' + this.spaceId
-					+ '?spaceAuth=' + response.data.edit_hash
-					+ this.nicknameParam
-				if (this.doneLoading) {
-					this.doneLoading()
-				}
 				console.debug('response.data', response.data)
-				/*
-				this.spaceUrl = this.user
-					? generateUrl('/apps/integration_whiteboard/proxy')
+				this.spaceId = response.data.space_id
+				if (!response.data.use_local_spacedeck) {
+					// access spacedeck directly in the frame
+					this.spaceUrl = response.data.base_url + '/spaces/' + this.spaceId
+						+ '?spaceAuth=' + response.data.edit_hash
+						+ this.nicknameParam
+				} else {
+					// use the proxy
+					this.spaceUrl = this.user
+						? generateUrl('/apps/integration_whiteboard/proxy')
 						+ '/spaces/' + this.fileid
 						+ '?spaceAuth=' + response.data.edit_hash
 						+ this.nicknameParam
 						+ '&spaceName=' + response.data.space_name
-					: generateUrl('/apps/integration_whiteboard/proxy')
+						: generateUrl('/apps/integration_whiteboard/proxy')
 						+ '/spaces/' + response.data.space_name
 						+ '?spaceAuth=' + response.data.edit_hash
 						+ this.nicknameParam
 						+ '&token=' + this.sharingToken
 						+ '&spaceName=' + response.data.space_name
-				*/
+				}
 				// this method only exists when this component is loaded in the Viewer context
 				if (this.doneLoading) {
 					this.doneLoading()

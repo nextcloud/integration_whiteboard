@@ -37,17 +37,25 @@
 				{{ t('integration_whiteboard', 'Spacedeck base URL is the address where Spacedeck can be contacted, from your webserver point of view.') }}
 			</p>
 		</div>
-		<div class="grid-form">
-			<label v-if="!state.use_local_spacedeck"
-				for="spacedeck-baseurl">
+		<div v-if="!state.use_local_spacedeck"
+			class="grid-form">
+			<label for="spacedeck-baseurl">
 				<a class="icon icon-link" />
 				{{ t('integration_whiteboard', 'Spacedeck base URL') }}
 			</label>
-			<input v-if="!state.use_local_spacedeck"
-				id="spacedeck-baseurl"
+			<input id="spacedeck-baseurl"
 				v-model="state.base_url"
 				type="text"
 				:placeholder="t('integration_whiteboard', 'Your Spacedeck base URL')"
+				@input="onInput">
+			<label for="spacedeck-baseurl">
+				<a class="icon icon-password" />
+				{{ t('integration_whiteboard', 'Spacedeck user API token') }}
+			</label>
+			<input id="spacedeck-baseurl"
+				v-model="state.api_token"
+				type="password"
+				:placeholder="t('integration_whiteboard', 'Your Spacedeck user API token')"
 				@input="onInput">
 		</div>
 		<button
@@ -119,11 +127,21 @@ export default {
 	methods: {
 		onLocalInput(e) {
 			this.state.use_local_spacedeck = e.target.checked
-			this.saveOptions({ use_local_spacedeck: e.target.checked })
+			const values = {
+				use_local_spacedeck: e.target.checked,
+			}
+			if (this.state.use_local_spacedeck) {
+				this.state.api_token = ''
+				values.api_token = ''
+			}
+			this.saveOptions(values)
 		},
 		onInput() {
 			delay(() => {
-				this.saveOptions({ base_url: this.state.base_url })
+				this.saveOptions({
+					base_url: this.state.base_url,
+					api_token: this.state.api_token,
+				})
 			}, 2000)()
 		},
 		saveOptions(values) {

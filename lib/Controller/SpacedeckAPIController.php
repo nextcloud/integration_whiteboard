@@ -79,8 +79,8 @@ class SpacedeckAPIController extends Controller {
 		$this->apiToken = $this->config->getAppValue(Application::APP_ID, 'api_token', DEFAULT_SPACEDECK_API_KEY);
 		$this->apiToken = $this->apiToken ?: DEFAULT_SPACEDECK_API_KEY;
 
-		$useLocalSpacedeck = $this->config->getAppValue(Application::APP_ID, 'use_local_spacedeck', '1') === '1';
-		if ($useLocalSpacedeck) {
+		$this->useLocalSpacedeck = $this->config->getAppValue(Application::APP_ID, 'use_local_spacedeck', '1') === '1';
+		if ($this->useLocalSpacedeck) {
 			$this->baseUrl = DEFAULT_SPACEDECK_URL;
 		} else {
 			$this->baseUrl = $this->config->getAppValue(Application::APP_ID, 'base_url', DEFAULT_SPACEDECK_URL);
@@ -495,6 +495,7 @@ class SpacedeckAPIController extends Controller {
 		if (isset($result['error'])) {
 			$response = new DataResponse($result['error'], 401);
 		} else {
+			$result['use_local_spacedeck'] = $this->useLocalSpacedeck;
 			$response = new DataResponse($result);
 		}
 		return $response;
@@ -523,6 +524,7 @@ class SpacedeckAPIController extends Controller {
 		if (isset($result['error'])) {
 			$response = new DataResponse($result['error'], 401);
 		} else {
+			$result['use_local_spacedeck'] = $this->useLocalSpacedeck;
 			$response = new DataResponse($result);
 		}
 		return $response;

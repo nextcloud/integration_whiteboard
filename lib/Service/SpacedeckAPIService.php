@@ -227,7 +227,7 @@ class SpacedeckAPIService {
 		// file is not empty, try to load it
 		try {
 			$decoded = json_decode($fileContent, true);
-		} catch (Exception | Throwable $e) {
+		} catch (\Exception | \Throwable $e) {
 			return ['error' => 'File is invalid, impossible to parse JSON'];
 		}
 		if (isset($decoded['space'], $decoded['space']['_id'])) {
