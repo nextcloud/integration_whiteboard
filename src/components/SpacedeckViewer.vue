@@ -79,7 +79,7 @@ export default {
 
 	destroyed() {
 		console.debug('DESTROYED')
-		this.saveSpace()
+		this.stopListeningToFrameMessages()
 	},
 
 	methods: {
@@ -113,6 +113,7 @@ export default {
 				if (this.doneLoading) {
 					this.doneLoading()
 				}
+				this.listenToFrameMessages()
 			}).catch((error) => {
 				console.error(error)
 				showError(
@@ -148,6 +149,20 @@ export default {
 			const sidebarButtons = document.getElementsByClassName('icon-menu-sidebar-white-forced')
 			if (sidebarButtons.length > 0) {
 				sidebarButtons[0].click()
+			}
+		},
+		listenToFrameMessages() {
+			window.addEventListener('message', this.handleFrameMessages, false)
+		},
+		stopListeningToFrameMessages() {
+			window.removeEventListener('message', this.handleFrameMessages)
+		},
+		handleFrameMessages(event) {
+			if (!this.spaceUrl.startsWith(event.origin)) {
+				return
+			}
+			if (['update_artifact', 'create_artifact', 'delete_artifact'].includes(event.data?.action)) {
+				this.saveSpace()
 			}
 		},
 	},
