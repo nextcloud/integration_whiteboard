@@ -130,10 +130,6 @@ export default {
 			const values = {
 				use_local_spacedeck: e.target.checked,
 			}
-			if (this.state.use_local_spacedeck) {
-				this.state.api_token = ''
-				values.api_token = ''
-			}
 			this.saveOptions(values)
 		},
 		onInput() {
