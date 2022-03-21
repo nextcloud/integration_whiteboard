@@ -9,6 +9,7 @@
 
 namespace OCA\Spacedeck\AppInfo;
 
+use OCP\AppFramework\Services\IInitialState;
 use OCP\IConfig;
 use OCP\IContainer;
 use OCP\Util;
@@ -57,6 +58,11 @@ class Application extends App implements IBootstrap {
 		}
 
 		$this->updateCSP($url);
+
+		$initialState = $container->get(IInitialState::class);
+		$initialState->provideLazyInitialState('use_local_spacedeck', function () use ($config) {
+			return $config->getAppValue(self::APP_ID, 'use_local_spacedeck', '1');
+		});
 	}
 
 	protected function addPrivateListeners($eventDispatcher) {

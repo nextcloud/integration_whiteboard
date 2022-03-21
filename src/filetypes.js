@@ -19,6 +19,7 @@
  */
 
 import ApplicationPrototype from './prototype.js'
+import { loadState } from '@nextcloud/initial-state'
 
 const APP_NAME = 'integration_whiteboard'
 const APP_EXT = 'whiteboard'
@@ -33,7 +34,10 @@ document.addEventListener('DOMContentLoaded', () => {
 	// add the + action to create a file
 	OCA.integration_whiteboard.initialize(APP_NAME, APP_EXT, APP_MIME)
 	// pdf export does not work with the bundled spacedeck
-	// OCA.integration_whiteboard.registerExportFileAction()
+	const useLocalSpacedeck = loadState(APP_NAME, 'use_local_spacedeck') === '1'
+	if (!useLocalSpacedeck) {
+		OCA.integration_whiteboard.registerExportFileAction()
+	}
 
 	// if there is no viewer, do as the Whiteboard app: register a file action to edit
 	if (!OCA.Viewer) {
