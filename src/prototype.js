@@ -1,7 +1,7 @@
 /**
  * @author Julien Veyssier <eneiluj@posteo.net>
  *
- * @license GNU AGPL version 3 or any later version
+ * @license AGPL-3.0-or-later
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -30,9 +30,6 @@ import PrototypeView from './PrototypeView'
 const FILE_ACTION_EDIT_IDENTIFIER = 'edit-spacedeck'
 const FILE_ACTION_EXPORT_IDENTIFIER = 'export-spacedeck'
 
-/**
-* @namespace ApplicationPrototype
-*/
 export default {
 	name: 'ApplicationPrototype',
 
