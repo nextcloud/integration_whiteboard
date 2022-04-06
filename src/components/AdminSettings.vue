@@ -190,7 +190,9 @@ export default {
 				})
 		},
 		checkSpacedeckInterface() {
-			const url = generateUrl('/apps/integration_whiteboard/proxy/stylesheets/style.css')
+			const url = this.state.use_local_spacedeck
+				? generateUrl('/apps/integration_whiteboard/proxy/stylesheets/style.css')
+				: generateUrl('/apps/integration_whiteboard/test-get-style')
 			return axios.get(url)
 		},
 		checkSpacedeckApi() {

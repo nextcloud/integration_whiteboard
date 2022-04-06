@@ -16,6 +16,7 @@ return [
 		['name' => 'spacedeckAPI#saveSpaceToFile', 'url' => '/space/{space_id}/{file_id}', 'verb' => 'POST'],
 		['name' => 'spacedeckAPI#loadSpaceFromFile', 'url' => '/space/{file_id}', 'verb' => 'GET'],
 		['name' => 'spacedeckAPI#getSpaceList', 'url' => '/spaces', 'verb' => 'GET'],
+		['name' => 'spacedeckAPI#getExtSpacedeckStylesheet', 'url' => '/test-get-style', 'verb' => 'GET'],
 
 		['name' => 'spacedeckAPI#privateProxyGetMain', 'url' => '/proxy/spaces/{file_id}', 'verb' => 'GET'],
 		['name' => 'spacedeckAPI#privateProxyGet', 'url' => '/proxy/{path}', 'verb' => 'GET', 'requirements' => ['path' => '.*']],

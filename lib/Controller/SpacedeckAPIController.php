@@ -124,6 +124,20 @@ class SpacedeckAPIController extends Controller {
 		return $response;
 	}
 
+	public function getExtSpacedeckStylesheet(): DataResponse {
+		if (!$this->apiToken || !$this->baseUrl) {
+			return new DataResponse('Spacedeck not configured', 400);
+		}
+
+		$result = $this->spacedeckApiService->getExtSpacedeckStylesheet($this->baseUrl);
+		if (isset($result['error'])) {
+			$response = new DataResponse($result['error'], 401);
+		} else {
+			$response = new DataResponse(['styleContent' => $result['response']->getBody()]);
+		}
+		return $response;
+	}
+
 	/**
 	 * @NoAdminRequired
 	 * Export the space related to a file to PDF

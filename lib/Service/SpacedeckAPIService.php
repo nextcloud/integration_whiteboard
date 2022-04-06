@@ -372,6 +372,10 @@ class SpacedeckAPIService {
 		return $this->apiRequest($baseUrl, $apiToken, 'spaces');
 	}
 
+	public function getExtSpacedeckStylesheet(string $baseUrl): array {
+		return $this->basicRequest($baseUrl . '/stylesheets/style.css');
+	}
+
 	/**
 	 * Delete storage data that is not used anymore:
 	 * - everything related to spaces that have no corresponding file
