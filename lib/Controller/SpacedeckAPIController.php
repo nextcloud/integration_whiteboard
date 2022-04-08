@@ -89,6 +89,16 @@ class SpacedeckAPIController extends Controller {
 	}
 
 	/**
+	 * @PublicPage
+	 * @NoCSRFRequired
+	 * @param string $token
+	 * @return DataResponse
+	 */
+	public function check(string $token): DataResponse {
+		return new DataResponse([ 'access_level' => 2 ]);
+	}
+
+	/**
 	 * Wrapper for getallheaders to unset 0 length strings
 	 *
 	 * @return Array

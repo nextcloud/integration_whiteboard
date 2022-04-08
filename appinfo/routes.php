@@ -27,5 +27,8 @@ return [
 		// public share
 		['name' => 'spacedeckAPI#publicSaveSpaceToFile', 'url' => '/s/{token}/space/{space_id}/{file_id}', 'verb' => 'POST'],
 		['name' => 'spacedeckAPI#publicLoadSpaceFromFile', 'url' => '/s/{token}/space/{file_id}', 'verb' => 'GET'],
+
+		// wopi-like access control
+		['name' => 'spacedeckAPI#check', 'url' => '/check/{token}', 'verb' => 'GET'],
 	]
 ];

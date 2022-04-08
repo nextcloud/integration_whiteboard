@@ -93,6 +93,7 @@ export default {
 					// access spacedeck directly in the frame
 					this.spaceUrl = response.data.base_url + '/spaces/' + this.spaceId
 						+ '?spaceAuth=' + response.data.edit_hash
+						+ '&externalToken=' + 'dummyToken222222'
 						+ this.nicknameParam
 				} else {
 					// use the proxy
