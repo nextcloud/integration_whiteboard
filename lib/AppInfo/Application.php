@@ -36,6 +36,17 @@ class Application extends App implements IBootstrap {
 
 	public const APP_ID = 'integration_whiteboard';
 
+	public const PERMISSIONS = [
+		'none' => 0,
+		'view' => 1,
+		'edit' => 2,
+	];
+
+	public const TOKEN_TYPES = [
+		'user' => 0,
+		'share' => 1,
+	];
+
 	/**
 	 * Constructor
 	 *
