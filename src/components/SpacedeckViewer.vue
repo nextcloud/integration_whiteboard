@@ -41,6 +41,7 @@ export default {
 		return {
 			spaceId: null,
 			spaceUrl: '',
+			sessionToken: null,
 			user: getCurrentUser(),
 		}
 	},
@@ -80,6 +81,10 @@ export default {
 	destroyed() {
 		console.debug('DESTROYED')
 		this.stopListeningToFrameMessages()
+		if (this.sessionToken) {
+			this.deleteSession()
+		}
+		this.saveSpace()
 	},
 
 	methods: {
@@ -90,10 +95,11 @@ export default {
 				console.debug('response.data', response.data)
 				this.spaceId = response.data.space_id
 				if (!response.data.use_local_spacedeck) {
+					this.sessionToken = response.data.session_token
 					// access spacedeck directly in the frame
 					this.spaceUrl = response.data.base_url + '/spaces/' + this.spaceId
 						+ '?spaceAuth=' + response.data.edit_hash
-						+ '&externalToken=' + 'dummyToken222222'
+						+ '&externalToken=' + response.data.session_token
 						+ this.nicknameParam
 				} else {
 					// use the proxy
@@ -165,6 +171,23 @@ export default {
 			if (['update_artifact', 'create_artifact', 'delete_artifact'].includes(event.data?.action)) {
 				this.saveSpace()
 			}
+		},
+		deleteSession() {
+			const url = this.user
+				? generateUrl('/apps/integration_whiteboard/session/{token}', { token: this.sessionToken })
+				: generateUrl('/apps/integration_whiteboard/s/session/{token}', { token: this.sessionToken })
+
+			const params = {
+				params: {
+					sharingToken: this.user ? undefined : this.sharingToken,
+				},
+			}
+
+			axios.delete(url, params).then((response) => {
+				console.debug('session deleted', response.data)
+			}).catch((error) => {
+				console.error(error)
+			})
 		},
 	},
 }

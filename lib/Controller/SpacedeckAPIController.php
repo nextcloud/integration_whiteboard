@@ -12,6 +12,8 @@
 namespace OCA\Spacedeck\Controller;
 
 use OCA\Spacedeck\Service\FileService;
+use OCA\Spacedeck\Service\SessionService;
+use OCP\AppFramework\Http;
 use OCP\IConfig;
 use OCP\IServerContainer;
 use OCP\IL10N;
@@ -54,6 +56,10 @@ class SpacedeckAPIController extends Controller {
 	 * @var FileService
 	 */
 	private $fileService;
+	/**
+	 * @var SessionService
+	 */
+	private $sessionService;
 
 	public function __construct(string $AppName,
 								IRequest $request,
@@ -63,6 +69,7 @@ class SpacedeckAPIController extends Controller {
 								IShareManager $shareManager,
 								LoggerInterface $logger,
 								SpacedeckAPIService $spacedeckApiService,
+								SessionService $sessionService,
 								FileService $fileService,
 								?string $userId) {
 		parent::__construct($AppName, $request);
@@ -84,6 +91,7 @@ class SpacedeckAPIController extends Controller {
 			$this->baseUrl = $this->baseUrl ?: DEFAULT_SPACEDECK_URL;
 		}
 		$this->fileService = $fileService;
+		$this->sessionService = $sessionService;
 	}
 
 	/**
@@ -498,16 +506,24 @@ class SpacedeckAPIController extends Controller {
 	 */
 	public function loadSpaceFromFile(int $file_id): DataResponse {
 		if (!$this->apiToken || !$this->baseUrl) {
-			return new DataResponse('Spacedeck not configured', 400);
+			return new DataResponse('Spacedeck not configured', Http::STATUS_BAD_REQUEST);
 		}
 
 		$result = $this->spacedeckApiService->loadSpaceFromFile(
 			$this->baseUrl, $this->apiToken, $this->userId, $file_id, $this->usesIndexDotPhp()
 		);
 		if (isset($result['error'])) {
-			$response = new DataResponse($result['error'], 401);
+			$response = new DataResponse($result['error'], Http::STATUS_UNAUTHORIZED);
 		} else {
 			$result['use_local_spacedeck'] = $this->useLocalSpacedeck;
+			// session creation for external spacedeck
+			if (!$this->useLocalSpacedeck) {
+				$sessionInfo = $this->sessionService->createUserSession($this->userId, $file_id);
+				if ($sessionInfo === null) {
+					return new DataResponse('Failed to create the session', Http::STATUS_BAD_REQUEST);
+				}
+				$result['session_token'] = $sessionInfo['token'];
+			}
 			$response = new DataResponse($result);
 		}
 		return $response;
@@ -523,20 +539,28 @@ class SpacedeckAPIController extends Controller {
 	 */
 	public function publicLoadSpaceFromFile(string $token, int $file_id): DataResponse {
 		if (!$this->apiToken || !$this->baseUrl) {
-			return new DataResponse('Spacedeck not configured', 400);
+			return new DataResponse('Spacedeck not configured', Http::STATUS_BAD_REQUEST);
 		}
 		$foundFile = $this->fileService->getFileFromShareToken($token, $file_id);
 		if ($foundFile === null) {
-			return new DataResponse('No such share', 400);
+			return new DataResponse('No such share', Http::STATUS_BAD_REQUEST);
 		}
 
 		$result = $this->spacedeckApiService->loadSpaceFromFile(
 			$this->baseUrl, $this->apiToken, $this->userId, $file_id, $this->usesIndexDotPhp()
 		);
 		if (isset($result['error'])) {
-			$response = new DataResponse($result['error'], 401);
+			$response = new DataResponse($result['error'], Http::STATUS_UNAUTHORIZED);
 		} else {
 			$result['use_local_spacedeck'] = $this->useLocalSpacedeck;
+			// session creation for external spacedeck
+			if (!$this->useLocalSpacedeck) {
+				$sessionInfo = $this->sessionService->createShareSession($token, $file_id);
+				if ($sessionInfo === null) {
+					return new DataResponse('Failed to create the session', Http::STATUS_BAD_REQUEST);
+				}
+				$result['session_token'] = $sessionInfo['token'];
+			}
 			$response = new DataResponse($result);
 		}
 		return $response;
