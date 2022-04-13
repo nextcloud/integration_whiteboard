@@ -176,6 +176,36 @@ class SessionStoreService {
 		$qb->resetQueryParts();
 	}
 
+	public function cleanupSessions(int $timeout): array {
+		$qb = $this->db->getQueryBuilder();
+
+		$nowTimestamp = (new DateTime())->getTimestamp();
+		$minTimestamp = $nowTimestamp - $timeout;
+		// get them
+		$deletedSessions = [];
+		$qb->select('*')
+			->from(self::SESSIONS_TABLE_NAME);
+		$qb->where(
+			$qb->expr()->lt('last_checked', $qb->createNamedParameter($minTimestamp, IQueryBuilder::PARAM_INT))
+		);
+		$req = $qb->executeQuery();
+
+		while ($row = $req->fetch()) {
+			$deletedSessions[] = $this->getSessionFromRow($row);
+		}
+		$req->closeCursor();
+		$qb->resetQueryParts();
+
+		// delete them
+		$qb->delete(self::SESSIONS_TABLE_NAME)
+			->where(
+				$qb->expr()->lt('last_checked', $qb->createNamedParameter($minTimestamp, IQueryBuilder::PARAM_INT))
+			);
+		$qb->executeStatement();
+		$qb->resetQueryParts();
+		return $deletedSessions;
+	}
+
 	public function touchSession(string $sessionToken): void {
 		$qb = $this->db->getQueryBuilder();
 		$nowTimestamp = (new DateTime())->getTimestamp();

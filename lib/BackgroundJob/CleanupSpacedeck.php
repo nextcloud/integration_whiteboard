@@ -23,6 +23,7 @@ declare(strict_types=1);
 
 namespace OCA\Spacedeck\BackgroundJob;
 
+use OCA\Spacedeck\Service\SessionService;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\BackgroundJob\TimedJob;
 use OCP\IConfig;
@@ -48,10 +49,15 @@ class CleanupSpacedeck extends TimedJob {
 
 	/** @var LoggerInterface */
 	protected $logger;
+	/**
+	 * @var SessionService
+	 */
+	private $sessionService;
 
 	public function __construct(ITimeFactory $time,
 								IConfig $config,
 								SpacedeckAPIService $apiService,
+								SessionService $sessionService,
 								LoggerInterface $logger) {
 		parent::__construct($time);
 
@@ -61,6 +67,7 @@ class CleanupSpacedeck extends TimedJob {
 		$this->config = $config;
 		$this->apiService = $apiService;
 		$this->logger = $logger;
+		$this->sessionService = $sessionService;
 	}
 
 	protected function run($argument): void {
@@ -80,5 +87,6 @@ class CleanupSpacedeck extends TimedJob {
 				}
 			}
 		}
+		$this->sessionService->cleanupSessions();
 	}
 }

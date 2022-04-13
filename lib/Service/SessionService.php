@@ -20,6 +20,7 @@ use Psr\Log\LoggerInterface;
 use OCA\Spacedeck\AppInfo\Application;
 
 class SessionService {
+	private const SESSION_TIMEOUT_SECONDS = 600;
 	/**
 	 * @var LoggerInterface
 	 */
@@ -128,5 +129,9 @@ class SessionService {
 			return true;
 		}
 		return false;
+	}
+
+	public function cleanupSessions(): array {
+		return $this->sessionStoreService->cleanupSession(self::SESSION_TIMEOUT_SECONDS);
 	}
 }
