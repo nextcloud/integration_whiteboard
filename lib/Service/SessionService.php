@@ -13,177 +13,120 @@ namespace OCA\Spacedeck\Service;
 
 use DateTime;
 use OCP\DB\QueryBuilder\IQueryBuilder;
+use OCP\Files\IRootFolder;
 use OCP\IDBConnection;
 use Psr\Log\LoggerInterface;
 
 use OCA\Spacedeck\AppInfo\Application;
 
 class SessionService {
-	private const SESSIONS_TABLE_NAME = 'i_whiteboard_sessions';
-
-	/**
-	 * @var IDBConnection
-	 */
-	private $db;
 	/**
 	 * @var LoggerInterface
 	 */
 	private $logger;
+	/**
+	 * @var SessionStoreService
+	 */
+	private $sessionStoreService;
+	/**
+	 * @var FileService
+	 */
+	private $fileService;
 
-	public function __construct (IDBConnection   $db,
+	public function __construct (SessionStoreService $sessionStoreService,
+								 FileService $fileService,
 								 LoggerInterface $logger) {
-		$this->db = $db;
 		$this->logger = $logger;
+		$this->sessionStoreService = $sessionStoreService;
+		$this->fileService = $fileService;
 	}
 
-	public function getSession(string $token, ?string $ownerUid = null, ?string $editorUid = null, ?int $fileId = null,
-							   ?string $shareToken = null, ?int $tokenType = null): ?array {
-		$qb = $this->db->getQueryBuilder();
-
-		$qb->select('*')
-			->from(self::SESSIONS_TABLE_NAME)
-			->where(
-				$qb->expr()->eq('token', $qb->createNamedParameter($token, IQueryBuilder::PARAM_STR))
-			);
-		if ($ownerUid !== null) {
-			$qb->andWhere(
-				$qb->expr()->eq('owner_uid', $qb->createNamedParameter($ownerUid, IQueryBuilder::PARAM_STR))
-			);
+	/**
+	 * Check what this session can do with the related file
+	 *
+	 * @param string $sessionToken
+	 * @return int
+	 * @throws \OCP\Files\InvalidPathException
+	 * @throws \OCP\Files\NotFoundException
+	 * @throws \OCP\Files\NotPermittedException
+	 * @throws \OC\User\NoUserException
+	 */
+	public function checkSessionPermissions(string $sessionToken): int {
+		$session = $this->sessionStoreService->getSession($sessionToken);
+		if ($session !== null) {
+			$this->sessionStoreService->touchSession($sessionToken);
+			if ($session['token_type'] === Application::TOKEN_TYPES['user']) {
+				return $this->fileService->getUserPermissionsOnFile($session['editor_uid'], $session['file_id']);
+			} else {
+				return $this->fileService->getSharePermissionsOnFile($session['share_token'], $session['file_id']);
+			}
 		}
-		if ($editorUid !== null) {
-			$qb->andWhere(
-				$qb->expr()->eq('editor_uid', $qb->createNamedParameter($editorUid, IQueryBuilder::PARAM_STR))
-			);
-		}
-		if ($fileId !== null) {
-			$qb->andWhere(
-				$qb->expr()->eq('file_id', $qb->createNamedParameter($fileId, IQueryBuilder::PARAM_INT))
-			);
-		}
-		if ($shareToken !== null) {
-			$qb->andWhere(
-				$qb->expr()->eq('share_token', $qb->createNamedParameter($shareToken, IQueryBuilder::PARAM_STR))
-			);
-		}
-		if ($tokenType !== null) {
-			$qb->andWhere(
-				$qb->expr()->eq('token_type', $qb->createNamedParameter($tokenType, IQueryBuilder::PARAM_INT))
-			);
-		}
-		$req = $qb->executeQuery();
-
-		if ($row = $req->fetchOne()) {
-			return $this->getSessionFromRow($row);
-		}
-		$req->closeCursor();
-		$qb->resetQueryParts();
-		return null;
+		return Application::PERMISSIONS['none'];
 	}
 
-	public function getSessions(?string $ownerUid = null, ?string $editorUid = null, ?int $fileId = null,
-								?string $shareToken = null, ?int $tokenType = null): array {
-		$qb = $this->db->getQueryBuilder();
-
-		$qb->select('*')
-			->from(self::SESSIONS_TABLE_NAME);
-		if ($ownerUid !== null) {
-			$qb->andWhere(
-				$qb->expr()->eq('owner_uid', $qb->createNamedParameter($ownerUid, IQueryBuilder::PARAM_STR))
-			);
-		}
-		if ($editorUid !== null) {
-			$qb->andWhere(
-				$qb->expr()->eq('editor_uid', $qb->createNamedParameter($editorUid, IQueryBuilder::PARAM_STR))
-			);
-		}
-		if ($fileId !== null) {
-			$qb->andWhere(
-				$qb->expr()->eq('file_id', $qb->createNamedParameter($fileId, IQueryBuilder::PARAM_INT))
-			);
-		}
-		if ($shareToken !== null) {
-			$qb->andWhere(
-				$qb->expr()->eq('share_token', $qb->createNamedParameter($shareToken, IQueryBuilder::PARAM_STR))
-			);
-		}
-		if ($tokenType !== null) {
-			$qb->andWhere(
-				$qb->expr()->eq('token_type', $qb->createNamedParameter($tokenType, IQueryBuilder::PARAM_INT))
-			);
-		}
-		$req = $qb->executeQuery();
-
-		$sessions = [];
-		while ($row = $req->fetch()) {
-			$sessions[] = $this->getSessionFromRow($row);
-		}
-		$req->closeCursor();
-		$qb->resetQueryParts();
-		return $sessions;
-	}
-
-	private function getSessionFromRow(array $row): array {
-		return [
-			'id' => (int) $row['id'],
-			'owner_uid' => $row['owner_uid'],
-			'editor_uid' => $row['editor_uid'],
-			'file_id' => (int) $row['file_id'],
-			'token' => $row['token'],
-			'token_type' => (int) $row['token_type'],
-			'last_checked' => (int) $row['last_checked'],
-		];
-	}
-
-	public function createSession(string $ownerUid, ?string $editorUid, int $fileId, ?string $shareToken): ?array {
-		// exclusive or between editorUid and shareToken
-		if (!(($editorUid === null) xor ($shareToken === null))) {
+	/**
+	 * Create a session for a user
+	 *
+	 * @param string $userId
+	 * @param int $fileId
+	 * @return array|null
+	 */
+	public function createUserSession(string $userId, int $fileId): ?array {
+		$file = $this->fileService->getFileFromId($userId, $fileId);
+		if ($file === null) {
 			return null;
 		}
-
-		$qb = $this->db->getQueryBuilder();
-
-		$nowTimestamp = (new DateTime())->getTimestamp();
-		$token = $this->generateToken($ownerUid . ((string) $nowTimestamp));
-
-		$values = [
-			'token' => $qb->createNamedParameter($token, IQueryBuilder::PARAM_STR),
-			'owner_uid' => $qb->createNamedParameter($ownerUid, IQueryBuilder::PARAM_STR),
-			'editor_uid' => $qb->createNamedParameter($editorUid, IQueryBuilder::PARAM_STR),
-			'file_id' => $qb->createNamedParameter($fileId, IQueryBuilder::PARAM_INT),
-			'share_token' => $qb->createNamedParameter($shareToken, IQueryBuilder::PARAM_STR),
-			'token_type' => $qb->createNamedParameter(
-				$editorUid === null
-					? Application::TOKEN_TYPES['share']
-					: Application::TOKEN_TYPES['user'],
-				IQueryBuilder::PARAM_INT
-			),
-			'last_checked' => $qb->createNamedParameter($nowTimestamp, IQueryBuilder::PARAM_INT),
-			'created' => $qb->createNamedParameter($nowTimestamp, IQueryBuilder::PARAM_INT),
-		];
-
-		$qb->insert(self::SESSIONS_TABLE_NAME)
-			->values($values);
-		$qb->executeStatement();
-		$insertedSessionId = $qb->getLastInsertId();
-		$qb->resetQueryParts();
-
-		return [
-			'id' => $insertedSessionId,
-			'token' => $token,
-		];
+		return $this->sessionStoreService->createSession($file->getOwner()->getUID(), $fileId, $userId, null);
 	}
 
-	private function generateToken(string $baseString) {
-		return md5($baseString.rand());
+	/**
+	 * Create a session for a share token
+	 *
+	 * @param string $shareToken
+	 * @param int $fileId
+	 * @return array|null
+	 */
+	public function createShareSession(string $shareToken, int $fileId): ?array {
+		$file = $this->fileService->getFileFromShareToken($shareToken, $fileId);
+		if ($file === null) {
+			return null;
+		}
+		return $this->sessionStoreService->createSession($file->getOwner()->getUID(), $fileId, null, $shareToken);
 	}
 
-	public function deleteSession(string $token): void {
-		$qb = $this->db->getQueryBuilder();
-		$qb->delete(self::SESSIONS_TABLE_NAME)
-			->where(
-				$qb->expr()->eq('token', $qb->createNamedParameter($token, IQueryBuilder::PARAM_STR))
-			);
-		$qb->executeStatement();
-		$qb->resetQueryParts();
+	/**
+	 * Delete a user session
+	 *
+	 * @param string $userId
+	 * @param string $sessionToken
+	 * @return bool
+	 */
+	public function deleteUserSession(string $userId, string $sessionToken): bool {
+		$session = $this->sessionStoreService->getSession(
+			$sessionToken, null, $userId, null, null, Application::TOKEN_TYPES['user']
+		);
+		if ($session !== null) {
+			$this->sessionStoreService->deleteSession($sessionToken);
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Delete a share token session
+	 *
+	 * @param string $shareToken
+	 * @param string $sessionToken
+	 * @return bool
+	 */
+	public function deleteShareSession(string $shareToken, string $sessionToken): bool {
+		$session = $this->sessionStoreService->getSession(
+			$sessionToken, null, null, null, $shareToken, Application::TOKEN_TYPES['share']
+		);
+		if ($session !== null) {
+			$this->sessionStoreService->deleteSession($sessionToken);
+			return true;
+		}
+		return false;
 	}
 }

@@ -11,13 +11,11 @@
 
 namespace OCA\Spacedeck\Service;
 
-use OCP\IL10N;
 use Psr\Log\LoggerInterface;
 use OCP\IConfig;
 use OCP\Constants;
 use OCP\Files\IRootFolder;
 use OCP\Files\FileInfo;
-use OCP\Files\Node;
 use OCP\Lock\LockedException;
 use OCP\Files\NotFoundException;
 use OCP\Files\NotPermittedException;
@@ -29,15 +27,17 @@ use OCP\Http\Client\LocalServerException;
 use OCP\IUser;
 use OCP\IUserManager;
 
-use OCA\Spacedeck\Service\SpacedeckBundleService;
 use OCA\Spacedeck\AppInfo\Application;
 
 require_once __DIR__ . '/../constants.php';
 
 class SpacedeckAPIService {
 
-	private $l10n;
 	private $logger;
+	/**
+	 * @var FileService
+	 */
+	private $fileService;
 
 	/**
 	 * Service to make requests to Spacedeck API
@@ -46,12 +46,11 @@ class SpacedeckAPIService {
 								IRootFolder $root,
 								IUserManager $userManager,
 								LoggerInterface $logger,
-								IL10N $l10n,
 								IConfig $config,
 								SpacedeckBundleService $spacedeckBundleService,
+								FileService $fileService,
 								IClientService $clientService) {
 		$this->appName = $appName;
-		$this->l10n = $l10n;
 		$this->logger = $logger;
 		$this->config = $config;
 		$this->root = $root;
@@ -60,6 +59,7 @@ class SpacedeckAPIService {
 		$this->client = $clientService->newClient();
 		$this->spacedeckBundleService = $spacedeckBundleService;
 		$this->useLocalSpacedeck = $this->config->getAppValue(Application::APP_ID, 'use_local_spacedeck', '1') === '1';
+		$this->fileService = $fileService;
 	}
 
 	/**
@@ -74,7 +74,7 @@ class SpacedeckAPIService {
 	 */
 	public function exportSpaceToPdf(string $baseUrl, string $apiToken, string $userId, int $file_id, string $outputDirPath,
 									bool $usesIndexDotPhp): array {
-		$spaceFile = $this->getFileFromId($userId, $file_id);
+		$spaceFile = $this->fileService->getFileFromId($userId, $file_id);
 		if ($spaceFile) {
 			if ($this->useLocalSpacedeck) {
 				$this->spacedeckBundleService->launchSpacedeck($usesIndexDotPhp);
@@ -145,7 +145,7 @@ class SpacedeckAPIService {
 	 * @return array success state
 	 */
 	public function saveSpaceToFile(string $baseUrl, string $apiToken, ?string $userId, string $space_id, int $file_id): array {
-		$targetFile = $this->getFileFromId($userId, $file_id);
+		$targetFile = $this->fileService->getFileFromId($userId, $file_id);
 		if ($targetFile) {
 			try {
 				$res = $targetFile->fopen('w');
@@ -197,7 +197,7 @@ class SpacedeckAPIService {
 			$pid = $this->spacedeckBundleService->launchSpacedeck($usesIndexDotPhp);
 		}
 		// load file json content
-		$file = $this->getFileFromId($userId, $file_id);
+		$file = $this->fileService->getFileFromId($userId, $file_id);
 		if (is_null($file)) {
 			return ['error' => 'File does not exist'];
 		}
@@ -315,50 +315,6 @@ class SpacedeckAPIService {
 	}
 
 	/**
-	 * Get a user file from a fileId
-	 *
-	 * @param ?string $userId
-	 * @param int $fileID
-	 * @return ?Node the file or null if it does not exist (or is not accessible by this user)
-	 */
-	public function getFileFromId(?string $userId, int $fileId): ?Node {
-		if (is_null($userId)) {
-			$file = $this->root->getById($fileId);
-		} else {
-			$userFolder = $this->root->getUserFolder($userId);
-			$file = $userFolder->getById($fileId);
-		}
-		if (is_array($file) && count($file) > 0) {
-			return $file[0];
-		} elseif (!is_array($file) && $file->getType() === FileInfo::TYPE_FILE) {
-			return $file;
-		}
-		return null;
-	}
-
-	/**
-	 * Check if user has write access on a file
-	 *
-	 * @param ?string $userId
-	 * @param int $fileID
-	 * @return bool true if the user can write the file
-	 */
-	public function userHasWriteAccess(string $userId, int $fileId): bool {
-		$userFolder = $this->root->getUserFolder($userId);
-		$file = $userFolder->getById($fileId);
-		if (is_array($file)) {
-			foreach ($file as $f) {
-				if ($f->getType() === FileInfo::TYPE_FILE && ($f->getPermissions() & Constants::PERMISSION_UPDATE) !== 0) {
-					return true;
-				}
-			}
-		} elseif (!is_array($file) && $file->getType() === FileInfo::TYPE_FILE) {
-			return (($file->getPermissions() & Constants::PERMISSION_UPDATE) !== 0);
-		}
-		return false;
-	}
-
-	/**
 	 * Get spaces list from spacedeck API
 	 *
 	 * @param string $baseUrl
@@ -400,7 +356,7 @@ class SpacedeckAPIService {
 			$userFolder = $this->root->getUserFolder($user->getUID());
 			$wbFiles = $userFolder->searchByMime('application/spacedeck');
 			foreach ($wbFiles as $wbFile) {
-				if (!in_array($wbFile->getId())) {
+				if (!in_array($wbFile->getId(), $fileIds)) {
 					$fileIds[] = $wbFile->getId();
 				}
 			}
@@ -411,7 +367,7 @@ class SpacedeckAPIService {
 			$spaceName = $space['name'];
 			$spaceEditSlug = $space['edit_slug'];
 			// this does not work in the "Command" context because the storage is not set
-			// if ($this->getFileFromId(null, (int) $spaceName) === null) {
+			// if ($this->fileService->getFileFromId(null, (int) $spaceName) === null) {
 			if (!in_array((int) $spaceName, $fileIds)) {
 				// file does not exist
 				// => delete all data

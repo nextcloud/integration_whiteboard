@@ -22,23 +22,27 @@ use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\Http\ContentSecurityPolicy;
 use OCP\AppFramework\Controller;
 
-use OCA\Spacedeck\Service\SpacedeckAPIService;
 use OCA\Spacedeck\AppInfo\Application;
 
 class SessionController extends Controller {
 
-	public function __construct(string              $appName,
-								IRequest            $request,
-								IConfig             $config,
-								LoggerInterface     $logger,
-								SpacedeckAPIService $spacedeckAPIService,
-								?string             $userId) {
+	/**
+	 * @var SessionService
+	 */
+	private $sessionService;
+
+	public function __construct(string          $appName,
+								IRequest        $request,
+								IConfig         $config,
+								LoggerInterface $logger,
+								SessionService  $sessionService,
+								?string         $userId) {
 		parent::__construct($appName, $request);
 		$this->appName = $appName;
 		$this->userId = $userId;
 		$this->config = $config;
 		$this->logger = $logger;
-		$this->spacedeckAPIService = $spacedeckAPIService;
+		$this->sessionService = $sessionService;
 	}
 
 	/**
@@ -48,7 +52,7 @@ class SessionController extends Controller {
 	 * @return DataResponse
 	 */
 	public function check(string $token): DataResponse {
-		$permissions = $this->spacedeckAPIService->checkSessionPermissions($token);
+		$permissions = $this->sessionService->checkSessionPermissions($token);
 		return new DataResponse([ 'access_level' => $permissions ]);
 	}
 
@@ -58,7 +62,7 @@ class SessionController extends Controller {
 	 * @return DataResponse
 	 */
 	public function create(int $fileId): DataResponse {
-		$sessionInfo = $this->spacedeckAPIService->createUserSession($this->userId, $this->userId, $fileId);
+		$sessionInfo = $this->sessionService->createUserSession($this->userId, $fileId);
 		if ($sessionInfo !== null) {
 			return new DataResponse($sessionInfo);
 		} else {
@@ -73,7 +77,7 @@ class SessionController extends Controller {
 	 * @return DataResponse
 	 */
 	public function publicCreate(int $fileId, string $shareToken): DataResponse {
-		$sessionInfo = $this->spacedeckAPIService->createShareSession($shareToken, $fileId);
+		$sessionInfo = $this->sessionService->createShareSession($shareToken, $fileId);
 		if ($sessionInfo !== null) {
 			return new DataResponse($sessionInfo);
 		} else {
@@ -87,7 +91,7 @@ class SessionController extends Controller {
 	 * @return DataResponse
 	 */
 	public function delete(string $token): DataResponse {
-		$success = $this->spacedeckAPIService->deleteUserSession($this->userId, $token);
+		$success = $this->sessionService->deleteUserSession($this->userId, $token);
 		if ($success) {
 			return new DataResponse(1);
 		} else {
@@ -102,7 +106,7 @@ class SessionController extends Controller {
 	 * @return DataResponse
 	 */
 	public function publicDelete(string $token, string $shareToken): DataResponse {
-		$success = $this->spacedeckAPIService->deleteShareSession($shareToken, $token);
+		$success = $this->sessionService->deleteShareSession($shareToken, $token);
 		if ($success) {
 			return new DataResponse(1);
 		} else {

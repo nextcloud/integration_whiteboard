@@ -11,18 +11,12 @@
 
 namespace OCA\Spacedeck\Controller;
 
+use OCA\Spacedeck\Service\FileService;
 use OCP\IConfig;
 use OCP\IServerContainer;
 use OCP\IL10N;
 
-use OCP\AppFramework\Http;
-use OCP\AppFramework\Http\RedirectResponse;
-
-use OCP\AppFramework\Http\ContentSecurityPolicy;
-
-use OCP\Files\FileInfo;
 use OCP\Share\IManager as IShareManager;
-use OCP\Constants;
 use Psr\Log\LoggerInterface;
 use OCP\IRequest;
 use OCP\AppFramework\Http\DataResponse;
@@ -54,10 +48,12 @@ if (!function_exists('getallheaders'))
 
 class SpacedeckAPIController extends Controller {
 
-
 	private $userId;
 	private $config;
-	private $dbconnection;
+	/**
+	 * @var FileService
+	 */
+	private $fileService;
 
 	public function __construct(string $AppName,
 								IRequest $request,
@@ -67,6 +63,7 @@ class SpacedeckAPIController extends Controller {
 								IShareManager $shareManager,
 								LoggerInterface $logger,
 								SpacedeckAPIService $spacedeckApiService,
+								FileService $fileService,
 								?string $userId) {
 		parent::__construct($AppName, $request);
 		$this->userId = $userId;
@@ -86,12 +83,13 @@ class SpacedeckAPIController extends Controller {
 			$this->baseUrl = $this->config->getAppValue(Application::APP_ID, 'base_url', DEFAULT_SPACEDECK_URL);
 			$this->baseUrl = $this->baseUrl ?: DEFAULT_SPACEDECK_URL;
 		}
+		$this->fileService = $fileService;
 	}
 
 	/**
 	 * Wrapper for getallheaders to unset 0 length strings
 	 *
-	 * @return Array
+	 * @return array
 	 */
 	private function getallheadersWrapper(): Array {
 		$headers = getallheaders();
@@ -175,9 +173,9 @@ class SpacedeckAPIController extends Controller {
 	 * @return DataDisplayResponse
 	 */
 	public function privateProxyGetMain(int $file_id, ?string $token = null): DataDisplayResponse {
-		if (!is_null($this->userId) && !is_null($this->spacedeckApiService->getFileFromId($this->userId, $file_id))) {
+		if (!is_null($this->userId) && $this->fileService->getFileFromId($this->userId, $file_id) !== null) {
 			return $this->proxyGet('spaces/' . $file_id);
-		} elseif (is_null($this->userId) && !is_null($token) && $this->isFileSharedWithToken($token, $file_id)) {
+		} elseif (is_null($this->userId) && !is_null($token) && $this->fileService->getFileFromShareToken($token, $file_id) !== null) {
 			return $this->proxyGet('spaces/' . $file_id);
 		} else {
 			return new DataDisplayResponse('Unauthorized', 400);
@@ -274,15 +272,15 @@ class SpacedeckAPIController extends Controller {
 		$shareToken = $_SERVER['HTTP_X_SPACEDECK_SPACE_TOKEN'] ?? null;
 		if (!is_null($this->userId) && !is_null($spaceName)
 			&& (
-				($needWriteAccess && $this->spacedeckApiService->userHasWriteAccess($this->userId, $spaceName))
-				|| (!$needWriteAccess && !is_null($this->spacedeckApiService->getFileFromId($this->userId, $spaceName)))
+				($needWriteAccess && $this->fileService->userHasWriteAccess($this->userId, $spaceName))
+				|| (!$needWriteAccess && $this->fileService->getFileFromId($this->userId, $spaceName) !== null)
 			)
 		) {
 			return true;
 		} elseif (is_null($this->userId) && !is_null($shareToken)
 			&& (
-				($needWriteAccess && $this->isFileWriteableWithToken($shareToken, $spaceName))
-				|| (!$needWriteAccess && $this->isFileSharedWithToken($shareToken, $spaceName))
+				($needWriteAccess && $this->fileService->isFileWriteableWithToken($shareToken, $spaceName))
+				|| (!$needWriteAccess && $this->fileService->getFileFromShareToken($shareToken, $spaceName) !== null)
 			)
 		) {
 			return true;
@@ -474,13 +472,13 @@ class SpacedeckAPIController extends Controller {
 		if (!$this->apiToken || !$this->baseUrl) {
 			return new DataResponse('Spacedeck not configured', 400);
 		}
-		$foundFileId = $this->isFileSharedWithToken($token, $file_id);
-		if (!$foundFileId) {
+		$foundFile = $this->fileService->getFileFromShareToken($token, $file_id);
+		if ($foundFile == null) {
 			return new DataResponse('No such share', 400);
 		}
 
 		$result = $this->spacedeckApiService->saveSpaceToFile(
-			$this->baseUrl, $this->apiToken, $this->userId, $space_id, $foundFileId
+			$this->baseUrl, $this->apiToken, $this->userId, $space_id, $file_id
 		);
 		if (isset($result['error'])) {
 			$response = new DataResponse($result['error'], 401);
@@ -527,13 +525,13 @@ class SpacedeckAPIController extends Controller {
 		if (!$this->apiToken || !$this->baseUrl) {
 			return new DataResponse('Spacedeck not configured', 400);
 		}
-		$foundFileId = $this->isFileSharedWithToken($token, $file_id);
-		if (!$foundFileId) {
+		$foundFile = $this->fileService->getFileFromShareToken($token, $file_id);
+		if ($foundFile === null) {
 			return new DataResponse('No such share', 400);
 		}
 
 		$result = $this->spacedeckApiService->loadSpaceFromFile(
-			$this->baseUrl, $this->apiToken, $this->userId, $foundFileId, $this->usesIndexDotPhp()
+			$this->baseUrl, $this->apiToken, $this->userId, $file_id, $this->usesIndexDotPhp()
 		);
 		if (isset($result['error'])) {
 			$response = new DataResponse($result['error'], 401);
@@ -542,52 +540,6 @@ class SpacedeckAPIController extends Controller {
 			$response = new DataResponse($result);
 		}
 		return $response;
-	}
-
-	/**
-	 * Check if a share token can access a file
-	 *
-	 * @param string $token
-	 * @param int $file_id the file ID or 0 if the token target is a file (public file share page context)
-	 * @return ?int the file ID or null if this token does not exist or can't access this file
-	 */
-	private function isFileSharedWithToken(string $token, int $file_id): ?int {
-		try {
-			$share = $this->shareManager->getShareByToken($token);
-			$node = $share->getNode();
-			// in single file share, we get 0 as file ID
-			if ($node->getType() === FileInfo::TYPE_FILE && ($file_id === 0 || $node->getId() === $file_id)) {
-				return $node->getId();
-			} elseif ($node->getType() === FileInfo::TYPE_FOLDER) {
-				$file = $node->getById($file_id);
-				if ( (is_array($file) && count($file) > 0)
-					|| (!is_array($file) && $file->getType() === FileInfo::TYPE_FILE)
-				) {
-					return $file_id;
-				}
-			}
-		} catch (ShareNotFound $e) {
-			return null;
-		}
-		return null;
-	}
-
-	/**
-	 * Check if a token has write access to a file
-	 *
-	 * @param string $token
-	 * @param int $file_id
-	 * @return bool true if has write access
-	 */
-	private function isFileWriteableWithToken(string $token, int $file_id): bool {
-		try {
-			$share = $this->shareManager->getShareByToken($token);
-			$perms = $share->getPermissions();
-			return (($perms & Constants::PERMISSION_UPDATE) !== 0);
-		} catch (ShareNotFound $e) {
-			return false;
-		}
-		return false;
 	}
 
 	/**
