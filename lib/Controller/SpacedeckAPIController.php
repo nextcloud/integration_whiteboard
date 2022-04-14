@@ -486,7 +486,7 @@ class SpacedeckAPIController extends Controller {
 		}
 
 		$result = $this->spacedeckApiService->saveSpaceToFile(
-			$this->baseUrl, $this->apiToken, $this->userId, $space_id, $file_id
+			$this->baseUrl, $this->apiToken, $this->userId, $space_id, $foundFile->getId()
 		);
 		if (isset($result['error'])) {
 			$response = new DataResponse($result['error'], 401);
@@ -547,7 +547,7 @@ class SpacedeckAPIController extends Controller {
 		}
 
 		$result = $this->spacedeckApiService->loadSpaceFromFile(
-			$this->baseUrl, $this->apiToken, $this->userId, $file_id, $this->usesIndexDotPhp()
+			$this->baseUrl, $this->apiToken, $this->userId, $foundFile->getId(), $this->usesIndexDotPhp()
 		);
 		if (isset($result['error'])) {
 			$response = new DataResponse($result['error'], Http::STATUS_UNAUTHORIZED);

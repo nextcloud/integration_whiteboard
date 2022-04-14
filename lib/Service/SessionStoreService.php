@@ -61,7 +61,7 @@ class SessionStoreService {
 		}
 		$req = $qb->executeQuery();
 
-		if ($row = $req->fetchOne()) {
+		while ($row = $req->fetch()) {
 			return $this->getSessionFromRow($row);
 		}
 		$req->closeCursor();
