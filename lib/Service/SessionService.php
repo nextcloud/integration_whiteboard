@@ -132,6 +132,6 @@ class SessionService {
 	}
 
 	public function cleanupSessions(): array {
-		return $this->sessionStoreService->cleanupSession(self::SESSION_TIMEOUT_SECONDS);
+		return $this->sessionStoreService->cleanupSessions(self::SESSION_TIMEOUT_SECONDS);
 	}
 }

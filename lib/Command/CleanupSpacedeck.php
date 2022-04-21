@@ -12,6 +12,7 @@
 
 namespace OCA\Spacedeck\Command;
 
+use OCA\Spacedeck\Service\SessionService;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -26,11 +27,21 @@ require_once __DIR__ . '/../constants.php';
 class CleanupSpacedeck extends Command {
 
 	protected $output;
+	/**
+	 * @var SessionService
+	 */
+	private $sessionService;
+	/**
+	 * @var SpacedeckAPIService
+	 */
+	private $apiService;
 
 	public function __construct(SpacedeckAPIService $apiService,
+								SessionService $sessionService,
 								IConfig $config) {
 		parent::__construct();
 		$this->config = $config;
+		$this->sessionService = $sessionService;
 		$this->apiService = $apiService;
 	}
 
@@ -40,6 +51,8 @@ class CleanupSpacedeck extends Command {
 	}
 
 	protected function execute(InputInterface $input, OutputInterface $output) {
+		$this->sessionService->cleanupSessions();
+
 		// TODO find a way to setup the filesystem without any user ID
 		// for the moment, in cleanup command context, root FS is not available
 		// and we have to iterate on all users to get all application/spacedeck files

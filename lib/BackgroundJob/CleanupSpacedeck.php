@@ -71,6 +71,8 @@ class CleanupSpacedeck extends TimedJob {
 	}
 
 	protected function run($argument): void {
+		$this->sessionService->cleanupSessions();
+
 		$useLocalSpacedeck = $this->config->getAppValue(Application::APP_ID, 'use_local_spacedeck', '1') === '1';
 		if ($useLocalSpacedeck) {
 			$apiToken = $this->config->getAppValue(Application::APP_ID, 'api_token', DEFAULT_SPACEDECK_API_KEY);
@@ -87,6 +89,5 @@ class CleanupSpacedeck extends TimedJob {
 				}
 			}
 		}
-		$this->sessionService->cleanupSessions();
 	}
 }
