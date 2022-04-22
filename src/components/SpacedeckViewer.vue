@@ -158,6 +158,7 @@ export default {
 				sidebarButtons[0].click()
 			}
 		},
+		// TODO remove the 3 following methods if spacedeck does not send postMessages in the end
 		listenToFrameMessages() {
 			window.addEventListener('message', this.handleFrameMessages, false)
 		},

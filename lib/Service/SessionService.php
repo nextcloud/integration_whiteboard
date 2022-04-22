@@ -14,10 +14,13 @@ namespace OCA\Spacedeck\Service;
 use DateTime;
 use OCP\DB\QueryBuilder\IQueryBuilder;
 use OCP\Files\IRootFolder;
+use OCP\IConfig;
 use OCP\IDBConnection;
 use Psr\Log\LoggerInterface;
 
 use OCA\Spacedeck\AppInfo\Application;
+
+require_once __DIR__ . '/../constants.php';
 
 class SessionService {
 	private const SESSION_TIMEOUT_SECONDS = 600;
@@ -33,13 +36,25 @@ class SessionService {
 	 * @var FileService
 	 */
 	private $fileService;
+	/**
+	 * @var IConfig
+	 */
+	private $config;
+	/**
+	 * @var SpacedeckAPIService
+	 */
+	private $spacedeckAPIService;
 
 	public function __construct (SessionStoreService $sessionStoreService,
 								 FileService $fileService,
+								 IConfig $config,
+								 SpacedeckAPIService $spacedeckAPIService,
 								 LoggerInterface $logger) {
 		$this->logger = $logger;
 		$this->sessionStoreService = $sessionStoreService;
 		$this->fileService = $fileService;
+		$this->config = $config;
+		$this->spacedeckAPIService = $spacedeckAPIService;
 	}
 
 	/**
@@ -57,12 +72,32 @@ class SessionService {
 		if ($session !== null) {
 			$this->sessionStoreService->touchSession($sessionToken);
 			if ($session['token_type'] === Application::TOKEN_TYPES['user']) {
-				return $this->fileService->getUserPermissionsOnFile($session['editor_uid'], $session['file_id']);
+				$perm = $this->fileService->getUserPermissionsOnFile($session['editor_uid'], $session['file_id']);
+				if ($perm === Application::PERMISSIONS['edit']) {
+					$this->spaceSessionSpaceToFile($session);
+				}
+				return $perm;
 			} else {
-				return $this->fileService->getSharePermissionsOnFile($session['share_token'], $session['file_id']);
+				$perm = $this->fileService->getSharePermissionsOnFile($session['share_token'], $session['file_id']);
+				if ($perm === Application::PERMISSIONS['edit']) {
+					$this->spaceSessionSpaceToFile($session);
+				}
+				return $perm;
 			}
 		}
 		return Application::PERMISSIONS['none'];
+	}
+
+	private function spaceSessionSpaceToFile(array $session) {
+		try {
+			$baseUrl = $this->config->getAppValue(Application::APP_ID, 'base_url', DEFAULT_SPACEDECK_URL);
+			$apiToken = $this->config->getAppValue(Application::APP_ID, 'api_token', DEFAULT_SPACEDECK_API_KEY);
+			$this->spacedeckAPIService->saveSpaceToFile(
+				$baseUrl, $apiToken, null, (string)$session['file_id'], $session['file_id']
+			);
+		} catch (\Exception | \Throwable $e) {
+			$this->logger->error('Error saving space for session', ['exception' => $e]);
+		}
 	}
 
 	/**
