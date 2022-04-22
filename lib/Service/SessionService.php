@@ -61,25 +61,26 @@ class SessionService {
 	 * Check what this session can do with the related file
 	 *
 	 * @param string $sessionToken
+	 * @param string $method
 	 * @return int
 	 * @throws \OCP\Files\InvalidPathException
 	 * @throws \OCP\Files\NotFoundException
 	 * @throws \OCP\Files\NotPermittedException
 	 * @throws \OC\User\NoUserException
 	 */
-	public function checkSessionPermissions(string $sessionToken): int {
+	public function checkSessionPermissions(string $sessionToken, string $method): int {
 		$session = $this->sessionStoreService->getSession($sessionToken);
 		if ($session !== null) {
 			$this->sessionStoreService->touchSession($sessionToken);
 			if ($session['token_type'] === Application::TOKEN_TYPES['user']) {
 				$perm = $this->fileService->getUserPermissionsOnFile($session['editor_uid'], $session['file_id']);
-				if ($perm === Application::PERMISSIONS['edit']) {
+				if ($method !== 'GET' && $perm === Application::PERMISSIONS['edit']) {
 					$this->spaceSessionSpaceToFile($session);
 				}
 				return $perm;
 			} else {
 				$perm = $this->fileService->getSharePermissionsOnFile($session['share_token'], $session['file_id']);
-				if ($perm === Application::PERMISSIONS['edit']) {
+				if ($method !== 'GET' && $perm === Application::PERMISSIONS['edit']) {
 					$this->spaceSessionSpaceToFile($session);
 				}
 				return $perm;

@@ -29,7 +29,7 @@ return [
 		['name' => 'spacedeckAPI#publicLoadSpaceFromFile', 'url' => '/s/{token}/space/{file_id}', 'verb' => 'GET'],
 
 		// wopi-like access control
-		['name' => 'Session#check', 'url' => '/session/check/{token}', 'verb' => 'GET'],
+		['name' => 'Session#check', 'url' => '/session/check/{token}/{method}', 'verb' => 'GET'],
 		['name' => 'Session#create', 'url' => '/session', 'verb' => 'POST'],
 		['name' => 'Session#publicCreate', 'url' => '/s/session', 'verb' => 'POST'],
 		['name' => 'Session#delete', 'url' => '/session/{token}', 'verb' => 'DELETE'],

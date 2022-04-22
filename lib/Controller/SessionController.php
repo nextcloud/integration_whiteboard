@@ -49,10 +49,15 @@ class SessionController extends Controller {
 	 * @PublicPage
 	 * @NoCSRFRequired
 	 * @param string $token
+	 * @param string $method
 	 * @return DataResponse
+	 * @throws \OCP\Files\InvalidPathException
+	 * @throws \OCP\Files\NotFoundException
+	 * @throws \OCP\Files\NotPermittedException
+	 * @throws \OC\User\NoUserException
 	 */
-	public function check(string $token): DataResponse {
-		$permissions = $this->sessionService->checkSessionPermissions($token);
+	public function check(string $token, string $method): DataResponse {
+		$permissions = $this->sessionService->checkSessionPermissions($token, $method);
 		return new DataResponse([ 'access_level' => $permissions ]);
 	}
 
