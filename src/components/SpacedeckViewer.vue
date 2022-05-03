@@ -80,7 +80,6 @@ export default {
 
 	destroyed() {
 		console.debug('DESTROYED')
-		this.stopListeningToFrameMessages()
 		if (this.sessionToken) {
 			this.deleteSession()
 		}
@@ -120,7 +119,6 @@ export default {
 				if (this.doneLoading) {
 					this.doneLoading()
 				}
-				this.listenToFrameMessages()
 			}).catch((error) => {
 				console.error(error)
 				showError(
@@ -156,21 +154,6 @@ export default {
 			const sidebarButtons = document.getElementsByClassName('icon-menu-sidebar-white-forced')
 			if (sidebarButtons.length > 0) {
 				sidebarButtons[0].click()
-			}
-		},
-		// TODO remove the 3 following methods if spacedeck does not send postMessages in the end
-		listenToFrameMessages() {
-			window.addEventListener('message', this.handleFrameMessages, false)
-		},
-		stopListeningToFrameMessages() {
-			window.removeEventListener('message', this.handleFrameMessages)
-		},
-		handleFrameMessages(event) {
-			if (!this.spaceUrl.startsWith(event.origin)) {
-				return
-			}
-			if (['update_artifact', 'create_artifact', 'delete_artifact'].includes(event.data?.action)) {
-				this.saveSpace()
 			}
 		},
 		deleteSession() {
