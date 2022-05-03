@@ -128,7 +128,7 @@ class SessionService {
 		if ($file === null) {
 			return null;
 		}
-		return $this->sessionStoreService->createSession($file->getOwner()->getUID(), $fileId, null, $shareToken);
+		return $this->sessionStoreService->createSession($file->getOwner()->getUID(), $file->getId(), null, $shareToken);
 	}
 
 	/**
