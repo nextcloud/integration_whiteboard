@@ -4,13 +4,10 @@
 			<a class="icon icon-spacedeck" />
 			{{ t('integration_whiteboard', 'Spacedeck whiteboard integration') }}
 		</h2>
-		<p class="settings-hint">
+		<p v-if="state.use_local_spacedeck && !state.spacedeck_data_copied"
+		   class="settings-hint">
 			<span class="icon icon-error" />
-			{{ t('integration_whiteboard', 'Spacedeck data couldn\'t be copied to local data directory. Please deploy Spacedeck yourself.') }}
-			<a class="external"
-				href="">
-				{{ t('integration_whiteboard', 'How to deploy Spacedeck for Nextcloud') }}
-			</a>
+			{{ t('integration_whiteboard', 'Spacedeck data couldn\'t be copied to local data directory. Please deploy Spacedeck yourself and don\'t use the integrated Spacedeck server.') }}
 		</p>
 		<!--p class="settings-hint">
 			{{ t('integration_whiteboard', 'If you set up Spacedeck yourself, create a dedicated user in Spacedeck and set an API token in user account settings.') }}
@@ -26,16 +23,23 @@
 			</label>
 			<br>
 			<br>
-			<p v-if="!state.use_local_spacedeck"
-				class="settings-hint">
-				<span class="icon icon-info" />
-				{{ t('integration_whiteboard', 'The "endpoint" value of Spacedeck config should be "{spacedeckEndpoint}".', { spacedeckEndpoint }) }}
-			</p>
-			<p v-if="!state.use_local_spacedeck"
-				class="settings-hint">
-				<span class="icon icon-info" />
-				{{ t('integration_whiteboard', 'Spacedeck base URL is the address where Spacedeck can be contacted, from your webserver point of view.') }}
-			</p>
+			<div v-if="!state.use_local_spacedeck">
+				<p class="settings-hint">
+					<span class="icon icon-info" />
+					<a class="external"
+					   href="">
+						{{ t('integration_whiteboard', 'How to deploy Spacedeck for Nextcloud') }}
+					</a>
+				</p>
+				<p class="settings-hint">
+					<span class="icon icon-info" />
+					{{ t('integration_whiteboard', 'The "ext_access_control" value of Spacedeck configuration file should be "{spacedeckCheckEndpoint}".', { spacedeckCheckEndpoint }) }}
+				</p>
+				<p class="settings-hint">
+					<span class="icon icon-info" />
+					{{ t('integration_whiteboard', 'Spacedeck base URL is the address where Spacedeck can be contacted, from your webserver point of view.') }}
+				</p>
+			</div>
 		</div>
 		<div v-if="!state.use_local_spacedeck"
 			class="grid-form">
@@ -94,7 +98,7 @@ export default {
 	data() {
 		return {
 			state: loadState('integration_whiteboard', 'admin-config'),
-			spacedeckEndpoint: window.location.protocol + '//' + window.location.host + generateUrl('/apps/integration_whiteboard/proxy'),
+			spacedeckCheckEndpoint: window.location.protocol + '//' + window.location.host + generateUrl('/apps/integration_whiteboard/session/check'),
 			// to prevent some browsers to fill fields with remembered passwords
 			readonly: true,
 			checking: false,
@@ -237,7 +241,7 @@ export default {
 		margin-left: 35px;
 		.settings-hint .icon {
 			width: 24px;
-			padding: 11px 11px;
+			padding: 8px 11px;
 		}
 	}
 }
