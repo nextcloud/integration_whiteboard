@@ -75,8 +75,7 @@ class CleanupSpacedeck extends TimedJob {
 
 		$useLocalSpacedeck = $this->config->getAppValue(Application::APP_ID, 'use_local_spacedeck', '1') === '1';
 		if ($useLocalSpacedeck) {
-			$apiToken = $this->config->getAppValue(Application::APP_ID, 'api_token', DEFAULT_SPACEDECK_API_KEY);
-			$apiToken = $apiToken ?: DEFAULT_SPACEDECK_API_KEY;
+			$apiToken = DEFAULT_SPACEDECK_API_KEY;
 			$baseUrl = $this->config->getAppValue(Application::APP_ID, 'base_url', DEFAULT_SPACEDECK_URL);
 			$baseUrl = $baseUrl ?: DEFAULT_SPACEDECK_URL;
 
