@@ -128,7 +128,7 @@ need a reverse proxy to make it possible to reach it through your webserver.
 virtual host.
 
 Here is an example of Apache virtual host proxying to Spacedeck (with Websocket support).
-This make Spacedeck (which is listening to the 9666 port) to be accessible at https://spacedeck.myserver.org
+This makes Spacedeck (which is listening to the 9666 port) accessible at https://spacedeck.myserver.org
 ```apacheconf
 <VirtualHost *:443>
         ServerName spacedeck.myserver.org

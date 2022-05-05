@@ -54,7 +54,7 @@ class Admin implements ISettings {
 			'api_token' => $apiToken,
 			'spacedeck_data_copied' => $dataCopied,
 		];
-		$this->initialStateService->provideInitialState($this->appName, 'admin-config', $adminConfig);
+		$this->initialStateService->provideInitialState(Application::APP_ID, 'admin-config', $adminConfig);
 		return new TemplateResponse(Application::APP_ID, 'adminSettings');
 	}
 

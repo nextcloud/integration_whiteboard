@@ -452,13 +452,13 @@ class SpacedeckAPIService {
 			}
 		} catch (ServerException | ClientException $e) {
 			$response = $e->getResponse();
-			// $this->logger->warning('Spacedeck API error : '.$e->getMessage(), ['app' => $this->appName]);
+			// $this->logger->warning('Spacedeck API error : '.$e->getMessage(), ['app' => Application::APP_ID]);
 			return ['error' => $e->getMessage()];
 		} catch (ConnectException $e) {
-			$this->logger->warning('Spacedeck request connection error : '.$e->getMessage(), ['app' => $this->appName]);
+			$this->logger->warning('Spacedeck request connection error : '.$e->getMessage(), ['app' => Application::APP_ID]);
 			return ['error' => $e->getMessage()];
 		} catch (LocalServerException $e) {
-			$this->logger->warning('Spacedeck request LocalServerException : '.$e->getMessage(), ['app' => $this->appName]);
+			$this->logger->warning('Spacedeck request LocalServerException : '.$e->getMessage(), ['app' => Application::APP_ID]);
 			return [
 				'error' => 'Nextcloud refuses to connect to local remote servers',
 				'errorType' => 'LocalServerException',
@@ -527,13 +527,13 @@ class SpacedeckAPIService {
 			}
 		} catch (ServerException | ClientException $e) {
 			$response = $e->getResponse();
-			// $this->logger->warning('Spacedeck API error : '.$e->getMessage(), ['app' => $this->appName]);
+			// $this->logger->warning('Spacedeck API error : '.$e->getMessage(), ['app' => Application::APP_ID]);
 			return ['error' => $e->getMessage()];
 		} catch (ConnectException $e) {
-			$this->logger->warning('Spacedeck request connection error : '.$e->getMessage(), ['app' => $this->appName]);
+			$this->logger->warning('Spacedeck request connection error : '.$e->getMessage(), ['app' => Application::APP_ID]);
 			return ['error' => $e->getMessage()];
 		} catch (LocalServerException $e) {
-			$this->logger->warning('Spacedeck request LocalServerException : '.$e->getMessage(), ['app' => $this->appName]);
+			$this->logger->warning('Spacedeck request LocalServerException : '.$e->getMessage(), ['app' => Application::APP_ID]);
 			return [
 				'error' => 'Nextcloud refuses to connect to local remote servers',
 				'errorType' => 'LocalServerException',
