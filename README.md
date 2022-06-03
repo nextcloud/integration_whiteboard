@@ -12,7 +12,7 @@ or via public links. Everyone having access with write permissions to such a fil
 
 There are 2 ways to setup this app:
 * Use the bundled Spacedeck server (only works on 64 bits GNU/Linux servers)
-* [Deploy a standalone Spacedeck server](#deploy-spacedeck)
+* [Deploy a standalone Spacedeck server](#deploy-spacedeck) (>= v0.1.0 which is not released yet)
 
 This is recommended to deploy and use a standalone Spacedeck server for:
 * Better performances
