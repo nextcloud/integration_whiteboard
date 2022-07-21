@@ -61,14 +61,6 @@ class Application extends App implements IBootstrap {
 		$this->addPrivateListeners($eventDispatcher);
 
 		$config = $container->get(IConfig::class);
-		$useLocalSpacedeck = $config->getAppValue(self::APP_ID, 'use_local_spacedeck', '1') === '1';
-		$url = '';
-		if (!$useLocalSpacedeck) {
-			$url = $config->getAppValue(Application::APP_ID, 'base_url', DEFAULT_SPACEDECK_URL);
-			$url = $url ?: DEFAULT_SPACEDECK_URL;
-		}
-
-		$this->updateCSP($url);
 
 		$initialState = $container->get(IInitialState::class);
 		$initialState->provideLazyInitialState('use_local_spacedeck', function () use ($config) {
@@ -91,23 +83,6 @@ class Application extends App implements IBootstrap {
 	private function loadFilesScripts() {
 		Util::addscript(self::APP_ID, self::APP_ID . '-filetypes');
 		Util::addStyle(self::APP_ID, 'style');
-	}
-
-	/**
-	 * this might have been necessary in the past
-	 */
-	public function updateCSP(string $url = '') {
-		$container = $this->getContainer();
-
-		$cspManager = $container->getServer()->getContentSecurityPolicyManager();
-		$policy = new ContentSecurityPolicy();
-		$policy->addAllowedFrameDomain('\'self\'');
-		$policy->addAllowedFrameAncestorDomain('\'self\'');
-		if ($url) {
-			$policy->addAllowedFrameDomain($url);
-		}
-
-		$cspManager->addDefaultPolicy($policy);
 	}
 
 	public function register(IRegistrationContext $context): void {
