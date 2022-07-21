@@ -2,38 +2,31 @@
 namespace OCA\Spacedeck\Settings;
 
 use OCP\AppFramework\Http\TemplateResponse;
-use OCP\IRequest;
-use OCP\IL10N;
+use OCP\AppFramework\Services\IInitialState;
 use OCP\IConfig;
 use OCP\Settings\ISettings;
-use OCP\IURLGenerator;
-use OCP\IInitialStateService;
 
 use OCA\Spacedeck\AppInfo\Application;
 
 class Admin implements ISettings {
 
-	private $request;
+	/**
+	 * @var IConfig
+	 */
 	private $config;
-	private $dataDirPath;
-	private $urlGenerator;
-	private $l;
+	/**
+	 * @var IInitialState
+	 */
+	private $initialStateService;
 
 	public function __construct(
 						string $appName,
-						IL10N $l,
-						IRequest $request,
 						IConfig $config,
-						IURLGenerator $urlGenerator,
-						IInitialStateService $initialStateService,
-						$userId) {
+						IInitialState $initialStateService,
+						?string $userId) {
 		$this->appName = $appName;
-		$this->urlGenerator = $urlGenerator;
-		$this->request = $request;
-		$this->l = $l;
 		$this->config = $config;
 		$this->initialStateService = $initialStateService;
-		$this->userId = $userId;
 	}
 
 	/**
@@ -51,7 +44,7 @@ class Admin implements ISettings {
 			'api_token' => $apiToken,
 			'spacedeck_data_copied' => $dataCopied,
 		];
-		$this->initialStateService->provideInitialState(Application::APP_ID, 'admin-config', $adminConfig);
+		$this->initialStateService->provideInitialState('admin-config', $adminConfig);
 		return new TemplateResponse(Application::APP_ID, 'adminSettings');
 	}
 
