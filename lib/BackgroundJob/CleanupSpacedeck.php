@@ -32,8 +32,6 @@ use Psr\Log\LoggerInterface;
 use OCA\Spacedeck\Service\SpacedeckAPIService;
 use OCA\Spacedeck\AppInfo\Application;
 
-require_once __DIR__ . '/../constants.php';
-
 /**
  * Class CleanupSpacedeck
  *
@@ -75,9 +73,9 @@ class CleanupSpacedeck extends TimedJob {
 
 		$useLocalSpacedeck = $this->config->getAppValue(Application::APP_ID, 'use_local_spacedeck', '1') === '1';
 		if ($useLocalSpacedeck) {
-			$apiToken = DEFAULT_SPACEDECK_API_KEY;
-			$baseUrl = $this->config->getAppValue(Application::APP_ID, 'base_url', DEFAULT_SPACEDECK_URL);
-			$baseUrl = $baseUrl ?: DEFAULT_SPACEDECK_URL;
+			$apiToken = Application::DEFAULT_SPACEDECK_API_KEY;
+			$baseUrl = $this->config->getAppValue(Application::APP_ID, 'base_url', Application::DEFAULT_SPACEDECK_URL);
+			$baseUrl = $baseUrl ?: Application::DEFAULT_SPACEDECK_URL;
 
 			$result = $this->apiService->cleanupSpacedeckStorage($baseUrl, $apiToken);
 			if (isset($result['error'])) {

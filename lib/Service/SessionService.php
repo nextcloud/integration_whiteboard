@@ -11,16 +11,10 @@
 
 namespace OCA\Spacedeck\Service;
 
-use DateTime;
-use OCP\DB\QueryBuilder\IQueryBuilder;
-use OCP\Files\IRootFolder;
 use OCP\IConfig;
-use OCP\IDBConnection;
 use Psr\Log\LoggerInterface;
 
 use OCA\Spacedeck\AppInfo\Application;
-
-require_once __DIR__ . '/../constants.php';
 
 class SessionService {
 	private const SESSION_TIMEOUT_SECONDS = 600;
@@ -91,8 +85,8 @@ class SessionService {
 
 	private function saveSessionSpaceToFile(array $session) {
 		try {
-			$baseUrl = $this->config->getAppValue(Application::APP_ID, 'base_url', DEFAULT_SPACEDECK_URL);
-			$apiToken = $this->config->getAppValue(Application::APP_ID, 'api_token', DEFAULT_SPACEDECK_API_KEY);
+			$baseUrl = $this->config->getAppValue(Application::APP_ID, 'base_url', Application::DEFAULT_SPACEDECK_URL);
+			$apiToken = $this->config->getAppValue(Application::APP_ID, 'api_token', Application::DEFAULT_SPACEDECK_API_KEY);
 			$this->spacedeckAPIService->saveSpaceToFile(
 				$baseUrl, $apiToken, null, (string)$session['file_id'], $session['file_id']
 			);

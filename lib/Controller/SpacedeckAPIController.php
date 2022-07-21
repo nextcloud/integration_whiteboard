@@ -28,8 +28,6 @@ use OCP\AppFramework\Controller;
 use OCA\Spacedeck\Service\SpacedeckAPIService;
 use OCA\Spacedeck\AppInfo\Application;
 
-require_once __DIR__ . '/../constants.php';
-
 if (!function_exists('getallheaders'))
 {
 	// polyfill, e.g. on PHP 7.2 setups with nginx.
@@ -83,13 +81,13 @@ class SpacedeckAPIController extends Controller {
 
 		$this->useLocalSpacedeck = $this->config->getAppValue(Application::APP_ID, 'use_local_spacedeck', '1') === '1';
 		if ($this->useLocalSpacedeck) {
-			$this->baseUrl = DEFAULT_SPACEDECK_URL;
-			$this->apiToken = DEFAULT_SPACEDECK_API_KEY;
+			$this->baseUrl = Application::DEFAULT_SPACEDECK_URL;
+			$this->apiToken = Application::DEFAULT_SPACEDECK_API_KEY;
 		} else {
-			$this->baseUrl = $this->config->getAppValue(Application::APP_ID, 'base_url', DEFAULT_SPACEDECK_URL);
-			$this->baseUrl = $this->baseUrl ?: DEFAULT_SPACEDECK_URL;
-			$this->apiToken = $this->config->getAppValue(Application::APP_ID, 'api_token', DEFAULT_SPACEDECK_API_KEY);
-			$this->apiToken = $this->apiToken ?: DEFAULT_SPACEDECK_API_KEY;
+			$this->baseUrl = $this->config->getAppValue(Application::APP_ID, 'base_url', Application::DEFAULT_SPACEDECK_URL);
+			$this->baseUrl = $this->baseUrl ?: Application::DEFAULT_SPACEDECK_URL;
+			$this->apiToken = $this->config->getAppValue(Application::APP_ID, 'api_token', Application::DEFAULT_SPACEDECK_API_KEY);
+			$this->apiToken = $this->apiToken ?: Application::DEFAULT_SPACEDECK_API_KEY;
 		}
 		$this->fileService = $fileService;
 		$this->sessionService = $sessionService;

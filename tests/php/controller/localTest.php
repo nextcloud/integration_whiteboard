@@ -16,14 +16,13 @@
  *
  */
 
+use OCA\Spacedeck\AppInfo\Application;
 use PHPUnit\Framework\TestCase;
 use OCP\IGroupManager;
 use OCP\IUserManager;
 
 use OCA\Spacedeck\Service\SpacedeckAPIService;
 use OCA\Spacedeck\Service\SpacedeckBundleService;
-
-require_once __DIR__ . '/../../../lib/constants.php';
 
 class LocalTest extends TestCase {
 
@@ -87,7 +86,7 @@ class LocalTest extends TestCase {
 		$this->assertNotEquals(0, $pid);
 		error_log('PID "'.$pid.'"');
 		sleep(15);
-		$spaces = $this->spacedeckAPIService->getSpaceList(DEFAULT_SPACEDECK_URL, DEFAULT_SPACEDECK_API_KEY, true);
+		$spaces = $this->spacedeckAPIService->getSpaceList(Application::DEFAULT_SPACEDECK_URL, Application::DEFAULT_SPACEDECK_API_KEY, true);
 		var_dump($spaces);
 		$this->assertArrayNotHasKey('error', $spaces);
 		$this->assertCount(1, $spaces);

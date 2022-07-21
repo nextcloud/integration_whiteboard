@@ -6,13 +6,10 @@ use OCP\IRequest;
 use OCP\IL10N;
 use OCP\IConfig;
 use OCP\Settings\ISettings;
-use OCP\Util;
 use OCP\IURLGenerator;
 use OCP\IInitialStateService;
 
 use OCA\Spacedeck\AppInfo\Application;
-
-require_once __DIR__ . '/../constants.php';
 
 class Admin implements ISettings {
 
@@ -45,7 +42,7 @@ class Admin implements ISettings {
 	public function getForm(): TemplateResponse {
 		$useLocalSpacedeck = $this->config->getAppValue(Application::APP_ID, 'use_local_spacedeck', '1') === '1';
 		$baseUrl = $this->config->getAppValue(Application::APP_ID, 'base_url', '');
-		$apiToken = $this->config->getAppValue(Application::APP_ID, 'api_token', DEFAULT_SPACEDECK_API_KEY);
+		$apiToken = $this->config->getAppValue(Application::APP_ID, 'api_token', Application::DEFAULT_SPACEDECK_API_KEY);
 		$dataCopied = $this->config->getAppValue(Application::APP_ID, 'spacedeck_data_copied', '0') === '1';
 
 		$adminConfig = [

@@ -29,8 +29,6 @@ use OCP\IUserManager;
 
 use OCA\Spacedeck\AppInfo\Application;
 
-require_once __DIR__ . '/../constants.php';
-
 class SpacedeckAPIService {
 
 	private $logger;

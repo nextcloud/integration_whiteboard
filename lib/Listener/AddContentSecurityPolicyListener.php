@@ -30,8 +30,6 @@ use OCP\EventDispatcher\IEventListener;
 use OCP\IConfig;
 use OCP\Security\CSP\AddContentSecurityPolicyEvent;
 
-require_once __DIR__ . '/../constants.php';
-
 class AddContentSecurityPolicyListener implements IEventListener {
 	/**
 	 * @var IConfig
@@ -50,8 +48,8 @@ class AddContentSecurityPolicyListener implements IEventListener {
 		$useLocalSpacedeck = $this->config->getAppValue(Application::APP_ID, 'use_local_spacedeck', '1') === '1';
 		$url = '';
 		if (!$useLocalSpacedeck) {
-			$url = $this->config->getAppValue(Application::APP_ID, 'base_url', DEFAULT_SPACEDECK_URL);
-			$url = $url ?: DEFAULT_SPACEDECK_URL;
+			$url = $this->config->getAppValue(Application::APP_ID, 'base_url', Application::DEFAULT_SPACEDECK_URL);
+			$url = $url ?: Application::DEFAULT_SPACEDECK_URL;
 		}
 
 		$csp = new ContentSecurityPolicy();

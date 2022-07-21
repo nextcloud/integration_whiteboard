@@ -11,10 +11,8 @@ namespace OCA\Spacedeck\AppInfo;
 
 use OCP\AppFramework\Services\IInitialState;
 use OCP\IConfig;
-use OCP\IContainer;
 use OCP\Util;
 use OCP\AppFramework\App;
-use OCP\AppFramework\IAppContainer;
 use OCP\AppFramework\Bootstrap\IRegistrationContext;
 use OCP\AppFramework\Bootstrap\IBootContext;
 use OCP\AppFramework\Bootstrap\IBootstrap;
@@ -22,10 +20,6 @@ use OCP\AppFramework\Bootstrap\IBootstrap;
 use OCA\Files\Event\LoadAdditionalScriptsEvent;
 use OCA\Files_Sharing\Event\BeforeTemplateRenderedEvent;
 use OCA\Viewer\Event\LoadViewer;
-
-use OC\Security\CSP\ContentSecurityPolicy;
-
-require_once __DIR__ . '/../constants.php';
 
 /**
  * Class Application
@@ -35,6 +29,8 @@ require_once __DIR__ . '/../constants.php';
 class Application extends App implements IBootstrap {
 
 	public const APP_ID = 'integration_whiteboard';
+	public const DEFAULT_SPACEDECK_URL =  'http://localhost:9666';
+	public const DEFAULT_SPACEDECK_API_KEY = 'super_secret_token';
 
 	public const PERMISSIONS = [
 		'none' => 0,
