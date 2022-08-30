@@ -9,8 +9,10 @@
 
 namespace OCA\Spacedeck\AppInfo;
 
+use OCA\Spacedeck\Listener\AddContentSecurityPolicyListener;
 use OCP\AppFramework\Services\IInitialState;
 use OCP\IConfig;
+use OCP\Security\CSP\AddContentSecurityPolicyEvent;
 use OCP\Util;
 use OCP\AppFramework\App;
 use OCP\AppFramework\Bootstrap\IRegistrationContext;
@@ -82,6 +84,7 @@ class Application extends App implements IBootstrap {
 	}
 
 	public function register(IRegistrationContext $context): void {
+		$context->registerEventListener(AddContentSecurityPolicyEvent::class, AddContentSecurityPolicyListener::class);
 	}
 
 	public function boot(IBootContext $context): void {
