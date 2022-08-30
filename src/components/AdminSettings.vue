@@ -1,86 +1,101 @@
 <template>
 	<div id="spacedeck_prefs" class="section">
 		<h2>
-			<a class="icon icon-spacedeck" />
+			<WhiteboardIcon class="icon" />
 			{{ t('integration_whiteboard', 'Spacedeck whiteboard integration') }}
 		</h2>
-		<p v-if="state.use_local_spacedeck && !state.spacedeck_data_copied"
-		   class="settings-hint">
-			<span class="icon icon-error" />
-			{{ t('integration_whiteboard', 'Spacedeck data couldn\'t be copied to local data directory. Please deploy Spacedeck yourself and don\'t use the integrated Spacedeck server.') }}
-		</p>
-		<!--p class="settings-hint">
-			{{ t('integration_whiteboard', 'If you set up Spacedeck yourself, create a dedicated user in Spacedeck and set an API token in user account settings.') }}
-		</p-->
-		<div id="toggle-local">
-			<input id="spacedeck-local"
-				type="checkbox"
-				class="checkbox"
-				:checked="state.use_local_spacedeck"
-				@input="onLocalInput">
-			<label for="spacedeck-local">
-				{{ t('integration_whiteboard', 'Use integrated Spacedeck server') }}
-			</label>
-			<br>
-			<br>
-			<div v-if="!state.use_local_spacedeck">
-				<p class="settings-hint">
-					<span class="icon icon-info" />
-					<a class="external"
-					   href="">
-						{{ t('integration_whiteboard', 'How to deploy Spacedeck for Nextcloud') }}
-					</a>
-				</p>
-				<p class="settings-hint">
-					<span class="icon icon-info" />
-					{{ t('integration_whiteboard', 'The "ext_access_control" value of Spacedeck configuration file should be "{spacedeckCheckEndpoint}".', { spacedeckCheckEndpoint }) }}
-				</p>
-				<p class="settings-hint">
-					<span class="icon icon-info" />
-					{{ t('integration_whiteboard', 'Spacedeck base URL is the address where Spacedeck can be contacted, from your webserver point of view.') }}
-				</p>
+		<div id="spacedeck-content">
+			<p v-if="state.use_local_spacedeck && !state.spacedeck_data_copied"
+				class="settings-hint">
+				<AlertCircleIcon :size="20" class="icon" />
+				{{ t('integration_whiteboard', 'Spacedeck data couldn\'t be copied to local data directory. Please deploy Spacedeck yourself and don\'t use the integrated Spacedeck server.') }}
+			</p>
+			<!--p class="settings-hint">
+				{{ t('integration_whiteboard', 'If you set up Spacedeck yourself, create a dedicated user in Spacedeck and set an API token in user account settings.') }}
+			</p-->
+			<div id="toggle-local">
+				<CheckboxRadioSwitch
+					:checked="state.use_local_spacedeck"
+					@update:checked="onCheckboxChanged($event, 'use_local_spacedeck')">
+					{{ t('integration_whiteboard', 'Use integrated Spacedeck server') }}
+				</CheckboxRadioSwitch>
+				<br>
+				<div v-if="!state.use_local_spacedeck">
+					<p class="settings-hint">
+						<InformationOutlineIcon :size="20" class="icon" />
+						<a class="external"
+							target="_blank"
+							href="https://github.com/nextcloud/integration_whiteboard/#deploy-spacedeck">
+							{{ t('integration_whiteboard', 'How to deploy Spacedeck for Nextcloud') }}
+						</a>
+					</p>
+					<p class="settings-hint">
+						<InformationOutlineIcon :size="20" class="icon" />
+						{{ t('integration_whiteboard', 'The "ext_access_control" value of Spacedeck configuration file should be "{spacedeckCheckEndpoint}".', { spacedeckCheckEndpoint }) }}
+					</p>
+					<p class="settings-hint">
+						<InformationOutlineIcon :size="20" class="icon" />
+						{{ t('integration_whiteboard', 'Spacedeck base URL is the address where Spacedeck can be contacted, from your webserver point of view.') }}
+					</p>
+				</div>
 			</div>
-		</div>
-		<div v-if="!state.use_local_spacedeck"
-			class="grid-form">
-			<label for="spacedeck-baseurl">
-				<a class="icon icon-link" />
-				{{ t('integration_whiteboard', 'Spacedeck base URL') }}
+			<div v-if="!state.use_local_spacedeck">
+				<div class="line">
+					<label for="spacedeck-baseurl">
+						<EarthIcon :size="20" class="icon" />
+						{{ t('integration_whiteboard', 'Spacedeck base URL') }}
+					</label>
+					<input id="spacedeck-baseurl"
+						v-model="state.base_url"
+						type="text"
+						:placeholder="t('integration_whiteboard', 'Your Spacedeck base URL')"
+						@input="onInput">
+				</div>
+				<div class="line">
+					<label for="spacedeck-baseurl">
+						<LockIcon :size="20" class="icon" />
+						{{ t('integration_whiteboard', 'Spacedeck user API token') }}
+					</label>
+					<input id="spacedeck-baseurl"
+						v-model="state.api_token"
+						type="password"
+						:placeholder="t('integration_whiteboard', 'Your Spacedeck user API token')"
+						@input="onInput">
+				</div>
+			</div>
+			<NcButton
+				:class="{ loading: checking }"
+				@click="checkSpacedeck">
+				<template #icon>
+					<CogIcon />
+				</template>
+				{{ t('integration_whiteboard', 'Check Spacedeck config') }}
+			</NcButton>
+			<label class="check-label">
+				{{ checkText }}
 			</label>
-			<input id="spacedeck-baseurl"
-				v-model="state.base_url"
-				type="text"
-				:placeholder="t('integration_whiteboard', 'Your Spacedeck base URL')"
-				@input="onInput">
-			<label for="spacedeck-baseurl">
-				<a class="icon icon-password" />
-				{{ t('integration_whiteboard', 'Spacedeck user API token') }}
-			</label>
-			<input id="spacedeck-baseurl"
-				v-model="state.api_token"
-				type="password"
-				:placeholder="t('integration_whiteboard', 'Your Spacedeck user API token')"
-				@input="onInput">
 		</div>
-		<button
-			:class="{ 'icon-loading-small': checking }"
-			@click="checkSpacedeck">
-			{{ t('integration_whiteboard', 'Check Spacedeck config') }}
-		</button>
-		<label class="check-label">
-			{{ checkText }}
-		</label>
 	</div>
 </template>
 
 <script>
+import InformationOutlineIcon from 'vue-material-design-icons/InformationOutline.vue'
+import CogIcon from 'vue-material-design-icons/Cog.vue'
+import EarthIcon from 'vue-material-design-icons/Earth.vue'
+import LockIcon from 'vue-material-design-icons/Lock.vue'
+import AlertCircleIcon from 'vue-material-design-icons/AlertCircle.vue'
+
+import WhiteboardIcon from './icons/WhiteboardIcon.vue'
+
 import { loadState } from '@nextcloud/initial-state'
 import { generateUrl } from '@nextcloud/router'
 import axios from '@nextcloud/axios'
 import { showSuccess, showError } from '@nextcloud/dialogs'
-import '@nextcloud/dialogs/styles/toast.scss'
 
-import { delay } from '../utils'
+import NcButton from '@nextcloud/vue/dist/Components/Button.js'
+import CheckboxRadioSwitch from '@nextcloud/vue/dist/Components/CheckboxRadioSwitch.js'
+
+import { delay } from '../utils.js'
 
 const CHECK_NOT_DONE = 0
 const CHECK_OK = 1
@@ -91,6 +106,14 @@ export default {
 	name: 'AdminSettings',
 
 	components: {
+		WhiteboardIcon,
+		NcButton,
+		CheckboxRadioSwitch,
+		CogIcon,
+		InformationOutlineIcon,
+		EarthIcon,
+		LockIcon,
+		AlertCircleIcon,
 	},
 
 	props: [],
@@ -129,12 +152,9 @@ export default {
 	},
 
 	methods: {
-		onLocalInput(e) {
-			this.state.use_local_spacedeck = e.target.checked
-			const values = {
-				use_local_spacedeck: e.target.checked,
-			}
-			this.saveOptions(values)
+		onCheckboxChanged(newValue, key) {
+			this.state[key] = newValue
+			this.saveOptions({ [key]: this.state[key] ? '1' : '0' })
 		},
 		onInput() {
 			delay(() => {
@@ -209,52 +229,32 @@ export default {
 
 <style scoped lang="scss">
 #spacedeck_prefs {
-	.grid-form {
-		max-width: 500px;
-		display: grid;
-		grid-template: 1fr / 1fr 1fr;
-		margin: 0 0 40px 30px;
-
+	#spacedeck-content {
+		margin-left: 40px;
+	}
+	h2,
+	.line,
+	.settings-hint {
+		display: flex;
+		align-items: center;
 		.icon {
-			margin-bottom: -3px;
-		}
-		input {
-			width: 100%;
-		}
-		label {
-			line-height: 38px;
-		}
-		button {
-			height: 34px;
-		}
-		.check-label {
-			padding-left: 5px;
+			margin-right: 4px;
 		}
 	}
 
-	.icon {
-		display: inline-block;
-		width: 32px;
+	h2 .icon {
+		margin-right: 8px;
 	}
 
-	#toggle-local {
-		margin-left: 35px;
-		.settings-hint .icon {
-			width: 24px;
-			padding: 8px 11px;
+	.line {
+		> label {
+			width: 300px;
+			display: flex;
+			align-items: center;
+		}
+		> input {
+			width: 250px;
 		}
 	}
 }
-
-.icon-spacedeck {
-	background-image: url(./../../img/app-dark.svg);
-	background-size: 23px 23px;
-	height: 23px;
-	margin-bottom: -4px;
-}
-
-body.theme--dark .icon-spacedeck {
-	background-image: url(./../../img/app.svg);
-}
-
 </style>

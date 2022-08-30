@@ -18,7 +18,7 @@
  *
  */
 
-import SpacedeckViewer from './components/SpacedeckViewer'
+import SpacedeckViewer from './components/SpacedeckViewer.vue'
 
 document.addEventListener('DOMContentLoaded', () => {
 	// register the viewer handler if possible

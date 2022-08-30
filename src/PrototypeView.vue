@@ -19,9 +19,17 @@
  -->
 
 <template>
-	<Content :id="appContent" :app-name="appName">
-		<button class="icon-close" @click="close" />
-		<button v-if="dir" class="icon-menu-sidebar" @click="sidebar" />
+	<NcContent :id="appContent" :app-name="appName">
+		<NcButton @click="close">
+			<template #icon>
+				<CloseIcon />
+			</template>
+		</NcButton>
+		<NcButton v-if="dir" @click="sidebar">
+			<template #icon>
+				<MenuOpenIcon />
+			</template>
+		</NcButton>
 		<AppContent style="height: 100%;">
 			<SpacedeckViewer
 				ref="viewer"
@@ -31,23 +39,30 @@
 				:in-oc-viewer="false"
 				@close="close" />
 		</AppContent>
-	</Content>
+	</NcContent>
 </template>
 
 <script>
-import Content from '@nextcloud/vue/dist/Components/Content'
-import AppContent from '@nextcloud/vue/dist/Components/AppContent'
+import CloseIcon from 'vue-material-design-icons/Close.vue'
+import MenuOpenIcon from 'vue-material-design-icons/MenuOpen.vue'
+
+import NcContent from '@nextcloud/vue/dist/Components/Content.js'
+import AppContent from '@nextcloud/vue/dist/Components/AppContent.js'
+import NcButton from '@nextcloud/vue/dist/Components/Button.js'
 import { emit } from '@nextcloud/event-bus'
 
-import SpacedeckViewer from './components/SpacedeckViewer'
+import SpacedeckViewer from './components/SpacedeckViewer.vue'
 
 export default {
 	name: 'PrototypeView',
 
 	components: {
-		Content,
+		NcContent,
 		AppContent,
 		SpacedeckViewer,
+		NcButton,
+		CloseIcon,
+		MenuOpenIcon,
 	},
 
 	props: {
@@ -114,10 +129,9 @@ button {
 	opacity: 0.5;
 	z-index: 9999999;
 	border-width: 0;
-}
-
-button:hover {
-	opacity: 1;
+	&:hover {
+		opacity: 1;
+	}
 }
 
 #app-content-integration_whiteboard {
