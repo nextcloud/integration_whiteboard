@@ -15,12 +15,7 @@ use OCP\IL10N;
 use Psr\Log\LoggerInterface;
 use OCP\IConfig;
 use OCP\Files\IRootFolder;
-use OCP\Files\FileInfo;
-use OCP\Files\Node;
-use OCP\Lock\LockedException;
 use OCP\IURLGenerator;
-
-use OCA\Spacedeck\AppInfo\Application;
 
 function recursiveCopy($src, $dst) {
 	$dir = opendir($src);
@@ -49,26 +44,25 @@ function recursiveDelete($str) {
 		}
 		return @rmdir($str);
 	}
+	return true;
 }
 
 class SpacedeckBundleService {
 
-	private $l10n;
-	private $logger;
+	/**
+	 * @var IURLGenerator
+	 */
+	private $urlGenerator;
+	/**
+	 * @var IConfig
+	 */
+	private $config;
 
 	public function __construct (string $appName,
-								IRootFolder $root,
-								LoggerInterface $logger,
-								IL10N $l10n,
-								IURLGenerator $urlGenerator,
-								IConfig $config) {
-		$this->appName = $appName;
-		$this->l10n = $l10n;
-		$this->logger = $logger;
-		$this->config = $config;
-		$this->root = $root;
+								 IURLGenerator $urlGenerator,
+								 IConfig $config) {
 		$this->urlGenerator = $urlGenerator;
-
+		$this->config = $config;
 		$dataDirPath = $this->config->getSystemValue('datadirectory');
 		$instanceId = $this->config->getSystemValue('instanceid');
 		$this->appDataDirPath = $dataDirPath . '/appdata_' . $instanceId . '/spacedeck';
@@ -247,6 +241,7 @@ class SpacedeckBundleService {
 
 	/**
 	 * Add or remove index.php to spacedeck config baseUrl
+	 * @param bool $usesIndexDotPhp
 	 */
 	private function setBaseUrl(bool $usesIndexDotPhp): void {
 		$instanceBaseUrl = rtrim($this->urlGenerator->getBaseUrl(), '/');

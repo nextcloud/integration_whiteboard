@@ -11,15 +11,17 @@
 
 namespace OCA\Spacedeck\Service;
 
+use OC\User\NoUserException;
 use OCA\Spacedeck\AppInfo\Application;
+use OCP\Files\InvalidPathException;
+use OCP\Files\NotFoundException;
+use OCP\Files\NotPermittedException;
 use OCP\Share\Exceptions\ShareNotFound;
-use Psr\Log\LoggerInterface;
 use OCP\Constants;
 use OCP\Files\IRootFolder;
 use OCP\Files\FileInfo;
 use OCP\Files\Node;
 use OCP\Share\IManager as IShareManager;
-use OCP\IUserManager;
 
 class FileService {
 
@@ -27,25 +29,26 @@ class FileService {
 	 * @var IShareManager
 	 */
 	private $shareManager;
+	/**
+	 * @var IRootFolder
+	 */
+	private $root;
 
-	public function __construct (string          $appName,
-								 IShareManager   $shareManager,
-								 IRootFolder     $root,
-								 IUserManager    $userManager,
-								 LoggerInterface $logger) {
-		$this->appName = $appName;
-		$this->logger = $logger;
-		$this->root = $root;
-		$this->userManager = $userManager;
+	public function __construct (string $appName,
+								 IShareManager $shareManager,
+								 IRootFolder $root) {
 		$this->shareManager = $shareManager;
+		$this->root = $root;
 	}
 
 	/**
 	 * Get a user file from a fileId
 	 *
 	 * @param ?string $userId
-	 * @param int $fileID
+	 * @param int $fileId
 	 * @return ?Node the file or null if it does not exist (or is not accessible by this user)
+	 * @throws NoUserException
+	 * @throws NotPermittedException
 	 */
 	public function getFileFromId(?string $userId, int $fileId): ?Node {
 		if (is_null($userId)) {
@@ -66,8 +69,12 @@ class FileService {
 	 * Check if user has write access on a file
 	 *
 	 * @param ?string $userId
-	 * @param int $fileID
+	 * @param int $fileId
 	 * @return bool true if the user can write the file
+	 * @throws NoUserException
+	 * @throws NotPermittedException
+	 * @throws InvalidPathException
+	 * @throws NotFoundException
 	 */
 	public function userHasWriteAccess(string $userId, int $fileId): bool {
 		$userFolder = $this->root->getUserFolder($userId);
@@ -113,8 +120,10 @@ class FileService {
 	 * Check if a share token can access a file
 	 *
 	 * @param string $shareToken
-	 * @param int $fileId the file ID or 0 if the token target is a file (public file share page context)
+	 * @param int $fileId
 	 * @return ?Node the file or null if this token does not exist or can't access this file
+	 * @throws InvalidPathException
+	 * @throws NotFoundException
 	 */
 	public function getFileFromShareToken(string $shareToken, int $fileId): ?Node {
 		try {
@@ -141,6 +150,8 @@ class FileService {
 	 * @param string $shareToken
 	 * @param int $fileId
 	 * @return bool true if has write access
+	 * @throws InvalidPathException
+	 * @throws NotFoundException
 	 */
 	public function isFileWriteableWithToken(string $shareToken, int $fileId): bool {
 		$file = $this->getFileFromShareToken($shareToken, $fileId);

@@ -17,12 +17,8 @@ use Psr\Log\LoggerInterface;
 
 use OCP\IRequest;
 use OCP\AppFramework\Http;
-use OCP\AppFramework\Http\RedirectResponse;
 use OCP\AppFramework\Http\DataResponse;
-use OCP\AppFramework\Http\ContentSecurityPolicy;
 use OCP\AppFramework\Controller;
-
-use OCA\Spacedeck\AppInfo\Application;
 
 class SessionController extends Controller {
 

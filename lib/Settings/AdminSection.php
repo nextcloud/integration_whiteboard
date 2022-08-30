@@ -14,10 +14,8 @@ class AdminSection implements IIconSection {
 	private $urlGenerator;
 
 	public function __construct(string $appName,
-				    IURLGenerator $urlGenerator,
-				    IL10N $l
-				    ) {
-		$this->appName = $appName;
+								IURLGenerator $urlGenerator,
+								IL10N $l) {
 		$this->l = $l;
 		$this->urlGenerator = $urlGenerator;
 	}

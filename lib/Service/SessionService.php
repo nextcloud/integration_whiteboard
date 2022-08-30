@@ -11,6 +11,11 @@
 
 namespace OCA\Spacedeck\Service;
 
+use OC\User\NoUserException;
+use OCP\DB\Exception;
+use OCP\Files\InvalidPathException;
+use OCP\Files\NotFoundException;
+use OCP\Files\NotPermittedException;
 use OCP\IConfig;
 use Psr\Log\LoggerInterface;
 
@@ -101,6 +106,8 @@ class SessionService {
 	 * @param string $userId
 	 * @param int $fileId
 	 * @return array|null
+	 * @throws NoUserException
+	 * @throws NotPermittedException
 	 */
 	public function createUserSession(string $userId, int $fileId): ?array {
 		$file = $this->fileService->getFileFromId($userId, $fileId);
@@ -116,6 +123,8 @@ class SessionService {
 	 * @param string $shareToken
 	 * @param int $fileId
 	 * @return array|null
+	 * @throws InvalidPathException
+	 * @throws NotFoundException
 	 */
 	public function createShareSession(string $shareToken, int $fileId): ?array {
 		$file = $this->fileService->getFileFromShareToken($shareToken, $fileId);
@@ -131,6 +140,7 @@ class SessionService {
 	 * @param string $userId
 	 * @param string $sessionToken
 	 * @return bool
+	 * @throws Exception
 	 */
 	public function deleteUserSession(string $userId, string $sessionToken): bool {
 		$session = $this->sessionStoreService->getSession(
@@ -149,6 +159,7 @@ class SessionService {
 	 * @param string $shareToken
 	 * @param string $sessionToken
 	 * @return bool
+	 * @throws Exception
 	 */
 	public function deleteShareSession(string $shareToken, string $sessionToken): bool {
 		$session = $this->sessionStoreService->getSession(

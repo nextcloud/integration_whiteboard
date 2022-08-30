@@ -19,12 +19,9 @@ class Admin implements ISettings {
 	 */
 	private $initialStateService;
 
-	public function __construct(
-						string $appName,
-						IConfig $config,
-						IInitialState $initialStateService,
-						?string $userId) {
-		$this->appName = $appName;
+	public function __construct(string $appName,
+								IConfig $config,
+								IInitialState $initialStateService) {
 		$this->config = $config;
 		$this->initialStateService = $initialStateService;
 	}

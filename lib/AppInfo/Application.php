@@ -45,11 +45,6 @@ class Application extends App implements IBootstrap {
 		'share' => 1,
 	];
 
-	/**
-	 * Constructor
-	 *
-	 * @param array $urlParams
-	 */
 	public function __construct(array $urlParams = []) {
 		parent::__construct(self::APP_ID, $urlParams);
 

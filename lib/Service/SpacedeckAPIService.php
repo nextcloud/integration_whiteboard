@@ -11,6 +11,8 @@
 
 namespace OCA\Spacedeck\Service;
 
+use OC\User\NoUserException;
+use OCP\Files\InvalidPathException;
 use Psr\Log\LoggerInterface;
 use OCP\IConfig;
 use OCP\Constants;
@@ -30,12 +32,38 @@ use OCP\IUserManager;
 use OCA\Spacedeck\AppInfo\Application;
 
 class SpacedeckAPIService {
-
+	/**
+	 * @var IRootFolder
+	 */
+	private $root;
+	/**
+	 * @var IUserManager
+	 */
+	private $userManager;
+	/**
+	 * @var LoggerInterface
+	 */
 	private $logger;
+	/**
+	 * @var IConfig
+	 */
+	private $config;
+	/**
+	 * @var SpacedeckBundleService
+	 */
+	private $spacedeckBundleService;
 	/**
 	 * @var FileService
 	 */
 	private $fileService;
+	/**
+	 * @var \OCP\Http\Client\IClient
+	 */
+	private $client;
+	/**
+	 * @var bool
+	 */
+	private $useLocalSpacedeck;
 
 	/**
 	 * Service to make requests to Spacedeck API
@@ -48,16 +76,14 @@ class SpacedeckAPIService {
 								SpacedeckBundleService $spacedeckBundleService,
 								FileService $fileService,
 								IClientService $clientService) {
-		$this->appName = $appName;
-		$this->logger = $logger;
-		$this->config = $config;
 		$this->root = $root;
 		$this->userManager = $userManager;
-		$this->clientService = $clientService;
-		$this->client = $clientService->newClient();
+		$this->logger = $logger;
+		$this->config = $config;
 		$this->spacedeckBundleService = $spacedeckBundleService;
-		$this->useLocalSpacedeck = $this->config->getAppValue(Application::APP_ID, 'use_local_spacedeck', '1') === '1';
 		$this->fileService = $fileService;
+		$this->client = $clientService->newClient();
+		$this->useLocalSpacedeck = $this->config->getAppValue(Application::APP_ID, 'use_local_spacedeck', '1') === '1';
 	}
 
 	/**
@@ -66,9 +92,14 @@ class SpacedeckAPIService {
 	 * @param string $baseUrl
 	 * @param string $apiToken
 	 * @param ?string $userId
-	 * @param string $space_id
 	 * @param int $file_id
+	 * @param string $outputDirPath
+	 * @param bool $usesIndexDotPhp
 	 * @return array success state
+	 * @throws InvalidPathException
+	 * @throws NoUserException
+	 * @throws NotFoundException
+	 * @throws NotPermittedException
 	 */
 	public function exportSpaceToPdf(string $baseUrl, string $apiToken, string $userId, int $file_id, string $outputDirPath,
 									bool $usesIndexDotPhp): array {
@@ -141,6 +172,10 @@ class SpacedeckAPIService {
 	 * @param string $space_id
 	 * @param int $file_id
 	 * @return array success state
+	 * @throws InvalidPathException
+	 * @throws NoUserException
+	 * @throws NotFoundException
+	 * @throws NotPermittedException
 	 */
 	public function saveSpaceToFile(string $baseUrl, string $apiToken, ?string $userId, string $space_id, int $file_id): array {
 		$targetFile = $this->fileService->getFileFromId($userId, $file_id);
@@ -188,7 +223,10 @@ class SpacedeckAPIService {
 	 * @param string $apiToken
 	 * @param ?string $userId
 	 * @param int $file_id
+	 * @param bool $usesIndexDotPhp
 	 * @return array error or space information
+	 * @throws NoUserException
+	 * @throws NotPermittedException
 	 */
 	public function loadSpaceFromFile(string $baseUrl, string $apiToken, ?string $userId, int $file_id, bool $usesIndexDotPhp): array {
 		if ($this->useLocalSpacedeck) {
@@ -286,11 +324,12 @@ class SpacedeckAPIService {
 	 * @param string $spaceId
 	 * @param array $artifact
 	 * @return void
+	 * @throws \Exception
 	 */
 	private function loadArtifact(string $baseUrl, string $apiToken, string $spaceId, array $artifact): void {
 		$response = $this->apiRequest($baseUrl, $apiToken, 'spaces/' . $spaceId . '/artifacts', $artifact, 'POST');
 		if (isset($response['error'])) {
-			$this->logger->error('Error creating artifact in ' . $spaceId . ' : ' . $response['error']);
+			$this->logger->error('Error creating artifact in ' . $spaceId . ' : ' . $response['error'], ['app' => Application::APP_ID]);
 		}
 	}
 
@@ -302,6 +341,7 @@ class SpacedeckAPIService {
 	 * @param ?string $userId
 	 * @param int $fileId
 	 * @return array new space request result
+	 * @throws \Exception
 	 */
 	private function createSpace(string $baseUrl, string $apiToken, ?string $userId, int $fileId): array {
 		$strFileId = strval($fileId);
@@ -317,7 +357,9 @@ class SpacedeckAPIService {
 	 *
 	 * @param string $baseUrl
 	 * @param string $apiToken
+	 * @param bool $usesIndexDotPhp
 	 * @return array API response or request error
+	 * @throws \Exception
 	 */
 	public function getSpaceList(string $baseUrl, string $apiToken, bool $usesIndexDotPhp): array {
 		if ($this->useLocalSpacedeck) {
@@ -339,6 +381,7 @@ class SpacedeckAPIService {
 	 * @param string $baseUrl
 	 * @param string $apiToken
 	 * @return array with status and errors
+	 * @throws \Exception
 	 */
 	public function cleanupSpacedeckStorage(string $baseUrl, string $apiToken): array {
 		// we don't try to launch spacedeck here because urlGenerator->getBaseUrl()
@@ -374,7 +417,7 @@ class SpacedeckAPIService {
 				// => and delete the space via the API
 				$response = $this->apiRequest($baseUrl, $apiToken, 'spaces/' . $spaceId, [], 'DELETE');
 				if (isset($response['error'])) {
-					$this->logger->error('Error deleting space ' . $spaceId . ' : ' . $response['error']);
+					$this->logger->error('Error deleting space ' . $spaceId . ' : ' . $response['error'], ['app' => Application::APP_ID]);
 				} else {
 					$actions[] = 'Deleted space ' . $spaceId;
 				}
@@ -382,7 +425,7 @@ class SpacedeckAPIService {
 				// file exist: check if storage artifact data should be deleted
 				$artifacts = $this->apiRequest($baseUrl, $apiToken, 'spaces/' . $spaceId . '/artifacts');
 				if (isset($artifacts['error'])) {
-					$this->logger->error('Error getting artifacts of space ' . $spaceId . ' : ' . $artifacts['error']);
+					$this->logger->error('Error getting artifacts of space ' . $spaceId . ' : ' . $artifacts['error'], ['app' => Application::APP_ID]);
 				} else {
 					$artifactIds = [];
 					foreach ($artifacts as $artifact) {
@@ -407,6 +450,7 @@ class SpacedeckAPIService {
 	 * @param array $params
 	 * @param string $method
 	 * @return array json decoded response or error
+	 * @throws \Exception
 	 */
 	private function apiRequest(string $baseUrl, string $apiToken, string $endPoint, array $params = [], string $method = 'GET'): array {
 		try {
@@ -474,6 +518,7 @@ class SpacedeckAPIService {
 	 * @param array $extraHeaders
 	 * @param ?string $stringBody
 	 * @return array depending on $jsonOutput: json decoded response or text response body or error
+	 * @throws \Exception
 	 */
 	public function basicRequest(string $url, array $params = [], string $method = 'GET',
 								bool $jsonOutput = false, array $extraHeaders = [], ?string $stringBody = null): array {

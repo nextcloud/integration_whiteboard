@@ -23,7 +23,6 @@ use OCA\Spacedeck\AppInfo\Application;
 
 class CleanupSpacedeck extends Command {
 
-	protected $output;
 	/**
 	 * @var SessionService
 	 */
@@ -32,14 +31,18 @@ class CleanupSpacedeck extends Command {
 	 * @var SpacedeckAPIService
 	 */
 	private $apiService;
+	/**
+	 * @var IConfig
+	 */
+	private $config;
 
 	public function __construct(SpacedeckAPIService $apiService,
 								SessionService $sessionService,
 								IConfig $config) {
 		parent::__construct();
-		$this->config = $config;
 		$this->sessionService = $sessionService;
 		$this->apiService = $apiService;
+		$this->config = $config;
 	}
 
 	protected function configure() {

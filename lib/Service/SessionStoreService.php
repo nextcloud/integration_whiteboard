@@ -12,9 +12,9 @@
 namespace OCA\Spacedeck\Service;
 
 use DateTime;
+use OCP\DB\Exception;
 use OCP\DB\QueryBuilder\IQueryBuilder;
 use OCP\IDBConnection;
-use Psr\Log\LoggerInterface;
 
 use OCA\Spacedeck\AppInfo\Application;
 
@@ -25,17 +25,21 @@ class SessionStoreService {
 	 * @var IDBConnection
 	 */
 	private $db;
-	/**
-	 * @var LoggerInterface
-	 */
-	private $logger;
 
-	public function __construct (IDBConnection   $db,
-								 LoggerInterface $logger) {
+	public function __construct (IDBConnection $db) {
 		$this->db = $db;
-		$this->logger = $logger;
 	}
 
+	/**
+	 * @param string $sessionToken
+	 * @param string|null $ownerUid
+	 * @param string|null $editorUid
+	 * @param int|null $fileId
+	 * @param string|null $shareToken
+	 * @param int|null $tokenType
+	 * @return array|null
+	 * @throws Exception
+	 */
 	public function getSession(string $sessionToken, ?string $ownerUid = null, ?string $editorUid = null,
 							   ?int $fileId = null, ?string $shareToken = null, ?int $tokenType = null): ?array {
 		$qb = $this->db->getQueryBuilder();
@@ -69,6 +73,15 @@ class SessionStoreService {
 		return null;
 	}
 
+	/**
+	 * @param string|null $ownerUid
+	 * @param string|null $editorUid
+	 * @param int|null $fileId
+	 * @param string|null $shareToken
+	 * @param int|null $tokenType
+	 * @return array
+	 * @throws Exception
+	 */
 	public function getSessions(?string $ownerUid = null, ?string $editorUid = null, ?int $fileId = null,
 								?string $shareToken = null, ?int $tokenType = null): array {
 		$qb = $this->db->getQueryBuilder();
@@ -108,6 +121,10 @@ class SessionStoreService {
 		return $sessions;
 	}
 
+	/**
+	 * @param array $row
+	 * @return array
+	 */
 	private function getSessionFromRow(array $row): array {
 		return [
 			'id' => (int) $row['id'],
@@ -122,6 +139,14 @@ class SessionStoreService {
 		];
 	}
 
+	/**
+	 * @param string $ownerUid
+	 * @param int $fileId
+	 * @param string|null $editorUid
+	 * @param string|null $shareToken
+	 * @return array|null
+	 * @throws Exception
+	 */
 	public function createSession(string $ownerUid, int $fileId,
 								  ?string $editorUid = null, ?string $shareToken = null): ?array {
 		// exclusive or between editorUid and shareToken
@@ -162,10 +187,19 @@ class SessionStoreService {
 		];
 	}
 
+	/**
+	 * @param string $baseString
+	 * @return string
+	 */
 	private function generateToken(string $baseString) {
 		return md5($baseString.rand());
 	}
 
+	/**
+	 * @param string $token
+	 * @return void
+	 * @throws Exception
+	 */
 	public function deleteSession(string $token): void {
 		$qb = $this->db->getQueryBuilder();
 		$qb->delete(self::SESSIONS_TABLE_NAME)
@@ -176,6 +210,11 @@ class SessionStoreService {
 		$qb->resetQueryParts();
 	}
 
+	/**
+	 * @param int $timeout
+	 * @return array
+	 * @throws Exception
+	 */
 	public function cleanupSessions(int $timeout): array {
 		$qb = $this->db->getQueryBuilder();
 
@@ -206,6 +245,11 @@ class SessionStoreService {
 		return $deletedSessions;
 	}
 
+	/**
+	 * @param string $sessionToken
+	 * @return void
+	 * @throws Exception
+	 */
 	public function touchSession(string $sessionToken): void {
 		$qb = $this->db->getQueryBuilder();
 		$nowTimestamp = (new DateTime())->getTimestamp();

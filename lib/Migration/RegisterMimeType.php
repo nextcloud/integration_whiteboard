@@ -21,15 +21,19 @@
 
 namespace OCA\Spacedeck\Migration;
 
+use OCA\Spacedeck\AppInfo\Application;
 use OCP\Migration\IOutput;
 use OCP\Migration\IRepairStep;
-use OCP\ILogger;
+use Psr\Log\LoggerInterface;
 
 class RegisterMimeType implements IRepairStep {
-	protected $logger;
-	private $customMimetypeMapping;
 
-	public function __construct(ILogger $logger) {
+	/**
+	 * @var LoggerInterface
+	 */
+	private $logger;
+
+	public function __construct(LoggerInterface $logger) {
 		$this->logger = $logger;
 	}
 
@@ -38,7 +42,7 @@ class RegisterMimeType implements IRepairStep {
 	}
 
 	public function run(IOutput $output) {
-		$this->logger->info('Registering the Spacedeck mimetype...');
+		$this->logger->info('Registering the Spacedeck mimetype...', ['app' => Application::APP_ID]);
 
 		$mimetypeMapping = [
 			'whiteboard' => ['application/spacedeck']
@@ -53,6 +57,6 @@ class RegisterMimeType implements IRepairStep {
 
 		file_put_contents($mimetypeMappingFile, json_encode($mimetypeMapping, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT));
 
-		$this->logger->info('The Spacedeck mimetype was successfully registered.');
+		$this->logger->info('The Spacedeck mimetype was successfully registered.', ['app' => Application::APP_ID]);
 	}
 }

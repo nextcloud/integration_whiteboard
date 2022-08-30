@@ -28,8 +28,7 @@ use OCP\AppFramework\Controller;
 use OCA\Spacedeck\Service\SpacedeckAPIService;
 use OCA\Spacedeck\AppInfo\Application;
 
-if (!function_exists('getallheaders'))
-{
+if (!function_exists('getallheaders')) {
 	// polyfill, e.g. on PHP 7.2 setups with nginx.
 	// Can be removed when 7.2 becomes unsupported
 	function getallheaders() {

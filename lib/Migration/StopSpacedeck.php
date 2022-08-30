@@ -21,19 +21,28 @@
 
 namespace OCA\Spacedeck\Migration;
 
+use OCA\Spacedeck\AppInfo\Application;
 use OCP\Migration\IOutput;
 use OCP\Migration\IRepairStep;
-use OCP\ILogger;
 
 use OCA\Spacedeck\Service\SpacedeckBundleService;
+use Psr\Log\LoggerInterface;
 
 class StopSpacedeck implements IRepairStep {
-	protected $logger;
-	private $customMimetypeMapping;
 
-	public function __construct(ILogger $logger, SpacedeckBundleService $service) {
+	/**
+	 * @var LoggerInterface
+	 */
+	private $logger;
+	/**
+	 * @var SpacedeckBundleService
+	 */
+	private $bundleService;
+
+	public function __construct(LoggerInterface $logger,
+								SpacedeckBundleService $bundleService) {
 		$this->logger = $logger;
-		$this->service = $service;
+		$this->bundleService = $bundleService;
 	}
 
 	public function getName() {
@@ -43,11 +52,11 @@ class StopSpacedeck implements IRepairStep {
 	public function run(IOutput $output) {
 		$this->logger->info('Stopping Spacedeck...');
 
-		$stopped = $this->service->killSpacedeck();
+		$stopped = $this->bundleService->killSpacedeck();
 		if ($stopped) {
-			$this->logger->info('Spacedeck stopped!');
+			$this->logger->info('Spacedeck stopped!', ['app' => Application::APP_ID]);
 		} else {
-			$this->logger->warning('Failed to stop Spacedeck');
+			$this->logger->warning('Failed to stop Spacedeck', ['app' => Application::APP_ID]);
 		}
 	}
 }

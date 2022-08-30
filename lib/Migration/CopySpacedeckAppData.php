@@ -21,23 +21,35 @@
 
 namespace OCA\Spacedeck\Migration;
 
+use Exception;
 use OCP\Migration\IOutput;
 use OCP\Migration\IRepairStep;
-use OCP\ILogger;
 use OCP\IConfig;
 
 use OCA\Spacedeck\AppInfo\Application;
 use OCA\Spacedeck\Service\SpacedeckBundleService;
+use Psr\Log\LoggerInterface;
+use Throwable;
 
 class CopySpacedeckAppData implements IRepairStep {
-	protected $logger;
-	private $customMimetypeMapping;
+	/**
+	 * @var LoggerInterface
+	 */
+	private $logger;
+	/**
+	 * @var SpacedeckBundleService
+	 */
+	private $bundleService;
+	/**
+	 * @var IConfig
+	 */
+	private $config;
 
-	public function __construct(ILogger $logger,
-								SpacedeckBundleService $service,
+	public function __construct(LoggerInterface $logger,
+								SpacedeckBundleService $bundleService,
 								IConfig $config) {
 		$this->logger = $logger;
-		$this->service = $service;
+		$this->bundleService = $bundleService;
 		$this->config = $config;
 	}
 
@@ -48,14 +60,14 @@ class CopySpacedeckAppData implements IRepairStep {
 	public function run(IOutput $output) {
 		$this->logger->info('Copying Spacedeck data...');
 
-		$this->service->killSpacedeck();
+		$this->bundleService->killSpacedeck();
 		try {
-			$this->service->copySpacedeckData();
+			$this->bundleService->copySpacedeckData();
 			$this->config->setAppValue(Application::APP_ID, 'spacedeck_data_copied', '1');
-			$this->logger->info('Spacedeck data successfully copied!');
+			$this->logger->info('Spacedeck data successfully copied!', ['app' => Application::APP_ID]);
 		} catch (Exception | Throwable $e) {
 			$this->config->setAppValue(Application::APP_ID, 'spacedeck_data_copied', '0');
-			$this->logger->warning('Impossible to copy Spacedeck data');
+			$this->logger->warning('Impossible to copy Spacedeck data', ['app' => Application::APP_ID]);
 		}
 	}
 }
