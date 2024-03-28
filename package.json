@@ -1,6 +1,6 @@
 {
 	"name": "integration_whiteboard",
-	"version": "0.0.1",
+	"version": "0.0.15",
 	"description": "Spacedeck integration",
 	"main": "index.js",
 	"directories": {
